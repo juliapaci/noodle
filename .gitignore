@@ -1,0 +1,9 @@
+.DS*
+*jpg~
+*png~
+*gif~
+*bmp~
+/bin
+*io.bit
+*.bak
+/*-test
