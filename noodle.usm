@@ -7,13 +7,6 @@
 	space - toogle zoom
 	backspace - blank canvas
 	1-8 - select brush size
-
-	TODO
-		- Pixel cleanup brush
-		- Don't zoom move beyond image width
-		- Erase
-		- Rename
-		- Draw ouline when returning from present
 )
 
 %+  { ADD } %-   { SUB }  %*  { MUL } %/   { DIV }
@@ -253,7 +246,7 @@ BRK
 		( release ) #00 .Mouse/state DEO
 		.Mouse/x DEI2 .canvas/x1 LDZ2 -- .canvas/w LDZ2 #0001 SFT2 -- .zoom/x STZ2
 		.Mouse/y DEI2 .canvas/y1 LDZ2 -- .canvas/h LDZ2 #0001 SFT2 -- .zoom/y STZ2
-		;redraw JSR2 &no-touch-zoom
+		;redraw JSR2 RELEASE-MOUSE &no-touch-zoom
 
 BRK
 
