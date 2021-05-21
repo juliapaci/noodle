@@ -154,14 +154,16 @@ BRK
 		.Mouse/x DEI2 .cursor/x0 STZ2
 		.Mouse/y DEI2 .cursor/y0 STZ2
 
-		.Mouse/x DEI2 .Mouse/y DEI2 .sizepane ;within-rect JSR2
-			;on-touch-sizepane JCN2
-		.Mouse/x DEI2 .Mouse/y DEI2 .pattpane ;within-rect JSR2
-			;on-touch-pattpane JCN2
-		.Mouse/x DEI2 .Mouse/y DEI2 .toolpane ;within-rect JSR2
-			;on-touch-toolpane JCN2
-		.Mouse/x DEI2 .Mouse/y DEI2 .viewpane ;within-rect JSR2
-			;on-touch-viewpane JCN2
+		.document/presentation LDZ ,&skip-panes JCN
+			.Mouse/x DEI2 .Mouse/y DEI2 .sizepane ;within-rect JSR2
+				;on-touch-sizepane JCN2
+			.Mouse/x DEI2 .Mouse/y DEI2 .pattpane ;within-rect JSR2
+				;on-touch-pattpane JCN2
+			.Mouse/x DEI2 .Mouse/y DEI2 .toolpane ;within-rect JSR2
+				;on-touch-toolpane JCN2
+			.Mouse/x DEI2 .Mouse/y DEI2 .viewpane ;within-rect JSR2
+				;on-touch-viewpane JCN2
+		&skip-panes
 
 		( background )
 		.Mouse/y DEI2 #0008 // TOB .Screen/height DEI2 #0008 // TOB #02 - ! ,&no-background JCN
@@ -275,8 +277,11 @@ BRK
 	
 	.Mouse/x DEI2 .pattpane/x1 LDZ2 -- #0003 SFT2 TOB .brush/patt STZ
 
+	#01 .brush/tool STZ
+
 	( draw ) 
 	;draw-pattpane JSR2
+	;draw-toolpane JSR2
 
 	RELEASE-MOUSE
 
@@ -434,13 +439,12 @@ RTN
 		.theme/b1 LDZ2 .System/b DEO2 &skip1
 	POP
 
-	.toolpane/x1 LDZ2 #0002 -- .toolpane/y1 LDZ2 #0002 -- .toolpane/x2 LDZ2 #0001 ++ .toolpane/y2 LDZ2 #0001 ++ #00 ;fill-rect JSR2
-	.pattpane/x1 LDZ2 #0002 -- .pattpane/y1 LDZ2 #0002 -- .pattpane/x2 LDZ2 #0001 ++ .pattpane/y2 LDZ2 #0001 ++ #00 ;fill-rect JSR2
-	.sizepane/x1 LDZ2 #0002 -- .sizepane/y1 LDZ2 #0002 -- .sizepane/x2 LDZ2 #0001 ++ .sizepane/y2 LDZ2 #0001 ++ #00 ;fill-rect JSR2
-	.viewpane/x1 LDZ2 #0002 -- .viewpane/y1 LDZ2 #0002 -- .viewpane/x2 LDZ2 #0001 ++ .viewpane/y2 LDZ2 #0001 ++ #00 ;fill-rect JSR2
-
-	( clear panes )
-	;redraw JSR2
+	;draw-background JSR2
+	;draw-canvas JSR2
+	.canvas/w LDZ2 #0030 SFT2 .canvas/x1 LDZ2 ++ .canvas/x2 STZ2
+	.canvas/h LDZ2 #0030 SFT2 .canvas/y1 LDZ2 ++ .canvas/y2 STZ2
+	.canvas/x1 LDZ2 #0001 -- .canvas/y1 LDZ2 #0001 -- .canvas/x2 LDZ2 .canvas/y2 LDZ2 #01 ;line-rect JSR2
+	;draw-foreground JSR2
 
 RTN
 
@@ -728,7 +732,7 @@ RTN
 	( draw new cursor )
 	.cursor/x LDZ2 .Screen/x DEO2 
 	.cursor/y LDZ2 .Screen/y DEO2
-	;pointers_icn #00 .Controller/button DEI #02 = #0030 SFT2 ++ .Screen/addr DEO2
+	;pointers-icns #00 .Controller/button DEI #02 = #0030 SFT2 ++ .Screen/addr DEO2
 	#3f .Mouse/state DEI #01 = #0a * SUB .Screen/color DEO
 
 RTN
@@ -741,7 +745,7 @@ RTN
 	.toolpane/x1 LDZ2 #0001 -- .toolpane/y1 LDZ2 #0001 -- .toolpane/x2 LDZ2 .toolpane/y2 LDZ2 #00 ;line-rect JSR2
 	.toolpane/x1 LDZ2 #0002 -- .toolpane/y1 LDZ2 #0002 -- .toolpane/x2 LDZ2 .toolpane/y2 LDZ2 #01 ;line-rect JSR2
 
-	.toolpane/x1 LDZ2 .Screen/x DEO2 .toolpane/y1 LDZ2 .Screen/y DEO2 ;tool_icns .Screen/addr DEO2
+	.toolpane/x1 LDZ2 .Screen/x DEO2 .toolpane/y1 LDZ2 .Screen/y DEO2 ;tool-icns .Screen/addr DEO2
 
 	&loop
 		( draw ) #21 .Screen/x DEI2 .toolpane/x1 LDZ2 -- #0003 SFT2 TOB .brush/tool LDZ = #02 * ADD .Screen/color DEO
@@ -751,7 +755,7 @@ RTN
 
 	.zoom/active LDZ #01 ! ,&no-zoom JCN
 		.Screen/x DEI2 #0008 -- .Screen/x DEO2
-		;tool_icns #0028 ++ .Screen/addr DEO2
+		;tool-icns #0028 ++ .Screen/addr DEO2
 		#21 #04 .brush/tool LDZ = #02 * ADD .Screen/color DEO
 		&no-zoom
 
@@ -765,7 +769,7 @@ RTN
 	.pattpane/x1 LDZ2 #0001 -- .pattpane/y1 LDZ2 #0001 -- .pattpane/x2 LDZ2 .pattpane/y2 LDZ2 #00 ;line-rect JSR2
 	.pattpane/x1 LDZ2 #0002 -- .pattpane/y1 LDZ2 #0002 -- .pattpane/x2 LDZ2 .pattpane/y2 LDZ2 #01 ;line-rect JSR2
 
-	.pattpane/x1 LDZ2 .Screen/x DEO2 .pattpane/y1 LDZ2 .Screen/y DEO2 ;patt_icns .Screen/addr DEO2
+	.pattpane/x1 LDZ2 .Screen/x DEO2 .pattpane/y1 LDZ2 .Screen/y DEO2 ;patt-icns .Screen/addr DEO2
 
 	&loop
 		( draw ) #21 .Screen/x DEI2 .pattpane/x1 LDZ2 -- #0003 SFT2 TOB .brush/patt LDZ = #02 * ADD .Screen/color DEO
@@ -801,7 +805,7 @@ RTN
 	.viewpane/x1 LDZ2 #0001 -- .viewpane/y1 LDZ2 #0001 -- .viewpane/x2 LDZ2 .viewpane/y2 LDZ2 #00 ;line-rect JSR2
 	.viewpane/x1 LDZ2 #0002 -- .viewpane/y1 LDZ2 #0002 -- .viewpane/x2 LDZ2 .viewpane/y2 LDZ2 #01 ;line-rect JSR2
 
-	.viewpane/x1 LDZ2 .Screen/x DEO2 .viewpane/y1 LDZ2 .Screen/y DEO2 ;view_icns .Screen/addr DEO2
+	.viewpane/x1 LDZ2 .Screen/x DEO2 .viewpane/y1 LDZ2 .Screen/y DEO2 ;view-icns .Screen/addr DEO2
 
 	&loop
 		( draw ) #21 .Screen/color DEO
@@ -997,7 +1001,6 @@ RTN
 @bigpixel-icns
 	5580 0080 0080 0080 
 	55ff 7fff 7fff 7fff 
-
 @size_icns
 	0000 0010 0000 0000
 	0000 1038 1000 0000
@@ -1007,7 +1010,6 @@ RTN
 	1038 7cfe 7c38 1000
 	387c fefe fe7c 3800
 	7cfe fefe fefe 7c00
-
 	0000 0000 0000 0000
 	0000 0010 0000 0000
 	0000 1028 1000 0000
@@ -1016,50 +1018,40 @@ RTN
 	1028 4482 4428 1000
 	3844 8282 8244 3800
 	7c82 8282 8282 7c00
-
-@patt_icns
-	[ fefe fefe fefe fe00 ]
-	[ fed6 aad6 aad6 fe00 ]
-	[ fe92 82d6 8292 fe00 ]
-	[ fe82 92aa 9282 fe00 ]
-	[ fea6 ca92 a6ca fe00 ]
-	[ feca a692 caa6 fe00 ]
-	[ feaa aaaa aaaa fe00 ]	
-	[ fe82 fe82 fe82 fe00 ]
-
-@tool_icns
-	[ c0e0 5028 140a 0400 ]
-	[ e0d0 a844 2212 0c00 ]
-	[ c0b8 4848 7804 0200 ]
-	[ 44ba 4444 44ba 4400 ]
-	[ 3048 8484 4834 0200 ] ( zoom )
-	[ 3245 8284 4834 0200 ] ( zoom out )
-
-@view_icns
-	[ ee92 8a84 8a92 ee00 ]
-	[ f68a 92a2 928a f600 ]
-	[ fe82 8244 aa92 ee00 ]
-	[ fe82 92aa 4482 fe00 ]
-
+@patt-icns
+	fefe fefe fefe fe00
+	fed6 aad6 aad6 fe00
+	fe92 82d6 8292 fe00
+	fe82 92aa 9282 fe00
+	fea6 ca92 a6ca fe00
+	feca a692 caa6 fe00
+	feaa aaaa aaaa fe00	
+	fe82 fe82 fe82 fe00
+@tool-icns
+	c0e0 5028 140a 0400
+	e0d0 a844 2212 0c00
+	c0b8 4848 7804 0200
+	44ba 4444 44ba 4400
+	3048 8484 4834 0200 ( zoom )
+	3245 8284 4834 0200 ( zoom out )
+@view-icns
+	ee92 8a84 8a92 ee00
+	f68a 92a2 928a f600
+	fe82 8244 aa92 ee00
+	fe82 92aa 4482 fe00
 @brush_icns
-	[ 0000 0010 0000 0000 ]
-	[ 0000 1028 1000 0000 ]
-	[ 0000 3828 3800 0000 ]
-	[ 0010 2844 2810 0000 ]
-	[ 0038 4444 4438 0000 ]
-	[ 1028 4482 4428 1000 ]
-	[ 3844 8282 8244 3800 ]
-	[ 7c82 8282 8282 7c00 ]
-	[ 7cfe fefe fefe 7c00 ]
-
-@pointers_icn
-	[ 80c0 e0f0 f8e0 1000 ]
-	[ 2020 20b8 7c7c 3838 ]
-
-@eye_icn
-	[ 0038 4492 2810 0000 ] ( open )
-	[ 0000 0082 4438 0000 ] ( closed )
-
+	0000 0010 0000 0000
+	0000 1028 1000 0000
+	0000 3828 3800 0000
+	0010 2844 2810 0000
+	0038 4444 4438 0000
+	1028 4482 4428 1000
+	3844 8282 8244 3800
+	7c82 8282 8282 7c00
+	7cfe fefe fefe 7c00
+@pointers-icns
+	80c0 e0f0 f8e0 1000
+	2020 20b8 7c7c 3838
 
 @font-hex
 	007c 8282 8282 827c 0030 1010 1010 1010
@@ -1121,4 +1113,4 @@ RTN
 	0008 0808 0808 0800 0030 1008 0810 3000
 	0000 0032 4c00 0000 3c42 99a1 a199 423c
 
-|2100 @data
+@data
