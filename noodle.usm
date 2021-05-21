@@ -166,7 +166,7 @@ BRK
 		&skip-panes
 
 		( background )
-		.Mouse/y DEI2 #0008 // TOB .Screen/height DEI2 #0008 // TOB #02 - ! ,&no-background JCN
+		.Mouse/y DEI2 #0008 // TOB .Screen/height DEI2 #0008 // TOB #02 - ! ;&no-background JCN2
 			#ff .Mouse/x DEI2 #0008 // TOB .Screen/width DEI2 #0008 // TOB - - 
 			DUP #01 ! ,&no-save JCN
 				;path/name ;save-file JSR2
@@ -180,6 +180,10 @@ BRK
 				;redraw JSR2
 				RELEASE-MOUSE POP BRK &no-blank
 			POP
+			.Mouse/x DEI2 #0008 // TOB .Screen/width DEI2 #0008 // TOB #03 - > ,&no-rename JCN
+				;rename JSR2
+				#01 .document/edit STZ
+				RELEASE-MOUSE BRK &no-rename
 		&no-background 
 
 	&no-mouse-down
@@ -629,7 +633,7 @@ RTN
 	
 	;clear JSR2
 	;blank-txt ;path/name ;strcpy JSR2
-	;draw-canvas JSR2
+	;redraw JSR2
 
 RTN
 
@@ -826,6 +830,20 @@ RTN
 
 @draw-background ( -- )
 	
+	( draw size )
+	.Screen/width DEI2 #00a0 -- .Screen/x DEO2
+	#000f .Screen/y DEO2
+	.canvas/w LDZ2 #0080 SFT2 .canvas/h LDZ2 ++ #21 ;draw-short JSR2
+
+	( bottom )
+	.Screen/height DEI2 #0010 -- .Screen/y DEO2
+	#0008 .Screen/x DEO2
+	;path/name #01 ;draw-label JSR2
+	&clear
+		#20 .Screen/color DEO
+		.Screen/x DEI2 #0008 ++ DUP2 .Screen/x DEO2
+		.Screen/width DEI2 << ,&clear JCN
+
 	( draw hor line )
 	#0000 
 	.Screen/width DEI2 
@@ -839,16 +857,6 @@ RTN
 	.Screen/height DEI2 
 	.document/presentation LDZ #00 = 
 		;line-ver JSR2
-
-	( draw size )
-	.Screen/width DEI2 #00a0 -- .Screen/x DEO2
-	#000f .Screen/y DEO2
-	.canvas/w LDZ2 #0080 SFT2 .canvas/h LDZ2 ++ #21 ;draw-short JSR2
-
-	( bottom )
-	.Screen/height DEI2 #0010 -- .Screen/y DEO2
-	#0008 .Screen/x DEO2
-	;path/name #01 ;draw-label JSR2
 
 	( file i/o )
 	.Screen/height DEI2 #0010 -- .Screen/y DEO2
