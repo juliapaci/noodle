@@ -28,6 +28,8 @@
 %SFL { #40 SFT SFT }
 %FILESIZE { .canvas/w LDZ2 .canvas/h LDZ2 ** #0008 ** }
 %RELEASE-MOUSE { #00 .Mouse/state DEO }
+%DEBUG  { .Console/byte DEO #0a .Console/char DEO }
+%DEBUG2 { .Console/short DEO2 #0a .Console/char DEO }
 
 ( devices )
 
@@ -99,7 +101,7 @@
 	;untitled_txt ;path/name ;strcpy JSR2
 
 	( setup panes )
-	#0010 .toolpane/x1 STZ2 #0010 .toolpane/y1 STZ2 
+	#0011 .toolpane/x1 STZ2 #0010 .toolpane/y1 STZ2 
 	.toolpane/x1 LDZ2 #0028 ++ .toolpane/x2 STZ2 
 	.toolpane/y1 LDZ2 #0008 ++ .toolpane/y2 STZ2
 	#0040 .sizepane/x1 STZ2 #0010 .sizepane/y1 STZ2 
@@ -203,31 +205,8 @@ BRK
 			;on-touch-pattpane JCN2
 		.Mouse/x DEI2 .Mouse/y DEI2 .toolpane ;within-rect JSR2
 			;on-touch-toolpane JCN2
-
-		( in viewpane )
-		.Mouse/x DEI2 CLN2r .viewpane/x1 LDZ2 >> STH2r .viewpane/x2 LDZ2 << #0101 !! ;&no-touch-viewpane JCN2
-		.Mouse/y DEI2 CLN2r .viewpane/y1 LDZ2 >> STH2r .viewpane/y2 LDZ2 << #0101 !! ;&no-touch-viewpane JCN2
-			( release ) #00 .Mouse/state DEO
-			( clear ) .canvas/x1 LDZ2 #0002 -- .canvas/y1 LDZ2 #0002 -- .canvas/x2 LDZ2 #0002 ++ .canvas/y2 LDZ2 #0002 ++ #00 ;fill-rect JSR2
-			;draw-background JSR2
-			.Mouse/x DEI2 .viewpane/x1 LDZ2 -- #0003 SFT2 SWP POP
-			DUP ,&no-incwidth JCN
-				.canvas/w LDZ2 #0001 ++ .canvas/w STZ2
-			&no-incwidth
-			DUP #01 ! ,&no-decwidth JCN
-				.canvas/w LDZ2 #0001 -- .canvas/w STZ2
-			&no-decwidth
-			DUP #02 ! ,&no-incheight JCN
-				.canvas/h LDZ2 #0001 ++ .canvas/h STZ2
-			&no-incheight
-			DUP #03 ! ,&no-decheight JCN
-				.canvas/h LDZ2 #0001 -- .canvas/h STZ2
-			&no-decheight
-			POP
-			;fit-canvas JSR2
-			;redraw JSR2
-			;&touch-end JMP2
-		&no-touch-viewpane
+		.Mouse/x DEI2 .Mouse/y DEI2 .viewpane ;within-rect JSR2
+			;on-touch-viewpane JCN2
 
 		( in canvas )
 		.Mouse/x DEI2 CLN2r .canvas/x1 LDZ2 GTS2 STH2r .canvas/x2 LDZ2 LTS2 #0101 !! ;&no-touch-canvas JCN2
@@ -322,6 +301,35 @@ BRK
 
 	( draw ) 
 	;draw-toolpane JSR2
+
+	RELEASE-MOUSE
+
+BRK
+
+@on-touch-viewpane ( -> )
+	
+	( clear ) 
+	.canvas/x1 LDZ2 #0002 -- 
+	.canvas/y1 LDZ2 #0002 -- 
+	.canvas/x2 LDZ2 #0002 ++ 
+	.canvas/y2 LDZ2 #0002 ++ #00 
+	;fill-rect JSR2
+
+	;draw-background JSR2
+
+	.Mouse/x DEI2 .viewpane/x1 LDZ2 -- #0003 SFT2 SWP POP
+	DUP ,&no-incwidth JCN
+		.canvas/w LDZ2 #0001 ++ .canvas/w STZ2 &no-incwidth
+	DUP #01 ! ,&no-decwidth JCN
+		.canvas/w LDZ2 #0001 -- .canvas/w STZ2 &no-decwidth
+	DUP #02 ! ,&no-incheight JCN
+		.canvas/h LDZ2 #0001 ++ .canvas/h STZ2 &no-incheight
+	DUP #03 ! ,&no-decheight JCN
+		.canvas/h LDZ2 #0001 -- .canvas/h STZ2 &no-decheight
+	POP
+
+	;fit-canvas JSR2
+	;redraw JSR2
 
 	RELEASE-MOUSE
 
@@ -690,30 +698,43 @@ RTN
 
 @draw-cursor ( -- )
 
-	;blank_icn .Screen/addr DEO2
 	( clear brush size )
-	.cursor/x LDZ2 #0003 -- .Screen/x DEO2 .cursor/y LDZ2 #0003 -- .Screen/y DEO2 #30 .Screen/color DEO
+	.cursor/x LDZ2 #0003 -- .Screen/x DEO2 
+	.cursor/y LDZ2 #0003 -- .Screen/y DEO2 
+	#30 .Screen/color DEO
+
 	( clear last cursor )
-	.cursor/x LDZ2 .Screen/x DEO2 .cursor/y LDZ2 .Screen/y DEO2 #30 .Screen/color DEO
+	.cursor/x LDZ2 .Screen/x DEO2 
+	.cursor/y LDZ2 .Screen/y DEO2 
+	#30 .Screen/color DEO
+
 	( record cursor positions )
-	.Mouse/x DEI2 .cursor/x STZ2 .Mouse/y DEI2 .cursor/y STZ2
+	.Mouse/x DEI2 .cursor/x STZ2 
+	.Mouse/y DEI2 .cursor/y STZ2
+
 	( draw size cursor )
 	.brush/tool LDZ #01 ! ;&outside-canvas JCN2
-	( do not draw size when holding alt )
+
+	( when holding alt )
 	.Controller/button DEI #02 EQU ;&outside-canvas JCN2
-	.Mouse/x DEI2 CLN2r .canvas/x1 LDZ2 >> STH2r .canvas/x2 LDZ2 << #0101 !! ;&outside-canvas JCN2
-	.Mouse/y DEI2 CLN2r .canvas/y1 LDZ2 >> STH2r .canvas/y2 LDZ2 << #0101 !! ;&outside-canvas JCN2	
-	( do not draw size in toolpane )
-	.Mouse/x DEI2 CLN2r .toolpane/x1 LDZ2 >> STH2r .toolpane/x2 LDZ2 << #0101 == .Mouse/y DEI2 CLN2r .toolpane/y1 LDZ2 >> STH2r .toolpane/y2 LDZ2 << #0101 == #0101 == ;&outside-canvas JCN2
-	.Mouse/x DEI2 CLN2r .sizepane/x1 LDZ2 >> STH2r .sizepane/x2 LDZ2 << #0101 == .Mouse/y DEI2 CLN2r .sizepane/y1 LDZ2 >> STH2r .sizepane/y2 LDZ2 << #0101 == #0101 == ;&outside-canvas JCN2
-	.Mouse/x DEI2 CLN2r .pattpane/x1 LDZ2 >> STH2r .pattpane/x2 LDZ2 << #0101 == .Mouse/y DEI2 CLN2r .pattpane/y1 LDZ2 >> STH2r .pattpane/y2 LDZ2 << #0101 == #0101 == ;&outside-canvas JCN2
+	( outside canvas )
+	.Mouse/x DEI2 .Mouse/y DEI2 .canvas ;within-rect JSR2 #00 = ;&outside-canvas JCN2
+	( within panes )
+	.Mouse/x DEI2 .Mouse/y DEI2 .toolpane ;within-rect JSR2 ;&outside-canvas JCN2
+	.Mouse/x DEI2 .Mouse/y DEI2 .sizepane ;within-rect JSR2 ;&outside-canvas JCN2
+	.Mouse/x DEI2 .Mouse/y DEI2 .pattpane ;within-rect JSR2 ;&outside-canvas JCN2
+	.Mouse/x DEI2 .Mouse/y DEI2 .viewpane ;within-rect JSR2 ;&outside-canvas JCN2
+
 		.cursor/x LDZ2 #0003 -- .Screen/x DEO2 .cursor/y LDZ2 #0003 -- .Screen/y DEO2
 		;brush_icns #00 .brush/size LDZ #0030 SFT2 ++ .Screen/addr DEO2
 		#31 .Mouse/state DEI #02 MUL ADD .Screen/color DEO
 		.Mouse/state DEI #00 EQU ,&outside-canvas JCN RTN
+
 	&outside-canvas
+
 	( draw new cursor )
-	.cursor/x LDZ2 .Screen/x DEO2 .cursor/y LDZ2 .Screen/y DEO2
+	.cursor/x LDZ2 .Screen/x DEO2 
+	.cursor/y LDZ2 .Screen/y DEO2
 	;pointers_icn #00 .Controller/button DEI #02 EQU #0030 SFT2 ++ .Screen/addr DEO2
 	#3f .Mouse/state DEI #01 EQU #0a MUL SUB .Screen/color DEO
 
@@ -956,6 +977,13 @@ RTN
 	
 RTN
 
+
+@filestate_icn  1054 28c6 2854 1000 
+@load_icn       feaa d6aa d4aa f400 
+@save_icn       fe82 8282 848a f400 
+@blank_icn      0000 0000 0000 0000 
+@untitled_txt   "untitled.bit 00 
+
 @size_icns
 	[ 0000 0010 0000 0000 ]
 	[ 0000 1038 1000 0000 ]
@@ -1012,13 +1040,6 @@ RTN
 @eye_icn
 	[ 0038 4492 2810 0000 ] ( open )
 	[ 0000 0082 4438 0000 ] ( closed )
-
-@filestate_icn  [ 1054 28c6 2854 1000 ]
-@load_icn       [ feaa d6aa d4aa f400 ]
-@save_icn       [ fe82 8282 848a f400 ]
-
-@blank_icn      [ 0000 0000 0000 0000 ]
-@untitled_txt   [ "untitled.bit 00 ]
 
 @font_hex ( 0-F TODO: should pull from @font instead.. )
 [
