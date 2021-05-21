@@ -12,6 +12,8 @@
 		- Pixel cleanup brush
 		- Don't zoom move beyond image width
 		- Erase
+		- Rename
+		- Draw ouline when returning from present
 )
 
 %+  { ADD } %-   { SUB }  %*  { MUL } %/   { DIV }
@@ -46,8 +48,8 @@
 
 |0000
 
-@cursor [ &x $2 &y $2 &x0 $2 &y0 $2 &dx $2 &dy $2 &last $1 ]
-@brush [ &tool $1 &size $1 &patt $1 &drag $1 &last $1 &oper $2 ]
+@cursor [ &x $2 &y $2 &x0 $2 &y0 $2 &last $1 ]
+@brush [ &tool $1 &size $1 &patt $1 &drag $1 &last $1 &oper $2 &mode $1 ]
 @zoom [ &active $1 &x $2 &y $2 ]
 @toolpane [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
 @pattpane [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
@@ -56,8 +58,6 @@
 @canvas [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 &w $2 &h $2 ]
 @rect [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
 @line [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2 ]
-@origin [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
-@color [ &byte $1 ]
 @pt0 [ &x $2 &y $2 ]
 @pt1 [ &x $2 &y $2 ]
 @pt2 [ &x $2 &y $2 ] ( paint-rect )
@@ -66,6 +66,7 @@
 @path [ &length $1 &name $20 ]
 @timer [ &byte $1 ]
 @theme [ &r0 $2 &g0 $2 &b0 $2 &r1 $2 &g1 $2 &b1 $2 ]
+@color $1 
 
 ( program )
 
@@ -133,14 +134,14 @@ BRK
 
 	#0008 .Screen/x DEO2
 	.Screen/height DEI2 #0010 -- .Screen/y DEO2
-	;path/name #01 .timer LDZ #04 DIV #03 AND #03 MUL ADD ;draw-label JSR2
+	;path/name #01 .timer LDZ #04 / #03 AND #03 * + ;draw-label JSR2
 
 	&clear
 		#20 .Screen/color DEO
 		.Screen/x DEI2 #0008 ++ DUP2 .Screen/x DEO2
 		.Screen/width DEI2 << ,&clear JCN
 
-	( blink ) .timer LDZ #01 ADD .timer STZ
+	( blink ) .timer LDZ #01 + .timer STZ
 
 BRK
 
@@ -218,10 +219,14 @@ BRK
 
 @on-touch-canvas ( -> )
 	
-	( set cursor operation )
-	;add-pixel .Mouse/state DEI #01 = ,&no-oper JCN 
-		POP2 ;remove-pixel &no-oper 
+	( set erase from right-click )
+	;add-pixel .Mouse/state DEI #01 = ,&no-rightclick JCN 
+		POP2 ;remove-pixel &no-rightclick 
 	.brush/oper STZ2
+	( set erase from mode )
+	.brush/mode LDZ #00 = ,&no-erasemode JCN
+		;remove-pixel .brush/oper STZ2
+	&no-erasemode
 
 	.brush/tool LDZ ,&no-touch-pen JCN
 		.cursor/x0 LDZ2 .canvas/x1 LDZ2 -- 
@@ -248,7 +253,14 @@ BRK
 
 @on-touch-sizepane ( -> )
 
-	.Mouse/x DEI2 .sizepane/x1 LDZ2 -- #0003 SFT2 SWP POP .brush/size STZ
+	.Mouse/x DEI2 .sizepane/x1 LDZ2 -- #0003 SFT2 TOB 
+
+	DUP .brush/size LDZ ! ,&no-toggle JCN
+		.brush/mode LDZ #00 = .brush/mode STZ
+	&no-toggle
+
+	.brush/size STZ
+
 	#01 .brush/tool STZ
 
 	( draw ) 
@@ -261,7 +273,7 @@ BRK
 
 @on-touch-pattpane ( -> )
 	
-	.Mouse/x DEI2 .pattpane/x1 LDZ2 -- #0003 SFT2 SWP POP .brush/patt STZ
+	.Mouse/x DEI2 .pattpane/x1 LDZ2 -- #0003 SFT2 TOB .brush/patt STZ
 
 	( draw ) 
 	;draw-pattpane JSR2
@@ -272,7 +284,7 @@ BRK
 
 @on-touch-toolpane ( -> )
 	
-	.Mouse/x DEI2 .toolpane/x1 LDZ2 -- #0003 SFT2 SWP POP .brush/tool STZ
+	.Mouse/x DEI2 .toolpane/x1 LDZ2 -- #0003 SFT2 TOB .brush/tool STZ
 
 	( draw ) 
 	;draw-toolpane JSR2
@@ -292,7 +304,7 @@ BRK
 
 	;draw-background JSR2
 
-	.Mouse/x DEI2 .viewpane/x1 LDZ2 -- #0003 SFT2 SWP POP
+	.Mouse/x DEI2 .viewpane/x1 LDZ2 -- #0003 SFT2 TOB
 	DUP ,&no-incwidth JCN
 		.canvas/w LDZ2 #0001 ++ .canvas/w STZ2 &no-incwidth
 	DUP #01 ! ,&no-decwidth JCN
@@ -496,7 +508,7 @@ RTN
 	&ver
 		.rect/x1 LDZ2 .pt2/x STZ2
 		&hor
-			.pt2/x LDZ2 SWP POP .px/x STZ .pt2/y LDZ2 SWP POP .px/y STZ
+			.pt2/x LDZ2 TOB .px/x STZ .pt2/y LDZ2 TOB .px/y STZ
 			;patternize JSR2 #00 = ,&no-pixel JCN
 				( draw ) .pt2/x LDZ2 .pt2/y LDZ2 .brush/oper LDZ2 JSR2 &no-pixel
 			( incr ) .pt2/x LDZ2 #0001 ++ .pt2/x STZ2
@@ -568,10 +580,10 @@ RTN
 		.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ -- #0003 AND2 #0000 == RTN &notone5
 
 	.brush/patt LDZ #06 ! ,&notone6 JCN
-		.pt0/x LDZ2 #00 .px/x LDZ ++ #0001 AND2 SWP POP RTN &notone6
+		.pt0/x LDZ2 #00 .px/x LDZ ++ #0001 AND2 TOB RTN &notone6
 
 	.brush/patt LDZ #07 ! ,&notone7 JCN
-		.pt0/y LDZ2 #00 .px/y LDZ ++ #0001 AND2 SWP POP RTN &notone7
+		.pt0/y LDZ2 #00 .px/y LDZ ++ #0001 AND2 TOB RTN &notone7
 
 	#00
 
@@ -579,8 +591,8 @@ RTN
 
 @get-pixel ( x y -- b )
 
-	SWP POP #07 AND .px/y STZ
-	SWP POP #07 AND .px/x STZ
+	TOB #07 AND .px/y STZ
+	TOB #07 AND .px/x STZ
 	( get tile ) .pt1/x LDZ2 #0003 SFT2 .pt1/y LDZ2 #0003 SFT2 .canvas/w LDZ2 ** ++ #0030 SFT2
 	( add addr ) ;data ++
 	#00 .px/y LDZ ++ LDA #07 .px/x LDZ SUB SFT #01 AND
@@ -592,7 +604,7 @@ RTN
 	.pt1/y STZ2 .pt1/x STZ2
 	( get tile addr ) ;data .pt1/x LDZ2 #0003 SFT2 .pt1/y LDZ2 #0003 SFT2 .canvas/w LDZ2 ** ++ #0030 SFT2 .pt1/y LDZ2 MOD8 ++ ++
 	( load ) DUP2 LDA
-	( mask ) #01 #07 .pt1/x LDZ2 MOD8 SWP POP SUB SFL ORA
+	( mask ) #01 #07 .pt1/x LDZ2 MOD8 TOB SUB SFL ORA
 	( save ) ROT ROT STA
 
 RTN
@@ -602,7 +614,7 @@ RTN
 	.pt1/y STZ2 .pt1/x STZ2
 	( get tile addr ) ;data .pt1/x LDZ2 #0003 SFT2 .pt1/y LDZ2 #0003 SFT2 .canvas/w LDZ2 ** ++ #0030 SFT2 .pt1/y LDZ2 MOD8 ++ ++
 	( load ) DUP2 LDA
-	( mask ) #01 #07 .pt1/x LDZ2 MOD8 SWP POP SUB SFL #ff EOR AND
+	( mask ) #01 #07 .pt1/x LDZ2 MOD8 TOB SUB SFL #ff EOR AND
 	( save ) ROT ROT STA
 
 RTN
@@ -668,7 +680,7 @@ RTN
 		.canvas/x1 LDZ2 .Screen/x DEO2
 		.zoom/x LDZ2 .pt1/x STZ2
 		&hor
-			( incr ) ;bigpixel_icn #0008 #00 .pt1/x LDZ2 .pt1/y LDZ2 ;get-pixel JSR2 ** ++ .Screen/addr DEO2
+			( incr ) ;bigpixel-icns #0008 #00 .pt1/x LDZ2 .pt1/y LDZ2 ;get-pixel JSR2 ** ++ .Screen/addr DEO2
 			( draw ) #29 .Screen/color DEO
 			( incr ) .Screen/x DEI2 #0008 ++ .Screen/x DEO2
 			( incr ) .pt1/x LDZ2 #0001 ++ .pt1/x STZ2
@@ -709,7 +721,7 @@ RTN
 	.Mouse/x DEI2 .Mouse/y DEI2 .viewpane ;within-rect JSR2 ;&outside-canvas JCN2
 		.cursor/x LDZ2 #0003 -- .Screen/x DEO2 .cursor/y LDZ2 #0003 -- .Screen/y DEO2
 		;brush_icns #00 .brush/size LDZ #0030 SFT2 ++ .Screen/addr DEO2
-		#31 .Mouse/state DEI #02 MUL ADD .Screen/color DEO
+		#31 .Mouse/state DEI #02 * ADD .Screen/color DEO
 		.Mouse/state DEI #00 = ,&outside-canvas JCN RTN
 	&outside-canvas
 
@@ -717,7 +729,7 @@ RTN
 	.cursor/x LDZ2 .Screen/x DEO2 
 	.cursor/y LDZ2 .Screen/y DEO2
 	;pointers_icn #00 .Controller/button DEI #02 = #0030 SFT2 ++ .Screen/addr DEO2
-	#3f .Mouse/state DEI #01 = #0a MUL SUB .Screen/color DEO
+	#3f .Mouse/state DEI #01 = #0a * SUB .Screen/color DEO
 
 RTN
 
@@ -732,7 +744,7 @@ RTN
 	.toolpane/x1 LDZ2 .Screen/x DEO2 .toolpane/y1 LDZ2 .Screen/y DEO2 ;tool_icns .Screen/addr DEO2
 
 	&loop
-		( draw ) #21 .Screen/x DEI2 .toolpane/x1 LDZ2 -- #0003 SFT2 SWP POP .brush/tool LDZ = #02 MUL ADD .Screen/color DEO
+		( draw ) #21 .Screen/x DEI2 .toolpane/x1 LDZ2 -- #0003 SFT2 TOB .brush/tool LDZ = #02 * ADD .Screen/color DEO
 		( incr ) .Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		( incr ) .Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
 		.Screen/x DEI2 .toolpane/x2 LDZ2 << ,&loop JCN
@@ -740,7 +752,7 @@ RTN
 	.zoom/active LDZ #01 ! ,&no-zoom JCN
 		.Screen/x DEI2 #0008 -- .Screen/x DEO2
 		;tool_icns #0028 ++ .Screen/addr DEO2
-		#21 #04 .brush/tool LDZ = #02 MUL ADD .Screen/color DEO
+		#21 #04 .brush/tool LDZ = #02 * ADD .Screen/color DEO
 		&no-zoom
 
 RTN
@@ -756,7 +768,7 @@ RTN
 	.pattpane/x1 LDZ2 .Screen/x DEO2 .pattpane/y1 LDZ2 .Screen/y DEO2 ;patt_icns .Screen/addr DEO2
 
 	&loop
-		( draw ) #21 .Screen/x DEI2 .pattpane/x1 LDZ2 -- #0003 SFT2 SWP POP .brush/patt LDZ = #02 MUL ADD .Screen/color DEO
+		( draw ) #21 .Screen/x DEI2 .pattpane/x1 LDZ2 -- #0003 SFT2 TOB .brush/patt LDZ = #02 * ADD .Screen/color DEO
 		( incr ) .Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		( incr ) .Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
 		.Screen/x DEI2 .pattpane/x2 LDZ2 << ,&loop JCN
@@ -764,17 +776,17 @@ RTN
 RTN
 
 @draw-sizepane ( -- )
-
+	
 	.document/presentation LDZ #00 = ,&skip JCN RTN &skip
 
 	( frame )
 	.sizepane/x1 LDZ2 #0001 -- .sizepane/y1 LDZ2 #0001 -- .sizepane/x2 LDZ2 .sizepane/y2 LDZ2 #00 ;line-rect JSR2
 	.sizepane/x1 LDZ2 #0002 -- .sizepane/y1 LDZ2 #0002 -- .sizepane/x2 LDZ2 .sizepane/y2 LDZ2 #01 ;line-rect JSR2
-
-	.sizepane/x1 LDZ2 .Screen/x DEO2 .sizepane/y1 LDZ2 .Screen/y DEO2 ;size_icns .Screen/addr DEO2
-
+	.sizepane/x1 LDZ2 .Screen/x DEO2 
+	.sizepane/y1 LDZ2 .Screen/y DEO2 
+	;size_icns .brush/mode LDZ #40 * TOS ++ .Screen/addr DEO2
 	&loop
-		( draw ) #21 .Screen/x DEI2 .sizepane/x1 LDZ2 -- #0003 SFT2 SWP POP .brush/size LDZ = #02 MUL ADD .Screen/color DEO
+		( draw ) #21 .Screen/x DEI2 .sizepane/x1 LDZ2 -- #0003 SFT2 TOB .brush/size LDZ = #02 * ADD .Screen/color DEO
 		( incr ) .Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		( incr ) .Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
 		.Screen/x DEI2 .sizepane/x2 LDZ2 << ,&loop JCN
@@ -973,22 +985,37 @@ RTN
 	
 RTN
 
-
 @save-icn      1054 28c6 2854 1000 
 @make-icn      fe82 8282 848a f400 
 @load-icn      feaa d6aa d4aa f400 
 @untitled-txt  "untitled.bit $1
 @blank-txt     "blank.bit $1
 
+@mode-icns
+	fefe fe82 8282 fe00
+	fe82 8282 fefe fe00
+@bigpixel-icns
+	5580 0080 0080 0080 
+	55ff 7fff 7fff 7fff 
+
 @size_icns
-	[ 0000 0010 0000 0000 ]
-	[ 0000 1038 1000 0000 ]
-	[ 0000 3838 3800 0000 ]
-	[ 0010 387c 3810 0000 ]
-	[ 0038 7c7c 7c38 0000 ]
-	[ 1038 7cfe 7c38 1000 ]
-	[ 387c fefe fe7c 3800 ]
-	[ 7cfe fefe fefe 7c00 ]
+	0000 0010 0000 0000
+	0000 1038 1000 0000
+	0000 3838 3800 0000
+	0010 387c 3810 0000
+	0038 7c7c 7c38 0000
+	1038 7cfe 7c38 1000
+	387c fefe fe7c 3800
+	7cfe fefe fefe 7c00
+
+	0000 0000 0000 0000
+	0000 0010 0000 0000
+	0000 1028 1000 0000
+	0010 2844 2810 0000
+	0038 4444 4438 0000
+	1028 4482 4428 1000
+	3844 8282 8244 3800
+	7c82 8282 8282 7c00
 
 @patt_icns
 	[ fefe fefe fefe fe00 ]
@@ -1025,10 +1052,6 @@ RTN
 	[ 7c82 8282 8282 7c00 ]
 	[ 7cfe fefe fefe 7c00 ]
 
-@bigpixel_icn
-	[ 5580 0080 0080 0080 ]
-	[ 55ff 7fff 7fff 7fff ]
-
 @pointers_icn
 	[ 80c0 e0f0 f8e0 1000 ]
 	[ 2020 20b8 7c7c 3838 ]
@@ -1036,6 +1059,7 @@ RTN
 @eye_icn
 	[ 0038 4492 2810 0000 ] ( open )
 	[ 0000 0082 4438 0000 ] ( closed )
+
 
 @font-hex
 	007c 8282 8282 827c 0030 1010 1010 1010
