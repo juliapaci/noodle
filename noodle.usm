@@ -88,14 +88,14 @@
 |0100
 	
 	( theme )
-	#e0f7 .theme/r0 STZ2 
-	#30fc .theme/g0 STZ2 
-	#30f9 .theme/b0 STZ2 
+	#70fe .theme/r0 STZ2 
+	#c0f3 .theme/g0 STZ2 
+	#90f3 .theme/b0 STZ2 
 
 	( normal mode )
-	#00fe .theme/r1 STZ2 
-	#00f3 .theme/g1 STZ2 
-	#00f3 .theme/b1 STZ2
+	#00f7 .theme/r1 STZ2 
+	#00fc .theme/g1 STZ2 
+	#00f9 .theme/b1 STZ2
 
 	( vectors ) 
 	;on-frame .Screen/vector DEO2
