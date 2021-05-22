@@ -165,10 +165,9 @@ BRK
 	;draw-cursor JSR2
 
 	( on mouse-down )
-	.Mouse/state DEI .cursor/last LDZ #0100 !! ;&no-mouse-down JCN2
+	.Mouse/state DEI .cursor/last LDZ #0100 !! ,&no-mouse-down JCN
 		.Mouse/x DEI2 .cursor/x0 STZ2
 		.Mouse/y DEI2 .cursor/y0 STZ2
-
 		.state/presentation LDZ ,&skip-panes JCN
 			.Mouse/x DEI2 .Mouse/y DEI2 .sizepane ;within-rect JSR2
 				;on-touch-sizepane JCN2
@@ -179,29 +178,8 @@ BRK
 			.Mouse/x DEI2 .Mouse/y DEI2 .viewpane ;within-rect JSR2
 				;on-touch-viewpane JCN2
 		&skip-panes
-
-		( background )
-		.Mouse/y DEI2 #0008 // TOB .Screen/height DEI2 #0008 // TOB #02 - ! ;&no-background JCN2
-			#ff .Mouse/x DEI2 #0008 // TOB .Screen/width DEI2 #0008 // TOB - - 
-			DUP #01 ! ,&no-save JCN
-				;path/name ;save-file JSR2
-				RELEASE-MOUSE POP BRK &no-save
-			DUP #03 ! ,&no-load JCN
-				;path/name ;load-file JSR2
-				;draw-canvas JSR2
-				RELEASE-MOUSE POP BRK &no-load
-			DUP #04 ! ,&no-blank JCN
-				;clear-file JSR2
-				;redraw JSR2
-				RELEASE-MOUSE POP BRK &no-blank
-			POP
-			.Mouse/x DEI2 #0008 // TOB .Screen/width DEI2 #0008 // TOB #03 - > ,&no-rename JCN
-				.state/trap TOGGLE
-				#00 .state/blink STZ 
-				#21 ;draw-filepath JSR2
-				RELEASE-MOUSE BRK &no-rename
-		&no-background 
-
+		.Mouse/y DEI2 #0008 // TOB .Screen/height DEI2 #0008 // TOB #02 - =
+			;on-touch-background JCN2
 	&no-mouse-down
 
 	( on mouse-up )
@@ -241,14 +219,10 @@ BRK
 
 @on-touch-canvas ( -> )
 	
-	( set erase from right-click )
-	;add-pixel .Mouse/state DEI #01 = ,&no-rightclick JCN 
-		POP2 ;remove-pixel &no-rightclick 
+	( set erase from right-click/mode )
+	;remove-pixel .Mouse/state DEI #01 > .brush/mode LDZ + ,&no-rightclick JCN 
+		POP2 ;add-pixel &no-rightclick 
 	.brush/oper STZ2
-	( set erase from mode )
-	.brush/mode LDZ #00 = ,&no-erasemode JCN
-		;remove-pixel .brush/oper STZ2
-	&no-erasemode
 
 	.brush/tool LDZ ,&no-touch-pen JCN
 		.cursor/x0 LDZ2 .canvas/x1 LDZ2 -- 
@@ -272,6 +246,29 @@ BRK
 		.Mouse/x DEI2 .canvas/x1 LDZ2 -- .canvas/w LDZ2 #0001 SFT2 -- .zoom/x STZ2
 		.Mouse/y DEI2 .canvas/y1 LDZ2 -- .canvas/h LDZ2 #0001 SFT2 -- .zoom/y STZ2
 		;redraw JSR2 RELEASE-MOUSE &no-touch-zoom
+
+BRK
+
+@on-touch-background ( -> )
+	
+	#ff .Mouse/x DEI2 #0008 // TOB .Screen/width DEI2 #0008 // TOB - - 
+	DUP #01 ! ,&no-save JCN
+		;path/name ;save-file JSR2
+		RELEASE-MOUSE POP BRK &no-save
+	DUP #03 ! ,&no-load JCN
+		;path/name ;load-file JSR2
+		;draw-canvas JSR2
+		RELEASE-MOUSE POP BRK &no-load
+	DUP #04 ! ,&no-blank JCN
+		;clear-file JSR2
+		;redraw JSR2
+		RELEASE-MOUSE POP BRK &no-blank
+	POP
+	.Mouse/x DEI2 #0008 // TOB .Screen/width DEI2 #0008 // TOB #03 - > ,&no-rename JCN
+		.state/trap TOGGLE
+		#00 .state/blink STZ 
+		#21 ;draw-filepath JSR2
+		RELEASE-MOUSE BRK &no-rename
 
 BRK
 
@@ -504,7 +501,6 @@ RTN
 	&end
 
 	;draw-canvas JSR2
-	;draw-foreground JSR2
 
 RTN
 
