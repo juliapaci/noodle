@@ -28,6 +28,10 @@
 %FILESIZE { .canvas/w LDZ2 .canvas/h LDZ2 ** #0008 ** }
 %RELEASE-MOUSE { #00 .Mouse/state DEO }
 
+%SIZE-TO-RECT {
+	STH2 STH2 OVR2 STH2r ++ OVR2 STH2r ++
+} ( x y w h -- x1 y1 x2 y2 )
+
 ( devices )
 
 |00 @System     [ &vector $2 &pad     $6 &r      $2 &g     $2 &b     $2 ]
@@ -88,20 +92,16 @@
 |0100
 	
 	( theme )
-	#70fe .theme/r0 STZ2 
-	#c0f3 .theme/g0 STZ2 
-	#90f3 .theme/b0 STZ2 
-
-	( normal mode )
-	#00f7 .theme/r1 STZ2 
-	#00fc .theme/g1 STZ2 
-	#00f9 .theme/b1 STZ2
+	#70fe .theme/r0 STZ2 #00f7 .theme/r1 STZ2 
+	#c0f3 .theme/g0 STZ2 #00fc .theme/g1 STZ2 
+	#90f3 .theme/b0 STZ2 #00f9 .theme/b1 STZ2
 
 	( vectors ) 
 	;on-frame .Screen/vector DEO2
 	;on-button .Controller/vector DEO2
 	;on-mouse .Mouse/vector DEO2
 
+	( colors )
 	.theme/r0 LDZ2 .System/r DEO2 
 	.theme/g0 LDZ2 .System/g DEO2 
 	.theme/b0 LDZ2 .System/b DEO2
@@ -119,22 +119,10 @@
 	;untitled-txt ;path/name ;strcpy JSR2
 
 	( setup panes )
-	#0011 .toolpane/x1 STZ2 
-	#000f .toolpane/y1 STZ2 
-	.toolpane/x1 LDZ2 #0028 ++ .toolpane/x2 STZ2 
-	.toolpane/y1 LDZ2 #0008 ++ .toolpane/y2 STZ2
-	#0040 .sizepane/x1 STZ2 
-	#000f .sizepane/y1 STZ2 
-	.sizepane/x1 LDZ2 #0040 ++ .sizepane/x2 STZ2 
-	.sizepane/y1 LDZ2 #0008 ++ .sizepane/y2 STZ2
-	.Screen/width DEI2 #0078 -- .viewpane/x1 STZ2 
-	#000f .viewpane/y1 STZ2 
-	.viewpane/x1 LDZ2 #0020 ++ .viewpane/x2 STZ2 
-	.viewpane/y1 LDZ2 #0008 ++ .viewpane/y2 STZ2
-	.Screen/width DEI2 #0050 -- .pattpane/x1 STZ2 
-	#000f .pattpane/y1 STZ2 
-	.pattpane/x1 LDZ2 #0040 ++ .pattpane/x2 STZ2 
-	.pattpane/y1 LDZ2 #0008 ++ .pattpane/y2 STZ2
+	#0011 #000f #0028 #0008 SIZE-TO-RECT ;toolpane ;set-rect JSR2
+	#0040 #000f #0040 #0008 SIZE-TO-RECT ;sizepane ;set-rect JSR2
+	.Screen/width DEI2 #0078 -- #000f #0020 #0008 SIZE-TO-RECT ;viewpane ;set-rect JSR2
+	.Screen/width DEI2 #0050 -- #000f #0040 #0008 SIZE-TO-RECT ;pattpane ;set-rect JSR2
 
 	( ready. )
 	;center JSR2
@@ -166,20 +154,21 @@ BRK
 
 	( on mouse-down )
 	.Mouse/state DEI .cursor/last LDZ #0100 !! ,&no-mouse-down JCN
-		.Mouse/x DEI2 .cursor/x0 STZ2
-		.Mouse/y DEI2 .cursor/y0 STZ2
+		.Mouse/x DEI2 DUP2 .cursor/x0 STZ2
+		.Mouse/y DEI2 DUP2 .cursor/y0 STZ2
 		.state/presentation LDZ ,&skip-panes JCN
-			.Mouse/x DEI2 .Mouse/y DEI2 .sizepane ;within-rect JSR2
+			OVR2 OVR2 .sizepane ;within-rect JSR2
 				;on-touch-sizepane JCN2
-			.Mouse/x DEI2 .Mouse/y DEI2 .pattpane ;within-rect JSR2
+			OVR2 OVR2 .pattpane ;within-rect JSR2
 				;on-touch-pattpane JCN2
-			.Mouse/x DEI2 .Mouse/y DEI2 .toolpane ;within-rect JSR2
+			OVR2 OVR2 .toolpane ;within-rect JSR2
 				;on-touch-toolpane JCN2
-			.Mouse/x DEI2 .Mouse/y DEI2 .viewpane ;within-rect JSR2
+			OVR2 OVR2 .viewpane ;within-rect JSR2
 				;on-touch-viewpane JCN2
 		&skip-panes
 		.Mouse/y DEI2 #0008 // TOB .Screen/height DEI2 #0008 // TOB #02 - =
 			;on-touch-background JCN2
+		POP2 POP2
 	&no-mouse-down
 
 	( on mouse-up )
@@ -249,9 +238,10 @@ BRK
 
 BRK
 
-@on-touch-background ( -> )
+@on-touch-background ( x* y* -> )
 	
-	#ff .Mouse/x DEI2 #0008 // TOB .Screen/width DEI2 #0008 // TOB - - 
+	POP2
+	#0008 // TOB #ff SWP .Screen/width DEI2 #0008 // TOB - - 
 	DUP #02 ! ,&no-save JCN
 		;path/name ;save-file JSR2
 		RELEASE-MOUSE POP BRK &no-save
@@ -272,9 +262,10 @@ BRK
 
 BRK
 
-@on-touch-sizepane ( -> )
-
-	.Mouse/x DEI2 .sizepane/x1 LDZ2 -- #03 SFT2 TOB 
+@on-touch-sizepane ( x* y* -> )
+	
+	POP2 
+	.sizepane/x1 LDZ2 -- #03 SFT2 TOB 
 
 	DUP .brush/size LDZ ! ,&no-toggle JCN
 		.brush/mode LDZ #00 = .brush/mode STZ
@@ -292,9 +283,10 @@ BRK
 
 BRK
 
-@on-touch-pattpane ( -> )
+@on-touch-pattpane ( x* y* -> )
 	
-	.Mouse/x DEI2 .pattpane/x1 LDZ2 -- #03 SFT2 TOB .brush/patt STZ
+	POP2 
+	.pattpane/x1 LDZ2 -- #03 SFT2 TOB .brush/patt STZ
 
 	#01 .brush/tool STZ
 
@@ -306,9 +298,10 @@ BRK
 
 BRK
 
-@on-touch-toolpane ( -> )
+@on-touch-toolpane ( x* y* -> )
 	
-	.Mouse/x DEI2 .toolpane/x1 LDZ2 -- #03 SFT2 TOB .brush/tool STZ
+	POP2 
+	.toolpane/x1 LDZ2 -- #03 SFT2 TOB .brush/tool STZ
 
 	( draw ) 
 	;draw-toolpane JSR2
@@ -317,9 +310,10 @@ BRK
 
 BRK
 
-@on-touch-viewpane ( -> )
+@on-touch-viewpane ( x* y* -> )
 	
-	.Mouse/x DEI2 .viewpane/x1 LDZ2 -- #03 SFT2 TOB
+	POP2 
+	.viewpane/x1 LDZ2 -- #03 SFT2 TOB
 	DUP ,&no-incwidth JCN
 		.canvas/w LDZ2 .Screen/width DEI2 #0008 // #0001 -- >> ,&no-incwidth JCN
 			.canvas/w LDZ2 #0001 ++ .canvas/w STZ2 
@@ -1039,6 +1033,16 @@ RTN
 		OVR2 LDA ,&loop JCN
 	#00 ROT ROT STA POP2
 	
+RTN
+
+@set-rect ( x1 y1 x2 y2 addr -- )
+
+	DUP2 ROT2 SWP2 #0006 ++ STA2
+	DUP2 ROT2 SWP2 #0004 ++ STA2
+	DUP2 ROT2 SWP2 #0002 ++ STA2
+	DUP2 ROT2 SWP2 STA2
+	POP2
+
 RTN
 
 @save-icn      1054 28c6 2854 1000 
