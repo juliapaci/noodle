@@ -25,6 +25,8 @@
 %INCR2 { SWP2 #0001 ++ SWP2 }
 %DEBUG  { .Console/byte DEO #0a .Console/char DEO }
 %DEBUG2 { .Console/short DEO2 #0a .Console/char DEO }
+%GET-ITERATORS { SWP2k POP SWP POP }
+%ADD-POSITIONS { ROT2 ++ ROT2 ROT2 ++ SWP2 } 
 %TOGGLE { DUP LDZ #00 = SWP STZ }
 %FILESIZE { .canvas/w LDZ2 .canvas/h LDZ2 ** #0008 ** }
 %RELEASE-MOUSE { #00 .Mouse/state DEO }
@@ -535,7 +537,6 @@ RTN
 		.pt2/y LDZ2 .rect/y2 LDZ2 LTS2 ,&ver JCN
 
 	;draw-canvas JSR2
-	;draw-foreground JSR2
 	
 RTN
 
@@ -553,22 +554,26 @@ RTN
 	#00 #08
 	&ver
 		OVR .px/y STZ
-		#00 .px/x STZ
+		#00 #08
 		&hor
-			( addr ) ;size-icns #00 .brush/size LDZ #30 SFT2 ++
-			( byte ) #00 .px/y LDZ ++ LDA #07 .px/x LDZ SUB SFT #01 AND
-			#00 = ,&no-pixel JCN
-			.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ ;patternize JSR2 #00 = ,&no-pixel JCN
-				.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ .brush/oper LDZ2 JSR2 &no-pixel
-			( incr ) .px/x LDZ #01 ADD .px/x STZ
-			.px/x LDZ #08 < ;&hor JCN2
-		( incr ) .px/y LDZ #01 ADD .px/y STZ
+			OVR .px/x STZ
+			GET-ITERATORS 
+			DUP2 STH STH ;size-icns #00 .brush/size LDZ #30 SFT2 ++ #00 STHr ++ LDA #07 STHr SUB SFT #01 AND #00 = ,&skip JCN
+			DUP2 [ TOS ROT TOS SWP2 ] .pt0/x LDZ2 .pt0/y LDZ2 ADD-POSITIONS OVR2 OVR2 ;patternize JSR2 #00 = ,&no-pixel JCN
+					.brush/oper LDZ2 JSR2  
+					,&skip JMP
+					&no-pixel
+					POP2 POP2
+				&skip
+				POP2
+			INCR
+			LTHk ,&hor JCN
+			POP2
 		INCR
-		LTHk ;&ver JCN2
+		LTHk ,&ver JCN
 	POP2
 
 	;draw-canvas JSR2
-	;draw-foreground JSR2
 
 RTN
 
