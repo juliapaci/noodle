@@ -521,7 +521,7 @@ RTN
 		.rect/x1 LDZ2 .pt2/x STZ2
 		&hor
 			.pt2/x LDZ2 TOB .px/x STZ .pt2/y LDZ2 TOB .px/y STZ
-			;patternize JSR2 #00 = ,&no-pixel JCN
+			.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ ;patternize JSR2 #00 = ,&no-pixel JCN
 				( draw ) .pt2/x LDZ2 .pt2/y LDZ2 .brush/oper LDZ2 JSR2 &no-pixel
 			( incr ) .pt2/x LDZ2 #0001 ++ .pt2/x STZ2
 			.pt2/x LDZ2 .rect/x2 LDZ2 LTS2 ,&hor JCN
@@ -550,55 +550,56 @@ RTN
 			( addr ) ;size-icns #00 .brush/size LDZ #30 SFT2 ++
 			( byte ) #00 .px/y LDZ ++ LDA #07 .px/x LDZ SUB SFT #01 AND
 			#00 = ,&no-pixel JCN
-			;patternize JSR2 #00 = ,&no-pixel JCN
+			.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ ;patternize JSR2 #00 = ,&no-pixel JCN
 				.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ .brush/oper LDZ2 JSR2 &no-pixel
 			( incr ) .px/x LDZ #01 ADD .px/x STZ
-			.px/x LDZ #08 < ,&hor JCN
+			.px/x LDZ #08 < ;&hor JCN2
 		( incr ) .px/y LDZ #01 ADD .px/y STZ
-		.px/y LDZ #08 < ,&ver JCN
+		.px/y LDZ #08 < ;&ver JCN2
 
 	;draw-canvas JSR2
 	;draw-foreground JSR2
 
 RTN
 
-@patternize ( -- )
-
+@patternize ( x* y* -- )
+	
+	STH2 STH2
 	.brush/patt LDZ 
 	DUP ,&noplain JCN
-		POP
+		POP POP2r POP2r
 		#01 RTN &noplain
 	DUP #01 ! ,&notone1 JCN
-		POP
-		.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ ++ #0001 AND2 #0000 ==
-		.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ -- #0001 AND2 #0000 ==
+		POP OVR2r OVR2r
+		STH2r STH2r ++ #0001 AND2 #0000 ==
+		STH2r STH2r -- #0001 AND2 #0000 ==
 		#0101 ==
 		RTN &notone1
 	DUP #02 ! ,&notone2 JCN
-		POP
-		.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ ++ #0003 AND2 #0000 ==
-		.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ -- #0003 AND2 #0000 ==
+		POP OVR2r OVR2r
+		STH2r STH2r ++ #0003 AND2 #0000 ==
+		STH2r STH2r -- #0003 AND2 #0000 ==
 		#0101 ==
 		RTN &notone2
 	DUP #03 ! ,&notone3 JCN
-		POP
-		.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ ++ #0005 AND2 #0000 ==
-		.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ -- #0005 AND2 #0000 ==
+		POP OVR2r OVR2r
+		STH2r STH2r ++ #0005 AND2 #0000 ==
+		STH2r STH2r -- #0005 AND2 #0000 ==
 		#0101 ==
 		RTN &notone3
 	DUP #04 ! ,&notone4 JCN
-		POP
-		.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ ++ #0003 AND2 #0000 == RTN &notone4
+		POP STH2r STH2r 
+		++ #0003 AND2 #0000 == RTN &notone4
 	DUP #05 ! ,&notone5 JCN
-		POP
-		.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ -- #0003 AND2 #0000 == RTN &notone5
+		POP STH2r STH2r 
+		-- #0003 AND2 #0000 == RTN &notone5
 	DUP #06 ! ,&notone6 JCN
-		POP
-		.pt0/x LDZ2 #00 .px/x LDZ ++ #0001 AND2 TOB RTN &notone6
+		POP SWP2r POP2r STH2r
+		#0001 AND2 TOB RTN &notone6
 	DUP #07 ! ,&notone7 JCN
-		POP
-		.pt0/y LDZ2 #00 .px/y LDZ ++ #0001 AND2 TOB RTN &notone7
-	POP
+		POP POP2r STH2r 
+		#0001 AND2 TOB RTN &notone7
+	POP POP2r POP2r
 	#00
 
 RTN
