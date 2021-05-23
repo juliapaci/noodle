@@ -87,7 +87,6 @@
 @rect [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
 @line [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2 ]
 @pt0 [ &x $2 &y $2 ]
-@pt1 [ &x $2 &y $2 ]
 @pt2 [ &x $2 &y $2 ] ( paint-rect )
 @px [ &x $1 &y $1 ]
 
@@ -616,6 +615,27 @@ RTN
 
 RTN
 
+@get-pixel ( x* y* -- b )
+
+	( clamp ) DUP2 #0008 // .canvas/h LDZ2 >> ,&skip JCN
+	( clamp ) OVR2 #0008 // .canvas/w LDZ2 >> ,&skip JCN
+
+	OVR2 OVR2
+	TOB #07 AND STH
+	TOB #07 AND STH SWPr
+	( get tile ) 
+	#03 SFT2 SWP2
+	#03 SFT2 SWP2
+	.canvas/w LDZ2 ** ++ #30 SFT2
+	( add addr ) ;data ++
+	#00 STHr ++ LDA #07 STHr SUB SFT #01 AND
+
+	RTN
+	&skip
+	POP2 POP2 #01
+
+RTN
+
 @add-pixel ( x* y* -- )
 	
 	( clamp ) DUP2 #0008 // .canvas/h LDZ2 << #00 = ,&skip JCN
@@ -692,17 +712,21 @@ RTN
 	
 	.zoom/active LDZ ,draw-canvas-zoom JCN
 
-	.canvas/y1 LDZ2 .Screen/y DEO2
 	;data .Screen/addr DEO2
+	.canvas/y1 LDZ2 .canvas/y2 LDZ2
 	&ver
-		.canvas/x1 LDZ2 .Screen/x DEO2
+		OVR2 .Screen/y DEO2
+		.canvas/x1 LDZ2 .canvas/x2 LDZ2
 		&hor
-			( draw ) #29 .Screen/color DEO
-			( incr ) .Screen/x DEI2 #0008 ++ .Screen/x DEO2
-			( incr ) .Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
-		.Screen/x DEI2 .canvas/x2 LDZ2 !! ,&hor JCN
-		( incr ) .Screen/y DEI2 #0008 ++ .Screen/y DEO2
-	.Screen/y DEI2 .canvas/y2 LDZ2 !! ,&ver JCN
+			OVR2 .Screen/x DEO2
+			#29 .Screen/color DEO
+			SWP2 #0008 ++ SWP2
+			.Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
+			NEQ2k ,&hor JCN
+		POP2 POP2
+		SWP2 #0008 ++ SWP2
+		NEQ2k ,&ver JCN
+	POP2 POP2
 
 RTN
 
@@ -730,27 +754,6 @@ RTN
 
 RTN
 
-@get-pixel ( x* y* -- b )
-
-	( clamp ) DUP2 #0008 // .canvas/h LDZ2 >> ,&skip JCN
-	( clamp ) OVR2 #0008 // .canvas/w LDZ2 >> ,&skip JCN
-
-	OVR2 OVR2
-	TOB #07 AND STH
-	TOB #07 AND STH SWPr
-	( get tile ) 
-	#03 SFT2 SWP2
-	#03 SFT2 SWP2
-	.canvas/w LDZ2 ** ++ #30 SFT2
-	( add addr ) ;data ++
-	#00 STHr ++ LDA #07 STHr SUB SFT #01 AND
-
-	RTN
-	&skip
-	POP2 POP2 #01
-
-RTN
-
 @draw-cursor ( -- )
 
 	( clear brush size )
@@ -769,13 +772,13 @@ RTN
 
 	( draw size cursor )
 	.brush/tool LDZ #01 ! ;&outside-canvas JCN2
-
 	( outside canvas )
 	.Mouse/x DEI2 .Mouse/y DEI2 .canvas ;within-rect JSR2 #00 = ;&outside-canvas JCN2
-		.cursor/x LDZ2 #0003 -- .Screen/x DEO2 .cursor/y LDZ2 #0003 -- .Screen/y DEO2
+		.cursor/x LDZ2 #0003 -- .Screen/x DEO2 
+		.cursor/y LDZ2 #0003 -- .Screen/y DEO2
 		;brush-icns #00 .brush/size LDZ #30 SFT2 ++ .Screen/addr DEO2
-		#31 .Mouse/state DEI #02 * ADD .Screen/color DEO
-		.Mouse/state DEI #00 = ,&outside-canvas JCN RTN
+		.Mouse/state DEI DUP #02 * #31 ADD .Screen/color DEO
+		#00 = ,&outside-canvas JCN RTN
 	&outside-canvas
 
 	( draw new cursor )
