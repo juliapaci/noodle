@@ -218,11 +218,9 @@ BRK
 	.brush/tool LDZ ,&no-touch-pen JCN
 		.cursor/x0 LDZ2 .canvas/x1 LDZ2 STH2k -- 
 		.cursor/y0 LDZ2 .canvas/y1 LDZ2 STH2k --
-		.Mouse/x DEI2 SWP2r STH2r -- 
-		.Mouse/y DEI2 STH2r -- 
+		.Mouse/x DEI2 DUP2 .cursor/x0 STZ2 SWP2r STH2r -- 
+		.Mouse/y DEI2 DUP2 .cursor/y0 STZ2 STH2r -- 
 		;paint-line JSR2
-		.Mouse/x DEI2 .cursor/x0 STZ2
-		.Mouse/y DEI2 .cursor/y0 STZ2
 		BRK &no-touch-pen
 
 	.brush/tool LDZ #01 ! ,&no-touch-brush JCN
@@ -559,7 +557,7 @@ RTN
 			OVR .px/x STZ
 			GET-ITERATORS 
 			DUP2 STH STH ;size-icns #00 .brush/size LDZ #30 SFT2 ++ #00 STHr ++ LDA #07 STHr SUB SFT #01 AND #00 = ,&skip JCN
-			DUP2 [ TOS ROT TOS SWP2 ] .pt0/x LDZ2 .pt0/y LDZ2 ADD-POSITIONS OVR2 OVR2 ;patternize JSR2 #00 = ,&no-pixel JCN
+			DUP2 [ TOS ROT TOS SWP2 ] .pt0/x LDZ2 .pt0/y LDZ2 ADD-POSITIONS OVR2 OVR2 ,patternize JSR #00 = ,&no-pixel JCN
 					.brush/oper LDZ2 JSR2  
 					,&skip JMP
 					&no-pixel
@@ -699,14 +697,14 @@ RTN
 @redraw ( -- )
 	
 	;draw-background JSR2
-	;draw-canvas JSR2
+	,draw-canvas JSR
 	;draw-foreground JSR2
 		
 RTN
 
 @draw-canvas ( -- )
 	
-	.zoom/active LDZ #01 = ;draw-canvas-zoom JCN2
+	.zoom/active LDZ #01 = ,draw-canvas-zoom JCN
 
 	.canvas/y1 LDZ2 .Screen/y DEO2
 	;data .Screen/addr DEO2
@@ -723,22 +721,25 @@ RTN
 RTN
 
 @draw-canvas-zoom ( -- )
-	
-	.zoom/y LDZ2 .pt1/y STZ2
+
 	.canvas/y1 LDZ2 .Screen/y DEO2
-	;data .Screen/addr DEO2
+	.zoom/y LDZ2 DUP2 .canvas/h LDZ2 ++
 	&ver
+		( save ) OVR2 .pt1/y STZ2
 		.canvas/x1 LDZ2 .Screen/x DEO2
-		.zoom/x LDZ2 .pt1/x STZ2
+		.zoom/x LDZ2 DUP2 .canvas/w LDZ2 ++
 		&hor
+			( save ) OVR2 .pt1/x STZ2
 			( incr ) ;bigpixel-icns #0008 #00 .pt1/x LDZ2 .pt1/y LDZ2 ;get-pixel JSR2 ** ++ .Screen/addr DEO2
 			( draw ) #29 .Screen/color DEO
-			( incr ) .Screen/x DEI2 #0008 ++ .Screen/x DEO2
-			( incr ) .pt1/x LDZ2 #0001 ++ .pt1/x STZ2
-		.Screen/x DEI2 .canvas/x2 LDZ2 !! ,&hor JCN
-		( incr ) .Screen/y DEI2 #0008 ++ .Screen/y DEO2
-		( incr ) .pt1/y LDZ2 #0001 ++ .pt1/y STZ2
-	.Screen/y DEI2 .canvas/y2 LDZ2 !! ,&ver JCN
+			.Screen/x DEI2 #0008 ++ .Screen/x DEO2
+			INCR2
+			OVR2 OVR2 LTS2 ,&hor JCN
+		POP2 POP2
+		.Screen/y DEI2 #0008 ++ .Screen/y DEO2
+		INCR2
+		OVR2 OVR2 LTS2 ,&ver JCN
+	POP2 POP2
 
 RTN
 
