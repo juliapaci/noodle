@@ -76,11 +76,12 @@
 	&x $2 
 	&y $2
 
+@canvas [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 &w $2 &h $2 ]
+
 @toolpane [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
 @pattpane [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
 @sizepane [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
 @viewpane [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
-@canvas [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 &w $2 &h $2 ]
 @rect [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
 @line [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2 ]
 @pt0 [ &x $2 &y $2 ]
@@ -605,11 +606,11 @@ RTN
 	( clamp ) DUP2 #0008 // .canvas/h LDZ2 << #00 = ,&skip JCN
 	( clamp ) OVR2 #0008 // .canvas/w LDZ2 << #00 = ,&skip JCN
 
-	TOB #07 AND .px/y STZ
-	TOB #07 AND .px/x STZ
+	TOB #07 AND STH
+	TOB #07 AND STH SWPr
 	( get tile ) .pt1/x LDZ2 #03 SFT2 .pt1/y LDZ2 #03 SFT2 .canvas/w LDZ2 ** ++ #30 SFT2
 	( add addr ) ;data ++
-	#00 .px/y LDZ ++ LDA #07 .px/x LDZ SUB SFT #01 AND
+	#00 STHr ++ LDA #07 STHr SUB SFT #01 AND
 	RTN
 	&skip
 	POP2 POP2 #01
@@ -621,10 +622,11 @@ RTN
 	( clamp ) DUP2 #0008 // .canvas/h LDZ2 << #00 = ,&skip JCN
 	( clamp ) OVR2 #0008 // .canvas/w LDZ2 << #00 = ,&skip JCN
 
-	.pt1/y STZ2 .pt1/x STZ2
-	( get tile addr ) ;data .pt1/x LDZ2 #03 SFT2 .pt1/y LDZ2 #03 SFT2 .canvas/w LDZ2 ** ++ #30 SFT2 .pt1/y LDZ2 MOD8 ++ ++
+	STH2 STH2
+	( get tile addr ) ;data STH2kr #03 SFT2 SWP2r STH2kr #03 SFT2 
+		.canvas/w LDZ2 ** ++ #30 SFT2 STH2r MOD8 ++ ++
 	( load ) LDAk
-	( mask ) #01 #07 .pt1/x LDZ2 MOD8 TOB SUB SFL ORA
+	( mask ) #01 #07 STH2r MOD8 TOB SUB SFL ORA
 	( save ) ROT ROT STA
 	RTN
 	&skip
@@ -637,10 +639,11 @@ RTN
 	( clamp ) DUP2 #0008 // .canvas/h LDZ2 << #00 = ,&skip JCN
 	( clamp ) OVR2 #0008 // .canvas/w LDZ2 << #00 = ,&skip JCN
 
-	.pt1/y STZ2 .pt1/x STZ2
-	( get tile addr ) ;data .pt1/x LDZ2 #03 SFT2 .pt1/y LDZ2 #03 SFT2 .canvas/w LDZ2 ** ++ #30 SFT2 .pt1/y LDZ2 MOD8 ++ ++
+	STH2 STH2
+	( get tile addr ) ;data STH2kr #03 SFT2 SWP2r STH2kr #03 SFT2 
+		.canvas/w LDZ2 ** ++ #30 SFT2 STH2r MOD8 ++ ++
 	( load ) LDAk
-	( mask ) #01 #07 .pt1/x LDZ2 MOD8 TOB SUB SFL #ff EOR AND
+	( mask ) #01 #07 STH2r MOD8 TOB SUB SFL #ff EOR AND
 	( save ) ROT ROT STA
 	RTN
 	&skip
