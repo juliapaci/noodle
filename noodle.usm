@@ -761,8 +761,6 @@ RTN
 
 @draw-toolpane ( -- )
 
-	.state/presentation LDZ #00 = #01 JCN [ RTN ]
-
 	( frame ) 	
 	.toolpane/x1 LDZ2 #0002 -- 
 	.toolpane/y1 LDZ2 #0002 -- 
@@ -789,65 +787,85 @@ RTN
 		#04 STHkr = #21 + .Screen/color DEO
 		&no-zoom
 	( pop selection ) POPr
-	
+
 RTN
 
 @draw-pattpane ( -- )
 
-	.state/presentation LDZ #00 = #01 JCN [ RTN ]
-
 	( frame ) 	
-	.pattpane/x1 LDZ2 #0001 -- .pattpane/y1 LDZ2 #0001 -- .pattpane/x2 LDZ2 .pattpane/y2 LDZ2 #00 ;line-rect JSR2
-	.pattpane/x1 LDZ2 #0002 -- .pattpane/y1 LDZ2 #0002 -- .pattpane/x2 LDZ2 .pattpane/y2 LDZ2 #01 ;line-rect JSR2
+	.pattpane/x1 LDZ2 #0002 -- 
+	.pattpane/y1 LDZ2 #0002 -- 
+	.pattpane/x2 LDZ2 
+	.pattpane/y2 LDZ2 
+		#01 ;line-rect JSR2
 
-	.pattpane/x1 LDZ2 .Screen/x DEO2 .pattpane/y1 LDZ2 .Screen/y DEO2 ;patt-icns .Screen/addr DEO2
+	.pattpane/x1 LDZ2 .Screen/x DEO2 
+	.pattpane/y1 LDZ2 .Screen/y DEO2 
+	;patt-icns .Screen/addr DEO2
 
+	( stash selection ) .brush/patt LDZ STH
+	#00 #08
 	&loop
-		( draw ) #21 .Screen/x DEI2 .pattpane/x1 LDZ2 -- #03 SFT2 TOB .brush/patt LDZ = #01 * ADD .Screen/color DEO
-		( incr ) .Screen/x DEI2 #0008 ++ .Screen/x DEO2
-		( incr ) .Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
-		.Screen/x DEI2 .pattpane/x2 LDZ2 << ,&loop JCN
+		OVR STHkr = #21 + .Screen/color DEO
+		.Screen/x DEI2 #0008 ++ .Screen/x DEO2
+		.Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
+		INCR
+		LTHk ,&loop JCN
+	POP2
+	( pop selection ) POPr
 
 RTN
 
 @draw-sizepane ( -- )
-	
-	.state/presentation LDZ #00 = #01 JCN [ RTN ]
 
 	( frame )
-	.sizepane/x1 LDZ2 #0001 -- .sizepane/y1 LDZ2 #0001 -- .sizepane/x2 LDZ2 .sizepane/y2 LDZ2 #00 ;line-rect JSR2
-	.sizepane/x1 LDZ2 #0002 -- .sizepane/y1 LDZ2 #0002 -- .sizepane/x2 LDZ2 .sizepane/y2 LDZ2 #01 ;line-rect JSR2
+	.sizepane/x1 LDZ2 #0002 -- 
+	.sizepane/y1 LDZ2 #0002 -- 
+	.sizepane/x2 LDZ2 
+	.sizepane/y2 LDZ2 
+		#01 ;line-rect JSR2
+
 	.sizepane/x1 LDZ2 .Screen/x DEO2 
 	.sizepane/y1 LDZ2 .Screen/y DEO2 
 	;size-icns .brush/mode LDZ #40 * TOS ++ .Screen/addr DEO2
+
+	( stash selection ) .brush/size LDZ STH
+	#00 #08
 	&loop
-		( draw ) #21 .Screen/x DEI2 .sizepane/x1 LDZ2 -- #03 SFT2 TOB .brush/size LDZ = #01 * ADD .Screen/color DEO
-		( incr ) .Screen/x DEI2 #0008 ++ .Screen/x DEO2
-		( incr ) .Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
-		.Screen/x DEI2 .sizepane/x2 LDZ2 << ,&loop JCN
+		OVR STHkr = #21 + .Screen/color DEO
+		.Screen/x DEI2 #0008 ++ .Screen/x DEO2
+		.Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
+		INCR
+		LTHk ,&loop JCN
+	POP2
+	( pop selection ) POPr
 
 RTN
 
 @draw-viewpane ( -- )
 	
-	.state/presentation LDZ #00 = #01 JCN [ RTN ]
-
 	( frame )
-	.viewpane/x1 LDZ2 #0001 -- .viewpane/y1 LDZ2 #0001 -- .viewpane/x2 LDZ2 .viewpane/y2 LDZ2 #00 ;line-rect JSR2
 	.viewpane/x1 LDZ2 #0002 -- .viewpane/y1 LDZ2 #0002 -- .viewpane/x2 LDZ2 .viewpane/y2 LDZ2 #01 ;line-rect JSR2
 
-	.viewpane/x1 LDZ2 .Screen/x DEO2 .viewpane/y1 LDZ2 .Screen/y DEO2 ;view-icns .Screen/addr DEO2
+	.viewpane/x1 LDZ2 .Screen/x DEO2 
+	.viewpane/y1 LDZ2 .Screen/y DEO2 
+	;view-icns .Screen/addr DEO2
 
+	#00 #04
 	&loop
-		( draw ) #21 .Screen/color DEO
-		( incr ) .Screen/x DEI2 #0008 ++ .Screen/x DEO2
-		( incr ) .Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
-		.Screen/x DEI2 .viewpane/x2 LDZ2 << ,&loop JCN
+		OVR STHkr = #21 + .Screen/color DEO
+		.Screen/x DEI2 #0008 ++ .Screen/x DEO2
+		.Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
+		INCR
+		LTHk ,&loop JCN
+	POP2
 
 RTN
 
 @draw-foreground ( -- )
 	
+	.state/presentation LDZ #00 = #01 JCN [ RTN ]
+
 	;draw-toolpane JSR2
 	;draw-pattpane JSR2
 	;draw-sizepane JSR2
@@ -865,7 +883,7 @@ RTN
 	( bottom )
 	.Screen/height DEI2 #0010 -- .Screen/y DEO2
 	#0010 .Screen/x DEO2
-	;path/name #01 ;draw-label JSR2
+	#21 ;draw-filepath JSR2
 	&clear
 		#20 .Screen/color DEO
 		.Screen/x DEI2 #0008 ++ DUP2 .Screen/x DEO2
@@ -992,19 +1010,6 @@ RTN
 	#0f AND TOS #0008 ** ;font-hex ++ .Screen/addr DEO2
 	.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 	( draw ) STHr .Screen/color DEO
-
-RTN
-
-@draw-label ( addr color -- )
-	
-	.color STZ
-	&loop
-		LDAk DUP #00 ! #20 * - TOS #0008 ** ;font ++ .Screen/addr DEO2 
-		( draw ) .color LDZ #20 ADD .Screen/color DEO
-		( incr ) #0001 ++
-		( incr ) .Screen/x DEI2 #0008 ++ .Screen/x DEO2
-		( loop ) LDAk ,&loop JCN
-	POP2
 
 RTN
 
