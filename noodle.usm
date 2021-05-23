@@ -224,8 +224,8 @@ BRK
 		BRK &no-touch-pen
 
 	.brush/tool LDZ #01 ! ,&no-touch-brush JCN
-		.Mouse/x DEI2 .canvas/x1 LDZ2 -- 
-		.Mouse/y DEI2 .canvas/y1 LDZ2 -- 
+		.Mouse/x DEI2 .canvas/x1 LDZ2 -- #0003 -- ( cursor offset )
+		.Mouse/y DEI2 .canvas/y1 LDZ2 -- #0003 -- ( cursor offset )
 			;paint-brush JSR2
 		BRK &no-touch-brush
 
@@ -391,8 +391,7 @@ BRK
 	( default )
 	.path/length LDZ #1f = ,&edit-end JCN
 		.Controller/key DEI .path/name .path/length LDZ + STZ
-		.path/length LDZ #01 + .path/length STZ
-	&edit-end
+		.path/length LDZ #01 + .path/length STZ &edit-end
 	#00 .path/name .path/length LDZ + STZ
 
 BRK
@@ -447,7 +446,14 @@ RTN
 	;draw-canvas JSR2
 	.canvas/w LDZ2 #30 SFT2 .canvas/x1 LDZ2 ++ .canvas/x2 STZ2
 	.canvas/h LDZ2 #30 SFT2 .canvas/y1 LDZ2 ++ .canvas/y2 STZ2
-	.canvas/x1 LDZ2 #0001 -- .canvas/y1 LDZ2 #0001 -- .canvas/x2 LDZ2 .canvas/y2 LDZ2 #01 ;line-rect JSR2
+
+	( frame )
+	.canvas/x1 LDZ2 #0001 -- 
+	.canvas/y1 LDZ2 #0001 -- 
+	.canvas/x2 LDZ2 
+	.canvas/y2 LDZ2 
+		#01 ;line-rect JSR2
+
 	;draw-foreground JSR2
 
 RTN
@@ -535,7 +541,8 @@ RTN
 
 @paint-brush ( x* y* -- )
 
-	#0003 -- .pt0/y STZ2 #0003 -- .pt0/x STZ2 ( cursor offset )
+	.pt0/y STZ2 
+	.pt0/x STZ2
 
 	( trim if zoomed )
 	.zoom/active LDZ #01 ! ,&no-zoom JCN
@@ -543,8 +550,9 @@ RTN
 		.pt0/y LDZ2 #03 SFT2 .zoom/y LDZ2 ++ #0003 -- .pt0/y STZ2
 	&no-zoom
 
-	#00 .px/x STZ #00 .px/y STZ
+	#00 #08
 	&ver
+		OVR .px/y STZ
 		#00 .px/x STZ
 		&hor
 			( addr ) ;size-icns #00 .brush/size LDZ #30 SFT2 ++
@@ -555,7 +563,9 @@ RTN
 			( incr ) .px/x LDZ #01 ADD .px/x STZ
 			.px/x LDZ #08 < ;&hor JCN2
 		( incr ) .px/y LDZ #01 ADD .px/y STZ
-		.px/y LDZ #08 < ;&ver JCN2
+		INCR
+		LTHk ;&ver JCN2
+	POP2
 
 	;draw-canvas JSR2
 	;draw-foreground JSR2
@@ -573,20 +583,17 @@ RTN
 		POP OVR2r OVR2r
 		STH2r STH2r ++ #0001 AND2 #0000 ==
 		STH2r STH2r -- #0001 AND2 #0000 ==
-		#0101 ==
-		RTN &notone1
+		#0101 == RTN &notone1
 	DUP #02 ! ,&notone2 JCN
 		POP OVR2r OVR2r
 		STH2r STH2r ++ #0003 AND2 #0000 ==
 		STH2r STH2r -- #0003 AND2 #0000 ==
-		#0101 ==
-		RTN &notone2
+		#0101 == RTN &notone2
 	DUP #03 ! ,&notone3 JCN
 		POP OVR2r OVR2r
 		STH2r STH2r ++ #0005 AND2 #0000 ==
 		STH2r STH2r -- #0005 AND2 #0000 ==
-		#0101 ==
-		RTN &notone3
+		#0101 == RTN &notone3
 	DUP #04 ! ,&notone4 JCN
 		POP STH2r STH2r 
 		++ #0003 AND2 #0000 == RTN &notone4
