@@ -140,7 +140,7 @@ BRK
 
 @on-frame ( -> )
 	
-	.state/trap LDZ #00 ! #01 JCN [ BRK ]
+	.state/trap LDZ #01 JCN [ BRK ]
 
 	( incr ) .state/timer LDZ #01 + DUP .state/timer STZ 
 
@@ -195,7 +195,7 @@ BRK
 			BRK &no-touch-rect
 	&no-mouse-up
 
-	.Mouse/state DEI DUP .cursor/last STZ #00 ! #01 JCN [ BRK ]
+	.Mouse/state DEI DUP .cursor/last STZ #01 JCN [ BRK ]
 
 	.Mouse/x DEI2 .Mouse/y DEI2 .canvas ;within-rect JSR2
 		;on-touch-canvas JCN2
@@ -462,6 +462,8 @@ RTN
 	
 	.canvas/w LDZ2 #30 SFT2 .canvas/x1 LDZ2 ++ .canvas/x2 STZ2
 	.canvas/h LDZ2 #30 SFT2 .canvas/y1 LDZ2 ++ .canvas/y2 STZ2
+
+	( frame )
 	.canvas/x1 LDZ2 #0001 -- 
 	.canvas/y1 LDZ2 #0001 -- 
 	.canvas/x2 LDZ2 
@@ -540,14 +542,14 @@ RTN
 
 @paint-brush ( x* y* -- )
 
-	.pt0/y STZ2 
-	.pt0/x STZ2
-
 	( trim if zoomed )
 	.zoom/active LDZ #01 ! ,&no-zoom JCN
-		.pt0/x LDZ2 #03 SFT2 .zoom/x LDZ2 ++ #0003 -- .pt0/x STZ2
-		.pt0/y LDZ2 #03 SFT2 .zoom/y LDZ2 ++ #0003 -- .pt0/y STZ2
+		#03 SFT2 .zoom/y LDZ2 ++ #0003 -- SWP2
+		#03 SFT2 .zoom/x LDZ2 ++ #0003 -- SWP2
 	&no-zoom
+
+	.pt0/y STZ2 
+	.pt0/x STZ2
 
 	#00 #08
 	&ver
@@ -611,22 +613,6 @@ RTN
 		#0001 AND2 TOB RTN &notone7
 	POP POP2r POP2r
 	#00
-
-RTN
-
-@get-pixel ( x* y* -- b )
-
-	( clamp ) DUP2 #0008 // .canvas/h LDZ2 >> ,&skip JCN
-	( clamp ) OVR2 #0008 // .canvas/w LDZ2 >> ,&skip JCN
-
-	TOB #07 AND STH
-	TOB #07 AND STH SWPr
-	( get tile ) .pt1/x LDZ2 #03 SFT2 .pt1/y LDZ2 #03 SFT2 .canvas/w LDZ2 ** ++ #30 SFT2
-	( add addr ) ;data ++
-	#00 STHr ++ LDA #07 STHr SUB SFT #01 AND
-	RTN
-	&skip
-	POP2 POP2 #01
 
 RTN
 
@@ -704,7 +690,7 @@ RTN
 
 @draw-canvas ( -- )
 	
-	.zoom/active LDZ #01 = ,draw-canvas-zoom JCN
+	.zoom/active LDZ ,draw-canvas-zoom JCN
 
 	.canvas/y1 LDZ2 .Screen/y DEO2
 	;data .Screen/addr DEO2
@@ -725,21 +711,43 @@ RTN
 	.canvas/y1 LDZ2 .Screen/y DEO2
 	.zoom/y LDZ2 DUP2 .canvas/h LDZ2 ++
 	&ver
-		( save ) OVR2 .pt1/y STZ2
+		( save ) OVR2 STH2
 		.canvas/x1 LDZ2 .Screen/x DEO2
 		.zoom/x LDZ2 DUP2 .canvas/w LDZ2 ++
 		&hor
-			( save ) OVR2 .pt1/x STZ2
-			( incr ) ;bigpixel-icns #0008 #00 .pt1/x LDZ2 .pt1/y LDZ2 ;get-pixel JSR2 ** ++ .Screen/addr DEO2
+			( save ) OVR2 STH2
+			( incr ) ;bigpixel-icns #0008 #00 STH2r STH2kr ;get-pixel JSR2 ** ++ .Screen/addr DEO2
 			( draw ) #29 .Screen/color DEO
 			.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 			INCR2
 			OVR2 OVR2 LTS2 ,&hor JCN
 		POP2 POP2
+		POP2r
 		.Screen/y DEI2 #0008 ++ .Screen/y DEO2
 		INCR2
 		OVR2 OVR2 LTS2 ,&ver JCN
 	POP2 POP2
+
+RTN
+
+@get-pixel ( x* y* -- b )
+
+	( clamp ) DUP2 #0008 // .canvas/h LDZ2 >> ,&skip JCN
+	( clamp ) OVR2 #0008 // .canvas/w LDZ2 >> ,&skip JCN
+
+	OVR2 OVR2
+	TOB #07 AND STH
+	TOB #07 AND STH SWPr
+	( get tile ) 
+	#03 SFT2 SWP2
+	#03 SFT2 SWP2
+	.canvas/w LDZ2 ** ++ #30 SFT2
+	( add addr ) ;data ++
+	#00 STHr ++ LDA #07 STHr SUB SFT #01 AND
+
+	RTN
+	&skip
+	POP2 POP2 #01
 
 RTN
 
@@ -947,7 +955,7 @@ RTN
 		STHkr .Screen/color DEO
 		.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		#0001 ++
-		LDAk #00 ! ,&loop JCN
+		LDAk ,&loop JCN
 	POP2
 	POPr
 	( clear last ) 
