@@ -68,6 +68,7 @@
 	&patt $1 
 	&oper $2 
 	&mode $1
+	&drag $1
 @cursor 
 	&x $2 
 	&y $2 
@@ -152,19 +153,17 @@ BRK
 	;draw-cursor JSR2
 
 	( on mouse-down )
-	.Mouse/state DEI .cursor/last LDZ #0100 !! ;&no-mouse-down JCN2
-	.state/presentation LDZ ;&no-mouse-down JCN2
+	.Mouse/state DEI .cursor/last LDZ #0100 !! ,&no-mouse-down JCN
 		.Mouse/x DEI2 DUP2 .cursor/x0 STZ2
 		.Mouse/y DEI2 DUP2 .cursor/y0 STZ2
+	.state/presentation LDZ ;&no-mouse-down JCN2
+		DUP2 .canvas/y2 LDZ2 #0008 -- -- #0008 >> ,&no-edge JCN
+		OVR2 .canvas/x2 LDZ2 #0008 -- -- #0008 >> ,&no-edge JCN
+			#01 .brush/drag STZ &no-edge
 		( conver to bytes )
 		STH2 8// TOB STH2r 8// TOB
 		DUP #02 = ;on-touch-top JCN2
 		DUP .Screen/height DEI2 8// TOB #02 - = ;on-touch-bottom JCN2
-		( edge )
-		OVR [ .canvas/x2 LDZ2 8// TOB #01 - ] ! ,&no-edge JCN
-		DUP [ .canvas/y2 LDZ2 8// TOB #01 - ] ! ,&no-edge JCN
-			#cc DEBUG
-		&no-edge
 		POP2
 	&no-mouse-down
 
@@ -186,9 +185,16 @@ BRK
 				;paint-rect JSR2
 			.Mouse/state DEI .cursor/last STZ
 			BRK &no-touch-rect
+		.brush/drag LDZ #01 ! ,&no-resize JCN
+			#00 .brush/drag STZ
+			;center JSR2 
+			BRK &no-resize
 	&no-mouse-up
 
 	.Mouse/state DEI DUP .cursor/last STZ #01 JCN [ BRK ]
+
+	.brush/drag LDZ 
+		;on-drag JCN2
 
 	.Mouse/x DEI2 .Mouse/y DEI2 .canvas ;within-rect JSR2
 		;on-touch-canvas JCN2
@@ -198,6 +204,29 @@ BRK
 		;present JSR2
 		RELEASE-MOUSE
 	&no-present
+
+BRK
+
+@on-drag ( -> )
+	
+	.Mouse/x DEI2 DUP2 .Screen/width DEI2 #0002 // STH2k #0010 ++ >> ,&no-clamp-x JCN
+		POP2 STH2kr #0010 ++ &no-clamp-x 
+	STH2r -- #0002 ** 8// #0001 ++ .canvas/w STZ2 
+
+	.Mouse/y DEI2 DUP2 .Screen/height DEI2 #0002 // STH2k #0010 ++ >> ,&no-clamp-y JCN
+		POP2 STH2kr #0010 ++ &no-clamp-y 
+	STH2r -- #0002 ** 8// #0001 ++ .canvas/h STZ2 
+
+	( draw size )
+	.Screen/width DEI2 #0078 -- .Screen/x DEO2
+	#000e .Screen/y DEO2
+	.canvas/w LDZ2 #80 SFT2 .canvas/h LDZ2 ++ #21 ;draw-short JSR2
+
+	.cursor/x LDZ2 .Screen/x DEO2 
+	.cursor/y LDZ2 .Screen/y DEO2
+	;drag-icn .Screen/addr DEO2
+	#30 .Screen/color DEO
+	#3f .Screen/color DEO
 
 BRK
 
@@ -376,7 +405,6 @@ RTN
 	.Screen/height DEI2 #0002 // .canvas/h LDZ2 #30 SFT2 #01 SFT2 -- .canvas/y1 STZ2
 
 	,fit-canvas JSR
-	;draw-foreground JSR2
 
 RTN
 
@@ -396,7 +424,6 @@ RTN
 
 	;draw-background JSR2
 	,fit-canvas JSR
-	;draw-foreground JSR2
 
 RTN
 
@@ -646,7 +673,6 @@ RTN
 	
 	;draw-background JSR2
 	,draw-canvas JSR
-	;draw-foreground JSR2
 		
 RTN
 
@@ -670,8 +696,10 @@ RTN
 		NEQ2k ,&ver JCN
 	POP2 POP2
 
-	;edge-icn .Screen/addr DEO2
-	#25 .Screen/color DEO
+	.state/presentation LDZ ,&no-edge JCN
+		;edge-icn .Screen/addr DEO2
+		#25 .Screen/color DEO
+	&no-edge
 
 RTN
 
@@ -820,16 +848,6 @@ RTN
 
 RTN
 
-@draw-foreground ( -- )
-	
-	.state/presentation LDZ #00 = #01 JCN [ RTN ]
-
-	;draw-toolpane JSR2
-	;draw-pattpane JSR2
-	;draw-sizepane JSR2
-
-RTN
-
 @draw-background ( -- )
 	
 	.state/presentation LDZ #00 = #01 JCN [ RTN ]
@@ -873,6 +891,10 @@ RTN
 	.Screen/x DEI2 #0008 -- .Screen/x DEO2
 	;make-icn .Screen/addr DEO2
 	#21 .Screen/color DEO
+
+	;draw-toolpane JSR2
+	;draw-pattpane JSR2
+	;draw-sizepane JSR2
 
 RTN
 
@@ -1020,7 +1042,8 @@ RTN
 @save-icn      1054 28c6 2854 1000 
 @make-icn      fe82 8282 848a f400 
 @load-icn      feaa d6aa d4aa f400 
-@edge-icn      0000 0103 070f 1f3f
+@edge-icn      0000 0000 0103 070f
+@drag-icn      1010 10ee 1010 1000
 @untitled-txt  "untitled.bit $1
 @blank-txt     "blank.bit $1
 
@@ -1060,11 +1083,6 @@ RTN
 	44ba 4444 44ba 4400
 	3048 8484 4834 0200 ( zoom )
 	3245 8284 4834 0200 ( zoom out )
-@view-icns
-	ee92 8a84 8a92 ee00
-	f68a 92a2 928a f600
-	fe82 8244 aa92 ee00
-	fe82 92aa 4482 fe00
 @brush-icns
 	0000 0010 0000 0000
 	0000 1028 1000 0000
