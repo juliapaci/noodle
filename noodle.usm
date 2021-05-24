@@ -395,6 +395,18 @@ BRK
 
 BRK
 
+@clear ( -- )
+	
+	;data DUP2 FILESIZE ++
+	&loop
+		( write ) OVR2 #00 ROT ROT STA
+		( incr ) INCR2
+		LTH2k ,&loop JCN
+	POP2 POP2
+	;redraw JSR2
+
+RTN
+
 @center ( -- )
 	
 	( clear old )
@@ -409,28 +421,15 @@ BRK
 	.Screen/width DEI2 #0002 // .canvas/w LDZ2 #30 SFT2 #01 SFT2 -- .canvas/x1 STZ2
 	.Screen/height DEI2 #0002 // .canvas/h LDZ2 #30 SFT2 #01 SFT2 -- .canvas/y1 STZ2
 
-	;fit-canvas JSR2
+	,fit-canvas JSR
 	;draw-foreground JSR2
-
-RTN
-
-@clear ( -- )
-	
-	;data FILESIZE ;data ++
-	&loop
-		( write ) OVR2 #00 ROT ROT STA
-		( incr ) INCR2
-		LTH2k ,&loop JCN
-	POP2 POP2
-	;redraw JSR2
 
 RTN
 
 @present ( -- )
 
-	.state/presentation LDZ #00 = .state/presentation STZ
-
-	.state/presentation LDZ
+	.state/presentation LDZ #00 = 
+	DUP .state/presentation STZ
 	DUP ,&skip0 JCN
 		.theme/r0 LDZ2 .System/r DEO2 
 		.theme/g0 LDZ2 .System/g DEO2 
@@ -442,17 +441,7 @@ RTN
 	POP
 
 	;draw-background JSR2
-	;draw-canvas JSR2
-	.canvas/w LDZ2 #30 SFT2 .canvas/x1 LDZ2 ++ .canvas/x2 STZ2
-	.canvas/h LDZ2 #30 SFT2 .canvas/y1 LDZ2 ++ .canvas/y2 STZ2
-
-	( frame )
-	.canvas/x1 LDZ2 #0001 -- 
-	.canvas/y1 LDZ2 #0001 -- 
-	.canvas/x2 LDZ2 
-	.canvas/y2 LDZ2 
-		#01 ;line-rect JSR2
-
+	,fit-canvas JSR
 	;draw-foreground JSR2
 
 RTN
@@ -521,19 +510,19 @@ RTN
 		.rect/y2 LDZ2 #03 SFT2 .zoom/y LDZ2 ++ #0001 ++ .rect/y2 STZ2
 	&no-zoom
 
-	.rect/x1 LDZ2 .pt2/x STZ2
-	.rect/y1 LDZ2 .pt2/y STZ2
-
+	.rect/y1 LDZ2 .rect/y2 LDZ2
 	&ver
-		.rect/x1 LDZ2 .pt2/x STZ2
+		OVR2 STH2
+		.rect/x1 LDZ2 .rect/x2 LDZ2
 		&hor
-			.pt2/x LDZ2 TOB .px/x STZ .pt2/y LDZ2 TOB .px/y STZ
-			.pt0/x LDZ2 #00 .px/x LDZ ++ .pt0/y LDZ2 #00 .px/y LDZ ++ ;patternize JSR2 #00 = ,&no-pixel JCN
-				( draw ) .pt2/x LDZ2 .pt2/y LDZ2 .brush/oper LDZ2 JSR2 &no-pixel
-			( incr ) .pt2/x LDZ2 #0001 ++ .pt2/x STZ2
-			.pt2/x LDZ2 .rect/x2 LDZ2 LTS2 ,&hor JCN
-		.pt2/y LDZ2 #0001 ++ .pt2/y STZ2
-		.pt2/y LDZ2 .rect/y2 LDZ2 LTS2 ,&ver JCN
+			OVR2 STH2kr ;patternize JSR2 #00 = ,&no-pixel JCN
+				OVR2 STH2kr .brush/oper LDZ2 JSR2 &no-pixel
+			INCR2
+			OVR2 OVR2 LTS2 ,&hor JCN
+		POP2 POP2 POP2r
+		INCR2
+		OVR2 OVR2 LTS2 ,&ver JCN
+	POP2 POP2
 
 	;draw-canvas JSR2
 	
@@ -757,13 +746,16 @@ RTN
 @draw-cursor ( -- )
 
 	( clear brush size )
-	.cursor/x LDZ2 #0003 -- .Screen/x DEO2 
-	.cursor/y LDZ2 #0003 -- .Screen/y DEO2 
+	.cursor/x LDZ2
+	.cursor/y LDZ2
+	( clear size cursor )
+	OVR2 OVR2
+	#0003 -- .Screen/y DEO2 
+	#0003 -- .Screen/x DEO2 
 	#30 .Screen/color DEO
-
 	( clear last cursor )
-	.cursor/x LDZ2 .Screen/x DEO2 
-	.cursor/y LDZ2 .Screen/y DEO2 
+	.Screen/y DEO2 
+	.Screen/x DEO2 
 	#30 .Screen/color DEO
 
 	( record cursor positions )
@@ -905,6 +897,8 @@ RTN
 
 @draw-background ( -- )
 	
+	.state/presentation LDZ #00 = #01 JCN [ RTN ]
+
 	( draw size )
 	.Screen/width DEI2 #00a0 -- .Screen/x DEO2
 	#000e .Screen/y DEO2
