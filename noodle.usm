@@ -153,7 +153,7 @@ BRK
 	;draw-cursor JSR2
 
 	( on mouse-down )
-	.Mouse/state DEI .cursor/last LDZ #0100 !! ,&no-mouse-down JCN
+	.Mouse/state DEI #00 ! .cursor/last LDZ #0100 !! ,&no-mouse-down JCN
 		.Mouse/x DEI2 DUP2 .cursor/x0 STZ2
 		.Mouse/y DEI2 DUP2 .cursor/y0 STZ2
 	.state/presentation LDZ ;&no-mouse-down JCN2
