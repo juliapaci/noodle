@@ -86,9 +86,6 @@
 @viewpane [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
 @rect [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
 @line [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2 ]
-@pt0 [ &x $2 &y $2 ]
-@pt2 [ &x $2 &y $2 ] ( paint-rect )
-@px [ &x $1 &y $1 ]
 
 ( program )
 
@@ -536,18 +533,15 @@ RTN
 		#03 SFT2 .zoom/x LDZ2 ++ #0003 -- SWP2
 	&no-zoom
 
-	.pt0/y STZ2 
-	.pt0/x STZ2
+	STH2 STH2
 
 	#00 #08
 	&ver
-		OVR .px/y STZ
 		#00 #08
 		&hor
-			OVR .px/x STZ
 			GET-ITERATORS 
 			DUP2 STH STH ;size-icns #00 .brush/size LDZ #30 SFT2 ++ #00 STHr ++ LDA #07 STHr SUB SFT #01 AND #00 = ,&skip JCN
-			DUP2 [ TOS ROT TOS SWP2 ] .pt0/x LDZ2 .pt0/y LDZ2 ADD-POSITIONS OVR2 OVR2 ,patternize JSR #00 = ,&no-pixel JCN
+			DUP2 [ TOS ROT TOS SWP2 ] STH2kr SWP2r STH2kr SWP2r ADD-POSITIONS OVR2 OVR2 ,patternize JSR #00 = ,&no-pixel JCN
 					.brush/oper LDZ2 JSR2  
 					,&skip JMP
 					&no-pixel
@@ -560,6 +554,8 @@ RTN
 		INCR
 		LTHk ,&ver JCN
 	POP2
+
+	POP2r POP2r
 
 	;draw-canvas JSR2
 
