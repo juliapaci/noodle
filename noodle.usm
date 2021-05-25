@@ -57,6 +57,7 @@
 	&trap $1
 	&blink $1
 	&presentation $1
+	&changed $1
 @theme
 	&r0 $2 &g0 $2 &b0 $2 
 	&r1 $2 &g1 $2 &b1 $2 
@@ -81,8 +82,7 @@
 	&x $2 
 	&y $2
 
-@canvas [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 &w $2 &h $2 ]
-
+@canvas   [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 &w $2 &h $2 ]
 @toolpane [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
 @pattpane [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
 @sizepane [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
@@ -190,6 +190,7 @@ BRK
 			#00 .brush/drag STZ
 			;center JSR2 
 			BRK &no-resize
+		;draw-state JSR2
 	&no-mouse-up
 
 	.Mouse/state DEI DUP .cursor/last STZ #01 JCN [ BRK ]
@@ -245,16 +246,19 @@ BRK
 		.Mouse/x DEI2 DUP2 .cursor/x0 STZ2 SWP2r STH2r -- 
 		.Mouse/y DEI2 DUP2 .cursor/y0 STZ2 STH2r -- 
 		;paint-line JSR2
+		#01 .state/changed STZ
 		POP BRK &no-touch-pen
 	DUP #01 ! ,&no-touch-brush JCN
 		.Mouse/x DEI2 .canvas/x1 LDZ2 -- #0003 -- ( cursor offset )
 		.Mouse/y DEI2 .canvas/y1 LDZ2 -- #0003 -- ( cursor offset )
 			;paint-brush JSR2
+			#01 .state/changed STZ
 		POP BRK &no-touch-brush
 	DUP #03 ! ,&no-touch-magic JCN
 		.Mouse/x DEI2 .canvas/x1 LDZ2 -- #0003 -- ( cursor offset )
 		.Mouse/y DEI2 .canvas/y1 LDZ2 -- #0003 -- ( cursor offset )
 			;paint-magic JSR2
+			#01 .state/changed STZ
 		POP BRK &no-touch-magic
 	DUP #05 ! ,&no-touch-zoom JCN
 		.zoom/active LDZ #00 = .zoom/active STZ
@@ -734,6 +738,9 @@ RTN
 	;clear JSR2
 	;blank-txt ;path/name ;strcpy JSR2
 	;redraw JSR2
+	
+	#00 .state/changed STZ
+	;draw-state JSR2
 
 RTN
 
@@ -745,6 +752,9 @@ RTN
 	.File/name DEI2 ;path/name ;strcpy JSR2
 	;draw-canvas JSR2
 
+	#00 .state/changed STZ
+	;draw-state JSR2
+
 RTN
 
 @save-file ( path* -- )
@@ -752,6 +762,9 @@ RTN
 	.File/name DEO2 
 	FILESIZE .File/length DEO2 
 	;data .File/save DEO2
+
+	#00 .state/changed STZ
+	;draw-state JSR2
 
 RTN
 
@@ -848,7 +861,7 @@ RTN
 	( draw new cursor )
 	.cursor/x LDZ2 .Screen/x DEO2 
 	.cursor/y LDZ2 .Screen/y DEO2
-	;pointers-icns #00 .Controller/button DEI #02 = #30 SFT2 ++ .Screen/addr DEO2
+	;pointers-icns .Screen/addr DEO2
 	#3f .Mouse/state DEI #01 = #0a * SUB .Screen/color DEO
 
 RTN
@@ -969,10 +982,7 @@ RTN
 		;line-ver JSR2
 
 	( file i/o )
-	.Screen/height DEI2 #0010 -- .Screen/y DEO2
-	.Screen/width DEI2 #0018 -- .Screen/x DEO2
-	;save-icn .Screen/addr DEO2
-	#21 .Screen/color DEO
+	,draw-state JSR
 	.Screen/x DEI2 #0010 -- .Screen/x DEO2
 	;load-icn .Screen/addr DEO2
 	#21 .Screen/color DEO
@@ -983,6 +993,15 @@ RTN
 	;draw-toolpane JSR2
 	;draw-pattpane JSR2
 	;draw-sizepane JSR2
+
+RTN
+
+@draw-state ( -- )
+	
+	.Screen/height DEI2 #0010 -- .Screen/y DEO2
+	.Screen/width DEI2 #0018 -- .Screen/x DEO2
+	;save-icn .Screen/addr DEO2
+	#25 .state/changed LDZ #0a * + .Screen/color DEO
 
 RTN
 
