@@ -7,10 +7,6 @@
 	space - toogle zoom
 	backspace - blank canvas
 	1-8 - select brush size
-
-	TODO:
-		Magic Brush
-		Invert image
 )
 
 %+  { ADD } %-   { SUB }  %*  { MUL } %/   { DIV }
@@ -241,26 +237,31 @@ BRK
 		POP2 ;add-pixel &no-rightclick 
 	.brush/oper STZ2
 
-	.brush/tool LDZ ,&no-touch-pen JCN
+	.brush/tool LDZ 
+	DUP ,&no-touch-pen JCN
 		.cursor/x0 LDZ2 .canvas/x1 LDZ2 STH2k -- 
 		.cursor/y0 LDZ2 .canvas/y1 LDZ2 STH2k --
 		.Mouse/x DEI2 DUP2 .cursor/x0 STZ2 SWP2r STH2r -- 
 		.Mouse/y DEI2 DUP2 .cursor/y0 STZ2 STH2r -- 
 		;paint-line JSR2
-		BRK &no-touch-pen
-
-	.brush/tool LDZ #01 ! ,&no-touch-brush JCN
+		POP BRK &no-touch-pen
+	DUP #01 ! ,&no-touch-brush JCN
 		.Mouse/x DEI2 .canvas/x1 LDZ2 -- #0003 -- ( cursor offset )
 		.Mouse/y DEI2 .canvas/y1 LDZ2 -- #0003 -- ( cursor offset )
 			;paint-brush JSR2
-		BRK &no-touch-brush
-
-	.brush/tool LDZ #05 ! ,&no-touch-zoom JCN
+		POP BRK &no-touch-brush
+	DUP #03 ! ,&no-touch-magic JCN
+		.Mouse/x DEI2 .canvas/x1 LDZ2 -- #0003 -- ( cursor offset )
+		.Mouse/y DEI2 .canvas/y1 LDZ2 -- #0003 -- ( cursor offset )
+			;paint-magic JSR2
+		POP BRK &no-touch-magic
+	DUP #05 ! ,&no-touch-zoom JCN
 		.zoom/active LDZ #00 = .zoom/active STZ
 		( release ) #00 .Mouse/state DEO
 		.Mouse/x DEI2 .canvas/x1 LDZ2 -- .canvas/w LDZ2 #01 SFT2 -- .zoom/x STZ2
 		.Mouse/y DEI2 .canvas/y1 LDZ2 -- .canvas/h LDZ2 #01 SFT2 -- .zoom/y STZ2
 		;redraw JSR2 RELEASE-MOUSE &no-touch-zoom
+	POP
 
 BRK
 
@@ -529,13 +530,43 @@ RTN
 		&hor
 			GET-ITERATORS 
 			DUP2 STH STH ;size-icns #00 .brush/size LDZ #30 SFT2 ++ #00 STHr ++ LDA #07 STHr SUB SFT #01 AND #00 = ,&skip JCN
-			DUP2 [ TOS ROT TOS SWP2 ] STH2kr SWP2r STH2kr SWP2r ADD-POSITIONS OVR2 OVR2 ,patternize JSR #00 = ,&no-pixel JCN
+			DUP2 [ TOS ROT TOS SWP2 ] STH2kr SWP2r STH2kr SWP2r ADD-POSITIONS OVR2 OVR2 ;patternize JSR2 #00 = ,&no-pixel JCN
 					.brush/oper LDZ2 JSR2  
 					,&skip JMP
 					&no-pixel
 					POP2 POP2
 				&skip
 				POP2
+			INCR
+			LTHk ,&hor JCN
+			POP2
+		INCR
+		LTHk ,&ver JCN
+	POP2
+
+	POP2r POP2r
+
+	;draw-canvas JSR2
+
+RTN
+
+@paint-magic ( x* y* -- )
+
+	( trim if zoomed )
+	.zoom/active LDZ #01 ! ,&no-zoom JCN
+		#03 SFT2 .zoom/y LDZ2 ++ #0003 -- SWP2
+		#03 SFT2 .zoom/x LDZ2 ++ #0003 -- SWP2
+	&no-zoom
+
+	STH2 STH2
+
+	#00 .brush/size LDZ
+	&ver
+		#00 .brush/size LDZ
+		&hor
+			GET-ITERATORS [ TOS ROT TOS ]
+			STH2kr SWP2r STH2kr SWP2r ADD-POSITIONS
+			;clean-pixel JSR2
 			INCR
 			LTHk ,&hor JCN
 			POP2
@@ -588,6 +619,36 @@ RTN
 
 RTN
 
+@clean-pixel ( x* y* -- )
+	
+	( skip blanks ) OVR2 OVR2 ;get-pixel JSR2 ,&valid JCN [ POP2 POP2 RTN ] &valid
+
+	( NE )
+	OVR2 OVR2 #0001 -- ,get-pixel JSR STH
+	OVR2 #0001 ++ OVR2 ,get-pixel JSR STHr
+	#0101 !! ,&no-se JCN 
+		,&remove JMP &no-se
+	( NW )
+	OVR2 OVR2 #0001 --  ,get-pixel JSR STH
+	OVR2 #0001 -- OVR2 ,get-pixel JSR STHr
+	#0101 !! ,&no-sw JCN 
+		,&remove JMP &no-sw
+	( SE )
+	OVR2 OVR2 #0001 ++ ,get-pixel JSR STH
+	OVR2 #0001 ++ OVR2 ,get-pixel JSR STHr
+	#0101 !! ,&no-ne JCN 
+		,&remove JMP &no-ne
+	( SW )
+	OVR2 OVR2 #0001 ++  ,get-pixel JSR STH
+	OVR2 #0001 -- OVR2 ,get-pixel JSR STHr
+	#0101 !! ,&no-nw JCN 
+		,&remove JMP &no-nw
+	POP2 POP2 RTN
+	&remove
+		OVR2 OVR2 ;remove-pixel JSR2 [ POP2 POP2 RTN ]
+
+RTN
+
 @get-pixel ( x* y* -- b )
 
 	( clamp ) DUP2 8// .canvas/h LDZ2 >> ,&skip JCN
@@ -608,6 +669,7 @@ RTN
 	POP2 POP2 #01
 
 RTN
+
 
 @add-pixel ( x* y* -- )
 	
@@ -751,7 +813,7 @@ RTN
 	.Mouse/y DEI2 .cursor/y STZ2
 
 	( draw size cursor )
-	.brush/tool LDZ #01 ! ;&outside-canvas JCN2
+	.brush/tool LDZ DUP #01 = SWP #03 = #0000 == ;&outside-canvas JCN2
 	( outside canvas )
 	.Mouse/x DEI2 .Mouse/y DEI2 .canvas ;within-rect JSR2 #00 = ;&outside-canvas JCN2
 		.cursor/x LDZ2 #0003 -- .Screen/x DEO2 
@@ -794,7 +856,7 @@ RTN
 	.zoom/active LDZ #01 ! ,&no-zoom JCN
 		.Screen/x DEI2 #0008 -- .Screen/x DEO2
 		;tool-icns #0030 ++ .Screen/addr DEO2
-		#04 STHkr = #21 + .Screen/color DEO
+		#05 STHkr = #21 + .Screen/color DEO
 		&no-zoom
 	( pop selection ) POPr
 
