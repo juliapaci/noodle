@@ -7,6 +7,10 @@
 	space - toogle zoom
 	backspace - blank canvas
 	1-8 - select brush size
+
+	TODO:
+		Magic Brush
+		Invert image
 )
 
 %+  { ADD } %-   { SUB }  %*  { MUL } %/   { DIV }
@@ -120,8 +124,8 @@
 	;untitled-txt ;path/name ;strcpy JSR2
 
 	( setup panes )
-	#0011 #000f #0028 #0008 SIZE-TO-RECT ;toolpane ;set-rect JSR2
-	#0040 #000f #0040 #0008 SIZE-TO-RECT ;sizepane ;set-rect JSR2
+	#0011 #000f #0030 #0008 SIZE-TO-RECT ;toolpane ;set-rect JSR2
+	#0048 #000f #0040 #0008 SIZE-TO-RECT ;sizepane ;set-rect JSR2
 	.Screen/width DEI2 #0050 -- #000f #0040 #0008 SIZE-TO-RECT ;pattpane ;set-rect JSR2
 
 	( ready. )
@@ -177,7 +181,7 @@ BRK
 				;paint-line JSR2
 			.Mouse/state DEI .cursor/last STZ
 			BRK &no-complete-line
-		.brush/tool LDZ #03 ! ,&no-touch-rect JCN
+		.brush/tool LDZ #04 ! ,&no-touch-rect JCN
 			.cursor/x0 LDZ2 .canvas/x1 LDZ2 STH2k -- 
 			.cursor/y0 LDZ2 .canvas/y1 LDZ2 STH2k -- SWP2r
 			.Mouse/x DEI2 STH2r -- 
@@ -251,7 +255,7 @@ BRK
 			;paint-brush JSR2
 		BRK &no-touch-brush
 
-	.brush/tool LDZ #04 ! ,&no-touch-zoom JCN
+	.brush/tool LDZ #05 ! ,&no-touch-zoom JCN
 		.zoom/active LDZ #00 = .zoom/active STZ
 		( release ) #00 .Mouse/state DEO
 		.Mouse/x DEI2 .canvas/x1 LDZ2 -- .canvas/w LDZ2 #01 SFT2 -- .zoom/x STZ2
@@ -264,13 +268,13 @@ BRK
 	
 	POP
 	#02 - 
-	DUP #04 > ,&no-tool JCN
+	DUP #05 > ,&no-tool JCN
 		.brush/tool STZ
 		;draw-toolpane JSR2
 		RELEASE-MOUSE BRK
 		&no-tool
-	DUP #05 > OVR #0e < #0101 !! ,&no-size JCN
-		#06 -
+	DUP #06 > OVR #0f < #0101 !! ,&no-size JCN
+		#07 -
 		DUP .brush/size LDZ ! ,&no-toggle JCN
 			.brush/mode LDZ #00 = .brush/mode STZ
 		&no-toggle
@@ -779,7 +783,7 @@ RTN
 	;tool-icns .Screen/addr DEO2
 
 	( stash selection ) .brush/tool LDZ STH
-	#00 #05
+	#00 #06
 	&loop
 		OVR STHkr = #21 + .Screen/color DEO
 		.Screen/x DEI2 #0008 ++ .Screen/x DEO2
@@ -789,7 +793,7 @@ RTN
 	POP2 
 	.zoom/active LDZ #01 ! ,&no-zoom JCN
 		.Screen/x DEI2 #0008 -- .Screen/x DEO2
-		;tool-icns #0028 ++ .Screen/addr DEO2
+		;tool-icns #0030 ++ .Screen/addr DEO2
 		#04 STHkr = #21 + .Screen/color DEO
 		&no-zoom
 	( pop selection ) POPr
@@ -1080,7 +1084,8 @@ RTN
 	c0e0 5028 140a 0400
 	e0d0 a844 2212 0c00
 	c0b8 4848 7804 0200
-	44ba 4444 44ba 4400
+	a850 8850 a804 0200
+	fc84 8480 84ea 0400
 	3048 8484 4834 0200 ( zoom )
 	3245 8284 4834 0200 ( zoom out )
 @brush-icns
