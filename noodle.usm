@@ -5,6 +5,7 @@
 	alt-click - drag canvas
 	arrows - move zoom
 	space - toogle zoom
+	tab - invert image
 	backspace - blank canvas
 	1-8 - select brush size
 )
@@ -280,7 +281,8 @@ BRK
 			.brush/mode LDZ #00 = .brush/mode STZ
 		&no-toggle
 		.brush/size STZ
-		#01 .brush/tool STZ
+		.brush/tool LDZ ,&no-switch1 JCN
+			#01 .brush/tool STZ &no-switch1
 		;draw-sizepane JSR2
 		;draw-toolpane JSR2
 		RELEASE-MOUSE BRK
@@ -288,7 +290,8 @@ BRK
 	DUP [ .Screen/width DEI2 8// TOB #0c - ] < ,&no-pattern JCN
 	DUP [ .Screen/width DEI2 8// TOB #05 - ] > ,&no-pattern JCN
 		.Screen/width DEI2 8// TOB #0c - - .brush/patt STZ
-		#01 .brush/tool STZ
+		.brush/tool LDZ ,&no-switch2 JCN
+			#01 .brush/tool STZ &no-switch2
 		;draw-pattpane JSR2
 		;draw-toolpane JSR2
 		RELEASE-MOUSE BRK
@@ -339,11 +342,17 @@ BRK
 		#00 = #04 JCN ;draw-canvas JSR2
 	&skip-zoom
 
+
 	.Controller/key DEI
+	DUP #00 ! ,&continue JCN
+		POP BRK
+		&continue
+	DUP #08 ! ,&no-backspace JCN
+		( erase ) POP ;clear JSR2 BRK &no-backspace
+	DUP #09 ! ,&no-invert JCN
+		( invert ) POP ;invert JSR2 BRK &no-invert
 	DUP #20 ! ,&no-space JCN
 		( toggle zoom ) .zoom/active LDZ #00 = .zoom/active STZ ;redraw JSR2 &no-space
-	DUP #08 ! ,&no-backspace JCN
-		( erase ) ;clear JSR2 &no-backspace
 	DUP #71 ! ,&no-qkey JCN
 		( tool0 ) #00 .brush/tool STZ ;draw-toolpane JSR2 &no-qkey
 	DUP #77 ! ,&no-wkey JCN
@@ -387,7 +396,20 @@ BRK
 	
 	;data DUP2 FILESIZE ++
 	&loop
-		( write ) OVR2 #00 ROT ROT STA
+		( save ) OVR2 #00 ROT ROT STA
+		( incr ) INCR2
+		LTH2k ,&loop JCN
+	POP2 POP2
+	;redraw JSR2
+
+RTN
+
+@invert ( -- )
+	
+	;data DUP2 FILESIZE ++
+	&loop
+		( load ) OVR2 DUP2 LDA #ff EOR
+		( save ) ROT ROT STA
 		( incr ) INCR2
 		LTH2k ,&loop JCN
 	POP2 POP2
