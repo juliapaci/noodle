@@ -154,7 +154,7 @@ BRK
 	;draw-cursor JSR2
 
 	( on mouse-down )
-	.Mouse/state DEI #00 ! .cursor/last LDZ #0100 !! ,&no-mouse-down JCN
+	.Mouse/state DEI #00 > .cursor/last LDZ #0100 !! ,&no-mouse-down JCN
 		.Mouse/x DEI2 DUP2 .cursor/x0 STZ2
 		.Mouse/y DEI2 DUP2 .cursor/y0 STZ2
 	.state/presentation LDZ ;&no-mouse-down JCN2
@@ -169,7 +169,7 @@ BRK
 	&no-mouse-down
 
 	( on mouse-up )
-	.Mouse/state DEI .cursor/last LDZ #0001 !! ,&no-mouse-up JCN
+	.Mouse/state DEI .cursor/last LDZ #00 > #0001 !! ,&no-mouse-up JCN
 		.brush/tool LDZ #02 ! ,&no-complete-line JCN
 			.cursor/x0 LDZ2 .canvas/x1 LDZ2 STH2k -- 
 			.cursor/y0 LDZ2 .canvas/y1 LDZ2 STH2k -- SWP2r
