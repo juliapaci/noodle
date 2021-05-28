@@ -1,4 +1,4 @@
-# Uxn
+# Noodle
 
 An [illustration program](https://wiki.xxiivv.com/site/noodle.html), written in Uxambly. 
 
@@ -18,4 +18,10 @@ sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/Git/noodle/noodle.rom sd_ca
 
 ## Controls
 
-- `coming soon`
+- `right-click`, erase
+- `alt-click`, drag canvas
+- `arrows`, move zoom
+- `space`, toogle zoom
+- `tab`, invert image
+- `backspace`, blank canvas
+- `1-8`, select brush size
