@@ -15,7 +15,7 @@
 %++ { ADD2 } %-- { SUB2 } %** { MUL2 } %// { DIV2 }
 %<< { LTH2 } %>> { GTH2 } %== { EQU2 } %!! { NEQ2 }
 
-%8//  { #03 SFT2 }
+%8**  { #30 SFT2 } %8//  { #03 SFT2 }
 %RTN  { JMP2r }
 %SFL  { #40 SFT SFT }
 %TOS  { #00 SWP } %TOB { SWP POP }
@@ -29,8 +29,8 @@
 %DEBUG2 { .Console/short DEO2 #0a .Console/char DEO }
 %GET-ITERATORS { SWP2k POP SWP POP }
 %ADD-POSITIONS { ROT2 ++ ROT2 ROT2 ++ SWP2 } 
-%TOGGLE { DUP LDZ #00 = SWP STZ }
-%FILESIZE { .canvas/w LDZ2 .canvas/h LDZ2 ** #0008 ** }
+%TOGGLE { LDZk #00 = SWP STZ }
+%FILESIZE { .canvas/w LDZ2 .canvas/h LDZ2 ** 8** }
 %RELEASE-MOUSE { #00 .Mouse/state DEO }
 
 %SIZE-TO-RECT {
@@ -117,9 +117,6 @@
 	#00 .brush/patt STZ 
 	#00 .brush/tool STZ
 
-	( load file )
-	;untitled-txt ;path/name ;strcpy JSR2
-
 	( setup panes )
 	#0011 #000f #0030 #0008 SIZE-TO-RECT ;toolpane ;set-rect JSR2
 	#0048 #000f #0040 #0008 SIZE-TO-RECT ;sizepane ;set-rect JSR2
@@ -130,8 +127,7 @@
 	;clear JSR2
 
 	( load default file )
-	;path/name ;load-file JSR2
-	#0c .path/length STZ
+	;untitled-txt ;new-file JSR2
 
 BRK
 
@@ -316,7 +312,7 @@ BRK
 		;draw-canvas JSR2
 		RELEASE-MOUSE POP BRK &no-load
 	DUP #05 ! ,&no-blank JCN
-		;clear-file JSR2
+		;untitled-txt ;new-file JSR2
 		;redraw JSR2
 		RELEASE-MOUSE POP BRK &no-blank
 	POP
@@ -349,8 +345,7 @@ BRK
 
 	.Controller/key DEI
 	DUP #00 ! ,&continue JCN
-		POP BRK
-		&continue
+		POP BRK &continue
 	DUP #08 ! ,&no-backspace JCN
 		( erase ) POP ;clear JSR2 BRK &no-backspace
 	DUP #09 ! ,&no-invert JCN
@@ -689,7 +684,6 @@ RTN
 	.canvas/w LDZ2 ** ++ #30 SFT2
 	( add addr ) ;data ++
 	#00 STHr ++ LDA #07 STHr SUB SFT #01 AND
-
 	RTN
 	&skip
 	POP2 POP2 #01
@@ -733,14 +727,23 @@ RTN
 
 ( file )
 
-@clear-file ( -- )
-	
-	;clear JSR2
-	;blank-txt ;path/name ;strcpy JSR2
-	;redraw JSR2
-	
+@new-file ( path* -- )
+
+	#2c ;draw-filepath JSR2 
+
+	STH2
+	#00 #0c
+	&loop
+		OVR DUP TOS STH2kr ++ LDA SWP .path/name + STZ
+		INCR
+		LTHk ,&loop JCN
+	.path/length STZ POP 
+	POP2r
+
+	#00 .path/name #0c + STZ
 	#00 .state/changed STZ
-	;draw-state JSR2
+
+	;clear JSR2
 
 RTN
 
@@ -749,10 +752,10 @@ RTN
 	.File/name DEO2 
 	FILESIZE .File/length DEO2 
 	;data .File/load DEO2
-	.File/name DEI2 ;path/name ;strcpy JSR2
-	;draw-canvas JSR2
 
 	#00 .state/changed STZ
+
+	;draw-canvas JSR2
 	;draw-state JSR2
 
 RTN
@@ -799,8 +802,7 @@ RTN
 
 	.state/presentation LDZ ,&no-edge JCN
 		;edge-icn .Screen/addr DEO2
-		#25 .Screen/color DEO
-	&no-edge
+		#25 .Screen/color DEO &no-edge
 
 RTN
 
@@ -1012,7 +1014,7 @@ RTN
 	.Screen/height DEI2 #0010 -- .Screen/y DEO2
 	;path/name
 	&loop
-		LDAk DUP #00 ! #20 * - TOS #0008 ** ;font ++ .Screen/addr DEO2 
+		LDAk DUP #00 ! #20 * - TOS 8** ;font ++ .Screen/addr DEO2 
 		STHkr .Screen/color DEO
 		.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		#0001 ++
@@ -1087,15 +1089,15 @@ RTN
 @draw-short ( short* color -- )
 
 	STH SWP 
-	DUP #04 SFT TOS #0008 ** ;font-hex ++ .Screen/addr DEO2
+	DUP #04 SFT TOS 8** ;font-hex ++ .Screen/addr DEO2
 	( draw ) STHkr .Screen/color DEO
-	#0f AND TOS #0008 ** ;font-hex ++ .Screen/addr DEO2
+	#0f AND TOS 8** ;font-hex ++ .Screen/addr DEO2
 	.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 	( draw ) STHkr .Screen/color DEO
-	DUP #04 SFT TOS #0008 ** ;font-hex ++ .Screen/addr DEO2
+	DUP #04 SFT TOS 8** ;font-hex ++ .Screen/addr DEO2
 	.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 	( draw ) STHkr .Screen/color DEO
-	#0f AND TOS #0008 ** ;font-hex ++ .Screen/addr DEO2
+	#0f AND TOS 8** ;font-hex ++ .Screen/addr DEO2
 	.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 	( draw ) STHr .Screen/color DEO
 
@@ -1125,17 +1127,6 @@ RTN
 
 RTN
 
-@strcpy ( src* dst* -- )
-
-	&loop
-		( copy src->dst ) OVR2 OVR2 SWP2 LDA ROT ROT STA
-		( incr dst ) #0001 ++
-		( incr src ) INCR2
-		OVR2 LDA ,&loop JCN
-	#00 ROT ROT STA POP2
-	
-RTN
-
 @set-rect ( x1 y1 x2 y2 addr -- )
 
 	DUP2 ROT2 SWP2 #0006 ++ STA2
@@ -1152,7 +1143,6 @@ RTN
 @edge-icn      0000 0000 0103 070f
 @drag-icn      1010 10ee 1010 1000
 @untitled-txt  "untitled.bit $1
-@blank-txt     "blank.bit $1
 
 @bigpixel-icns
 	5580 0080 0080 0080 
