@@ -5,7 +5,7 @@ rm -rf bin
 mkdir bin
 
 echo "Assembling.."
-uxnasm noodle.usm bin/noodle.rom 
+uxnasm noodle.tal bin/noodle.rom 
 
 echo "Installing.."
 if [ -d "$HOME/roms" ] && [ -e ./bin/noodle.rom ]
