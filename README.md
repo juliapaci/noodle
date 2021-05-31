@@ -1,6 +1,6 @@
 # Noodle
 
-An [illustration program](https://wiki.xxiivv.com/site/noodle.html), written in [Uxntal](https://wiki.xxiivv.com/site/uxntal.html).
+[Noodle](https://wiki.xxiivv.com/site/noodle.html) is an illustration program, written in [Uxntal](https://wiki.xxiivv.com/site/uxntal.html).
 
 ## Build
 
