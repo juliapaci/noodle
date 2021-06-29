@@ -24,3 +24,7 @@ sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/Git/noodle/noodle.rom sd_ca
 - `tab`, invert image
 - `backspace`, blank canvas
 - `1-8`, select brush size
+- `ctrl+n`, clear
+- `ctrl+r`, rename
+- `ctrl+o`, load
+- `ctrl+s`, save

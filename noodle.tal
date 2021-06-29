@@ -7,6 +7,10 @@
 	tab - invert image
 	backspace - blank canvas
 	1-8 - select brush size
+	ctrl+n - clear
+	ctrl+r - rename
+	ctrl+o - load
+	ctrl+s - save
 )
 
 %+  { ADD } %-   { SUB }  %*  { MUL }  %/  { DIV }
@@ -321,6 +325,7 @@ BRK
 @on-button ( -> )
 
 	.Controller/key DEI #00 ! .state/trap LDZ #0101 == ;on-button-trap JCN2
+	.Controller/button DEI #0f AND #01 = ;on-control JCN2
 	
 	( control zoom )
 	.zoom/active LDZ #00 = ,&skip-zoom JCN
@@ -359,6 +364,27 @@ BRK
 		DUP #30 > SWP #39 < #0101 !! ,&no-numkey JCN
 		( size ) .Controller/key DEI #31 SUB .brush/size STZ ;draw-sizepane JSR2 &no-numkey
 	POP
+
+BRK
+
+@on-control ( -> )
+	
+	.Controller/key DEI
+	DUP ( ctrl+o ) #6f ! ,&no-open JCN
+		;path/name ;load-file JSR2
+		;draw-canvas JSR2 POP BRK &no-open
+	DUP ( ctrl+r ) #72 ! ,&no-name JCN
+		.state/trap TOGGLE
+		#00 .state/blink STZ 
+		#21 ;draw-filepath JSR2 POP BRK &no-name
+	DUP ( ctrl+s ) #73 ! ,&no-save JCN
+		;path/name ;save-file JSR2
+		POP BRK  &no-save
+	DUP ( ctrl+n ) #6e ! ,&no-make JCN
+		#20 ;draw-filepath JSR2
+		;untitled-txt ;new-file JSR2
+		;draw-canvas JSR2 POP BRK &no-make
+	POP 
 
 BRK
 
