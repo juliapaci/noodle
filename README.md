@@ -19,7 +19,6 @@ sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/Git/noodle/noodle.rom sd_ca
 ## Controls
 
 - `right-click`, erase
-- `alt-click`, drag canvas
 - `arrows`, move zoom
 - `space`, toogle zoom
 - `tab`, invert image

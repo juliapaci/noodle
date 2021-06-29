@@ -2,7 +2,6 @@
 	app/noodle : illustration program
 	
 	right-click - erase
-	alt-click - drag canvas
 	arrows - move zoom
 	space - toogle zoom
 	tab - invert image
@@ -10,8 +9,8 @@
 	1-8 - select brush size
 )
 
-%+  { ADD } %-   { SUB }  %*  { MUL } %/   { DIV }
-%<  { LTH } %>   { GTH }  %=  { EQU } %!   { NEQ }
+%+  { ADD } %-   { SUB }  %*  { MUL }  %/  { DIV }
+%<  { LTH } %>   { GTH }  %=  { EQU }  %!  { NEQ }
 %++ { ADD2 } %-- { SUB2 } %** { MUL2 } %// { DIV2 }
 %<< { LTH2 } %>> { GTH2 } %== { EQU2 } %!! { NEQ2 }
 
@@ -25,10 +24,10 @@
 %MOD8 { #0007 AND2  }
 %INCR { SWP #01 + SWP }
 %INCR2 { SWP2 #0001 ++ SWP2 }
-%DEBUG  { .Console/byte DEO #0a .Console/char DEO }
-%DEBUG2 { .Console/short DEO2 #0a .Console/char DEO }
+
 %GET-ITERATORS { SWP2k POP SWP POP }
 %ADD-POSITIONS { ROT2 ++ ROT2 ROT2 ++ SWP2 } 
+
 %TOGGLE { LDZk #00 = SWP STZ }
 %FILESIZE { .canvas/w LDZ2 .canvas/h LDZ2 ** 8** }
 %RELEASE-MOUSE { #00 .Mouse/state DEO }
@@ -39,12 +38,12 @@
 
 ( devices )
 
-|00 @System     [ &vector $2 &pad     $6 &r      $2 &g     $2 &b     $2 ]
-|10 @Console    [ &vector $2 &pad     $6 &char   $1 &byte  $1 &short $2 &string $2 ]
-|20 @Screen     [ &vector $2 &width   $2 &height $2 &pad   $2 &x     $2 &y $2 &addr $2 &color $1 ]
-|80 @Controller [ &vector $2 &button  $1 &key    $1 ]
-|90 @Mouse      [ &vector $2 &x       $2 &y      $2 &state $1 &chord $1 ]
-|a0 @File       [ &vector $2 &success $2 &offset $2 &pad   $2 &name  $2 &length $2 &load $2 &save $2 ]
+|00 @System     &vector $2 &pad     $6 &r      $2 &g     $2 &b     $2
+|10 @Console    &vector $2 &read    $1 &pad    $5 &write $1 
+|20 @Screen     &vector $2 &width   $2 &height $2 &pad   $2 &x     $2 &y $2 &addr $2 &color $1
+|80 @Controller &vector $2 &button  $1 &key    $1
+|90 @Mouse      &vector $2 &x       $2 &y      $2 &state $1 &chord $1
+|a0 @File       &vector $2 &success $2 &offset $2 &pad   $2 &name  $2 &length $2 &load $2 &save $2
 
 ( variables )
 
@@ -341,7 +340,6 @@ BRK
 			( move ) .zoom/x LDZ2 #0001 ++ .zoom/x STZ2 &no-right
 		#00 = #04 JCN ;draw-canvas JSR2
 	&skip-zoom
-
 
 	.Controller/key DEI
 	DUP #00 ! ,&continue JCN
