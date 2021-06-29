@@ -57,9 +57,6 @@
 	&blink $1
 	&presentation $1
 	&changed $1
-@theme
-	&r0 $2 &g0 $2 &b0 $2 
-	&r1 $2 &g1 $2 &b1 $2 
 @path
 	&length $1 
 	&name $20
@@ -92,20 +89,15 @@
 
 |0100
 	
-	( theme )
-	#70fe .theme/r0 STZ2 #00f7 .theme/r1 STZ2 
-	#c0f3 .theme/g0 STZ2 #00fc .theme/g1 STZ2 
-	#90f3 .theme/b0 STZ2 #00f9 .theme/b1 STZ2
-
 	( vectors ) 
 	;on-frame .Screen/vector DEO2
 	;on-button .Controller/vector DEO2
 	;on-mouse .Mouse/vector DEO2
 
 	( colors )
-	.theme/r0 LDZ2 .System/r DEO2 
-	.theme/g0 LDZ2 .System/g DEO2 
-	.theme/b0 LDZ2 .System/b DEO2
+	#70fe .System/r DEO2 
+	#c0f3 .System/g DEO2 
+	#90f3 .System/b DEO2
 
 	( default size )
 	.Screen/width DEI2 8// #0004 -- .canvas/w STZ2 
@@ -124,6 +116,7 @@
 	( ready. )
 	;center JSR2
 	;clear JSR2
+	;draw-state JSR2
 
 	( load default file )
 	;untitled-txt ;new-file JSR2
@@ -150,9 +143,11 @@ BRK
 
 	( on mouse-down )
 	.Mouse/state DEI #00 > .cursor/last LDZ #0100 !! ,&no-mouse-down JCN
-		.Mouse/x DEI2 DUP2 .cursor/x0 STZ2
-		.Mouse/y DEI2 DUP2 .cursor/y0 STZ2
+		.Mouse/x DEI2 .cursor/x0 STZ2
+		.Mouse/y DEI2 .cursor/y0 STZ2
 	.state/presentation LDZ ;&no-mouse-down JCN2
+		.Mouse/x DEI2
+		.Mouse/y DEI2
 		DUP2 .canvas/y2 LDZ2 #0008 -- -- #0008 >> ,&no-edge JCN
 		OVR2 .canvas/x2 LDZ2 #0008 -- -- #0008 >> ,&no-edge JCN
 			#01 .brush/drag STZ &no-edge
@@ -312,7 +307,7 @@ BRK
 		RELEASE-MOUSE POP BRK &no-load
 	DUP #05 ! ,&no-blank JCN
 		;untitled-txt ;new-file JSR2
-		;redraw JSR2
+		;draw-canvas JSR2
 		RELEASE-MOUSE POP BRK &no-blank
 	POP
 	.Mouse/x DEI2 8// TOB .Screen/width DEI2 8// TOB #05 - > ,&no-rename JCN
@@ -437,13 +432,13 @@ RTN
 	.state/presentation LDZ #00 = 
 	DUP .state/presentation STZ
 	DUP ,&skip0 JCN
-		.theme/r0 LDZ2 .System/r DEO2 
-		.theme/g0 LDZ2 .System/g DEO2 
-		.theme/b0 LDZ2 .System/b DEO2 &skip0
+		#70fe .System/r DEO2 
+		#c0f3 .System/g DEO2 
+		#90f3 .System/b DEO2 &skip0
 	DUP #01 ! ,&skip1 JCN
-		.theme/r1 LDZ2 .System/r DEO2 
-		.theme/g1 LDZ2 .System/g DEO2 
-		.theme/b1 LDZ2 .System/b DEO2 &skip1
+		#00f7 .System/r DEO2 
+		#00fc .System/g DEO2 
+		#00f9 .System/b DEO2 &skip1
 	POP
 
 	;draw-background JSR2
@@ -742,6 +737,7 @@ RTN
 	#00 .state/changed STZ
 
 	;clear JSR2
+	;draw-state JSR2
 
 RTN
 
@@ -951,6 +947,8 @@ RTN
 
 @draw-background ( -- )
 	
+	;draw-state JSR2
+
 	.state/presentation LDZ #00 = #01 JCN [ RTN ]
 
 	( draw size )
@@ -982,11 +980,11 @@ RTN
 		;line-ver JSR2
 
 	( file i/o )
-	,draw-state JSR
-	.Screen/x DEI2 #0010 -- .Screen/x DEO2
+	.Screen/height DEI2 #0010 -- .Screen/y DEO2
+	.Screen/width DEI2 STH2k #0028 -- .Screen/x DEO2
 	;load-icn .Screen/addr DEO2
 	#21 .Screen/color DEO
-	.Screen/x DEI2 #0008 -- .Screen/x DEO2
+	STH2r #0030 -- .Screen/x DEO2
 	;make-icn .Screen/addr DEO2
 	#21 .Screen/color DEO
 
