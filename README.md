@@ -13,7 +13,7 @@ uxnasm noodle.tal noodle.rom && uxnemu noodle.rom
 ## Load on SD Card(Nintendo DS)
 
 ```
-sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/Git/noodle/noodle.rom sd_card/uxn/boot.rom && sync && sudo umount sd_card
+sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/roms/noodle.rom sd_card/uxn/boot.rom && sync && sudo umount sd_card
 ```
 
 ## Controls
