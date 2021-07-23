@@ -125,6 +125,9 @@
 	( load default file )
 	;untitled-txt ;new-file JSR2
 
+	( theme support )
+	;load-theme JSR2
+
 BRK
 
 @on-frame ( -> )
@@ -362,6 +365,8 @@ BRK
 	.Controller/key DEI
 	DUP #00 ! ,&continue JCN
 		POP BRK &continue
+	DUP #1b ! ,&no-escape JCN
+		;load-theme JSR2 POP BRK &no-escape
 	DUP #08 ! ,&no-backspace JCN
 		( erase ) POP ;clear JSR2 BRK &no-backspace
 	DUP #09 ! ,&no-invert JCN
@@ -481,19 +486,9 @@ RTN
 RTN
 
 @present ( -- )
-
-	.state/presentation LDZ #00 = 
-	DUP .state/presentation STZ
-	DUP ,&skip0 JCN
-		#70fe .System/r DEO2 
-		#c0f3 .System/g DEO2 
-		#90f3 .System/b DEO2 &skip0
-	DUP #01 ! ,&skip1 JCN
-		#00f7 .System/r DEO2 
-		#00fc .System/g DEO2 
-		#00f9 .System/b DEO2 &skip1
-	POP
-
+	
+	.state/presentation TOGGLE
+	.System/r DEI2 .System/r DEO2
 	;draw-background JSR2
 	,fit-canvas JSR
 
@@ -815,6 +810,25 @@ RTN
 
 	#00 .state/changed STZ
 	;draw-state JSR2
+
+RTN
+
+( theme )
+
+@theme-txt ".theme $1
+
+@load-theme ( -- )
+
+	;theme-txt .File/name DEO2 
+	#0006 .File/length DEO2 
+	#fffa .File/load DEO2
+
+	.File/success DEI2 #0006 !! ,&ignore JCN
+		#fffa LDA2 .System/r DEO2
+		#fffc LDA2 .System/g DEO2
+		#fffe LDA2 .System/b DEO2
+		;redraw JSR2
+		&ignore
 
 RTN
 
