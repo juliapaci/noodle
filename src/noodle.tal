@@ -1066,7 +1066,7 @@ RTN
 	.Screen/height DEI2 #0010 -- .Screen/y DEO2
 	.Screen/width DEI2 #0018 -- .Screen/x DEO2
 	;save-icn .Screen/addr DEO2
-	#05 .state/changed LDZ #0a * + .Screen/sprite DEO
+	#00 .state/changed LDZ #0f * + .Screen/sprite DEO
 
 RTN
 
