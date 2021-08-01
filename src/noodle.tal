@@ -44,7 +44,7 @@
 
 |00 @System     &vector $2 &pad     $6 &r      $2 &g     $2 &b     $2
 |10 @Console    &vector $2 &read    $1 &pad    $5 &write $1 
-|20 @Screen     &vector $2 &width   $2 &height $2 &pad   $2 &x     $2 &y $2 &addr $2 &color $1
+|20 @Screen     &vector $2 &width   $2 &height $2 &pad   $2 &x     $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |80 @Controller &vector $2 &button  $1 &key    $1
 |90 @Mouse      &vector $2 &x       $2 &y      $2 &state $1 &chord $1
 |a0 @File       &vector $2 &success $2 &offset $2 &pad   $2 &name  $2 &length $2 &load $2 &save $2
@@ -138,7 +138,7 @@ BRK
 
 	#08 ! ,&no-toggle JCN
 		.state/blink TOGGLE
-		#21 .state/blink LDZ #05 * + ;draw-filepath JSR2
+		#01 .state/blink LDZ #05 * + ;draw-filepath JSR2
 		#00 .state/timer STZ 
 		&no-toggle
 	
@@ -222,13 +222,13 @@ BRK
 	( draw size )
 	.Screen/width DEI2 #0078 -- .Screen/x DEO2
 	#000e .Screen/y DEO2
-	.canvas/w LDZ2 #80 SFT2 .canvas/h LDZ2 ++ #21 ;draw-short JSR2
+	.canvas/w LDZ2 #80 SFT2 .canvas/h LDZ2 ++ #01 ;draw-short JSR2
 
 	.cursor/x LDZ2 .Screen/x DEO2 
 	.cursor/y LDZ2 .Screen/y DEO2
 	;drag-icn .Screen/addr DEO2
-	#30 .Screen/color DEO
-	#3f .Screen/color DEO
+	#40 .Screen/sprite DEO
+	#4f .Screen/sprite DEO
 
 BRK
 
@@ -333,7 +333,7 @@ BRK
 	.Mouse/x DEI2 8// TOB .Screen/width DEI2 8// TOB #05 - > ,&no-rename JCN
 		.state/trap TOGGLE
 		#00 .state/blink STZ 
-		#21 ;draw-filepath JSR2
+		#01 ;draw-filepath JSR2
 		RELEASE-MOUSE BRK 
 		&no-rename
 
@@ -400,14 +400,14 @@ BRK
 	DUP ( ctrl+r ) #72 ! ,&no-name JCN
 		.state/trap TOGGLE
 		#00 .state/blink STZ 
-		#21 ;draw-filepath JSR2 POP BRK 
+		#01 ;draw-filepath JSR2 POP BRK 
 		&no-name
 	DUP ( ctrl+s ) #73 ! ,&no-save JCN
 		;path/name ;save-file JSR2
 		POP BRK  
 		&no-save
 	DUP ( ctrl+n ) #6e ! ,&no-make JCN
-		#20 ;draw-filepath JSR2
+		#00 ;draw-filepath JSR2
 		;untitled-txt ;new-file JSR2
 		;draw-canvas JSR2 POP BRK 
 		&no-make
@@ -423,20 +423,20 @@ BRK
 		&continue
 	DUP ( backspace ) #08 ! ,&no-edit-backspace JCN
 		( clamp ) .path/length LDZ #00 = ,&edit-end JCN
-		#20 ;draw-filepath JSR2
+		#00 ;draw-filepath JSR2
 		.path/length LDZ #01 - STHk .path/length STZ
 		#00 .path/name STHr + STZ
-		#21 ;draw-filepath JSR2 POP BRK
+		#01 ;draw-filepath JSR2 POP BRK
 		&no-edit-backspace
 	DUP ( special ) #20 > ,&no-edit-enter JCN
 		#00 .state/trap STZ
-		#21 ;draw-filepath JSR2 POP BRK
+		#01 ;draw-filepath JSR2 POP BRK
 		&no-edit-enter
 	( clamp ) .path/length LDZ #1f = ,&edit-end JCN
 	DUP .path/name .path/length LDZ STHk + STZ
 	STHr #01 + STHk .path/length STZ
 	#00 .path/name STHr + STZ
-	#23 ;draw-filepath JSR2
+	#03 ;draw-filepath JSR2
 	&edit-end
 	POP
 
@@ -852,7 +852,7 @@ RTN
 		.canvas/x1 LDZ2 .canvas/x2 LDZ2
 		&hor
 			OVR2 .Screen/x DEO2
-			#29 .Screen/color DEO
+			#09 .Screen/sprite DEO
 			SWP2 #0008 ++ SWP2
 			.Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
 			NEQ2k ,&hor JCN
@@ -863,7 +863,7 @@ RTN
 
 	.state/presentation LDZ ,&no-edge JCN
 		;edge-icn .Screen/addr DEO2
-		#25 .Screen/color DEO &no-edge
+		#05 .Screen/sprite DEO &no-edge
 
 RTN
 
@@ -878,7 +878,7 @@ RTN
 		&hor
 			( save ) OVR2 STH2
 			( incr ) ;bigpixel-icns #0008 #00 STH2r STH2kr ;get-pixel JSR2 ** ++ .Screen/addr DEO2
-			( draw ) #29 .Screen/color DEO
+			( draw ) #09 .Screen/sprite DEO
 			.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 			INCR2
 			OVR2 OVR2 LTS2 ,&hor JCN
@@ -900,11 +900,11 @@ RTN
 	OVR2 OVR2
 	#0003 -- .Screen/y DEO2 
 	#0003 -- .Screen/x DEO2 
-	#30 .Screen/color DEO
+	#40 .Screen/sprite DEO
 	( clear last cursor )
 	.Screen/y DEO2 
 	.Screen/x DEO2 
-	#30 .Screen/color DEO
+	#40 .Screen/sprite DEO
 
 	( record cursor positions )
 	.Mouse/x DEI2 .cursor/x STZ2 
@@ -917,7 +917,7 @@ RTN
 		.cursor/x LDZ2 #0003 -- .Screen/x DEO2 
 		.cursor/y LDZ2 #0003 -- .Screen/y DEO2
 		;brush-icns #00 .brush/size LDZ #30 SFT2 ++ .Screen/addr DEO2
-		.Mouse/state DEI DUP #02 * #31 ADD .Screen/color DEO
+		.Mouse/state DEI DUP #02 * #41 ADD .Screen/sprite DEO
 		#00 = ,&outside-canvas JCN RTN
 	&outside-canvas
 
@@ -925,7 +925,7 @@ RTN
 	.cursor/x LDZ2 .Screen/x DEO2 
 	.cursor/y LDZ2 .Screen/y DEO2
 	;pointers-icns .Screen/addr DEO2
-	#3f .Mouse/state DEI #01 = #0a * SUB .Screen/color DEO
+	#4f .Mouse/state DEI #01 = #0a * SUB .Screen/sprite DEO
 
 RTN
 
@@ -945,7 +945,7 @@ RTN
 	( stash selection ) .brush/tool LDZ STH
 	#00 #06
 	&loop
-		OVR STHkr = #21 + .Screen/color DEO
+		OVR STHkr = #01 + .Screen/sprite DEO
 		.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		.Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
 		INCR
@@ -954,7 +954,7 @@ RTN
 	.zoom/active LDZ #01 ! ,&no-zoom JCN
 		.Screen/x DEI2 #0008 -- .Screen/x DEO2
 		;tool-icns #0030 ++ .Screen/addr DEO2
-		#05 STHkr = #21 + .Screen/color DEO
+		#05 STHkr = #01 + .Screen/sprite DEO
 		&no-zoom
 	( pop selection ) POPr
 
@@ -976,7 +976,7 @@ RTN
 	( stash selection ) .brush/patt LDZ STH
 	#00 #08
 	&loop
-		OVR STHkr = #21 + .Screen/color DEO
+		OVR STHkr = #01 + .Screen/sprite DEO
 		.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		.Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
 		INCR
@@ -1002,7 +1002,7 @@ RTN
 	( stash selection ) .brush/size LDZ STH
 	#00 #08
 	&loop
-		OVR STHkr = #21 + .Screen/color DEO
+		OVR STHkr = #01 + .Screen/sprite DEO
 		.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		.Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
 		INCR
@@ -1021,14 +1021,14 @@ RTN
 	( draw size )
 	.Screen/width DEI2 #0078 -- .Screen/x DEO2
 	#000e .Screen/y DEO2
-	.canvas/w LDZ2 #80 SFT2 .canvas/h LDZ2 ++ #21 ;draw-short JSR2
+	.canvas/w LDZ2 #80 SFT2 .canvas/h LDZ2 ++ #01 ;draw-short JSR2
 
 	( bottom )
 	.Screen/height DEI2 #0010 -- .Screen/y DEO2
 	#0010 .Screen/x DEO2
-	#21 ;draw-filepath JSR2
+	#01 ;draw-filepath JSR2
 	&clear
-		#20 .Screen/color DEO
+		#00 .Screen/sprite DEO
 		.Screen/x DEI2 #0008 ++ DUP2 .Screen/x DEO2
 		.Screen/width DEI2 << ,&clear JCN
 
@@ -1050,10 +1050,10 @@ RTN
 	.Screen/height DEI2 #0010 -- .Screen/y DEO2
 	.Screen/width DEI2 STH2k #0028 -- .Screen/x DEO2
 	;load-icn .Screen/addr DEO2
-	#21 .Screen/color DEO
+	#01 .Screen/sprite DEO
 	STH2r #0030 -- .Screen/x DEO2
 	;make-icn .Screen/addr DEO2
-	#21 .Screen/color DEO
+	#01 .Screen/sprite DEO
 
 	;draw-toolpane JSR2
 	;draw-pattpane JSR2
@@ -1066,7 +1066,7 @@ RTN
 	.Screen/height DEI2 #0010 -- .Screen/y DEO2
 	.Screen/width DEI2 #0018 -- .Screen/x DEO2
 	;save-icn .Screen/addr DEO2
-	#25 .state/changed LDZ #0a * + .Screen/color DEO
+	#05 .state/changed LDZ #0a * + .Screen/sprite DEO
 
 RTN
 
@@ -1078,14 +1078,14 @@ RTN
 	;path/name
 	&loop
 		LDAk DUP #00 ! #20 * - TOS 8** ;font ++ .Screen/addr DEO2 
-		STHkr .Screen/color DEO
+		STHkr .Screen/sprite DEO
 		.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		#0001 ++
 		LDAk ,&loop JCN
 	POP2
 	POPr
 	( clear last ) 
-	#20 .Screen/color DEO
+	#00 .Screen/sprite DEO
 
 RTN
 
@@ -1114,16 +1114,16 @@ RTN
 	STH2r STH2r
 	&ver
 		( save ) OVR2 .Screen/y DEO2
-		( draw ) .rect/x1 LDZ2 .Screen/x DEO2 .color LDZ DUP .Screen/color DEO
-		( draw ) .rect/x2 LDZ2 .Screen/x DEO2 .Screen/color DEO
+		( draw ) .rect/x1 LDZ2 .Screen/x DEO2 .color LDZ DUP .Screen/pixel DEO
+		( draw ) .rect/x2 LDZ2 .Screen/x DEO2 .Screen/pixel DEO
 		( incr ) INCR2
 		OVR2 OVR2 LTS2 ,&ver JCN
 	POP2 POP2
 	.rect/x1 LDZ2 .rect/x2 LDZ2
 	&hor
 		( save ) OVR2 .Screen/x DEO2
-		( draw ) .rect/y1 LDZ2 .Screen/y DEO2 .color LDZ DUP .Screen/color DEO
-		( draw ) .rect/y2 LDZ2 .Screen/y DEO2 .Screen/color DEO
+		( draw ) .rect/y1 LDZ2 .Screen/y DEO2 .color LDZ DUP .Screen/pixel DEO
+		( draw ) .rect/y2 LDZ2 .Screen/y DEO2 .Screen/pixel DEO
 		( incr ) INCR2
 		OVR2 OVR2 #0001 ++ LTS2 ,&hor JCN
 	POP2 POP2
@@ -1139,7 +1139,7 @@ RTN
 		STH2 STH2 OVR2 OVR2
 		&hor
 			( save ) OVR2 .Screen/x DEO2
-			( draw ) .color LDZ .Screen/color DEO
+			( draw ) .color LDZ .Screen/pixel DEO
 			( incr ) INCR2
 			OVR2 OVR2 LTS2 ,&hor JCN
 		POP2 POP2 STH2r STH2r
@@ -1153,16 +1153,16 @@ RTN
 
 	STH SWP 
 		DUP #04 SFT ,&parse JSR .Screen/addr DEO2
-		( draw ) STHkr .Screen/color DEO
+		( draw ) STHkr .Screen/sprite DEO
 	.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		#0f AND ,&parse JSR .Screen/addr DEO2
-		( draw ) STHkr .Screen/color DEO
+		( draw ) STHkr .Screen/sprite DEO
 	.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		DUP #04 SFT ,&parse JSR .Screen/addr DEO2
-		( draw ) STHkr .Screen/color DEO
+		( draw ) STHkr .Screen/sprite DEO
 	.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		#0f AND ,&parse JSR .Screen/addr DEO2
-		( draw ) STHr .Screen/color DEO
+		( draw ) STHr .Screen/sprite DEO
 	RTN
 	&parse ( value -- addr* )
 		DUP #09 GTH ,&above JCN 
@@ -1177,7 +1177,7 @@ RTN
 	STH .Screen/y DEO2
 	&loop
 		( save ) OVR2 .Screen/x DEO2
-		( draw ) STHkr .Screen/color DEO
+		( draw ) STHkr .Screen/pixel DEO
 		( incr ) SWP2 #0002 ++ SWP2
 		LTH2k ,&loop JCN
 	POP2 POP2 POPr
@@ -1189,7 +1189,7 @@ RTN
 	STH ROT2 .Screen/x DEO2
 	&loop
 		( save ) OVR2 .Screen/y DEO2
-		( draw ) STHkr .Screen/color DEO
+		( draw ) STHkr .Screen/pixel DEO
 		( incr ) SWP2 #0002 ++ SWP2
 		LTH2k ,&loop JCN
 	POP2 POP2 POPr
