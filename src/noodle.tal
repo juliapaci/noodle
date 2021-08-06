@@ -26,10 +26,9 @@
 %LTS2 { #8000 ++ SWP2 #8000 ++ >> }
 %GTS2 { #8000 ++ SWP2 #8000 ++ << }
 %MOD8 { #0007 AND2  }
-%INCR { SWP #01 + SWP }
 %INCR2 { SWP2 #0001 ++ SWP2 }
 
-%GET-ITERATORS { SWP2k POP SWP POP }
+%GET-ITER { OVR2 SWP POP OVR SWP }
 %ADD-POSITIONS { ROT2 ++ ROT2 ROT2 ++ SWP2 } 
 
 %SET-STATE { #01 .state/changed STZ ;draw-state JSR2 }
@@ -456,11 +455,10 @@ BRK
 
 @clear ( -- )
 	
-	;data DUP2 FILESIZE ++
+	;data STH2k FILESIZE ++ STH2r
 	&loop
-		( save ) OVR2 #00 ROT ROT STA
-		( incr ) INCR2
-		LTH2k ,&loop JCN
+		( save ) DUP2 #00 ROT ROT STA
+		#0001 ++ GTH2k ,&loop JCN
 	POP2 POP2
 	;redraw JSR2
 
@@ -468,12 +466,11 @@ RTN
 
 @invert ( -- )
 	
-	;data DUP2 FILESIZE ++
+	;data STH2k FILESIZE ++ STH2r
 	&loop
-		( load ) OVR2 DUP2 LDA #ff EOR
+		( load ) DUP2 DUP2 LDA #ff EOR
 		( save ) ROT ROT STA
-		( incr ) INCR2
-		LTH2k ,&loop JCN
+		#0001 ++ GTH2k ,&loop JCN
 	POP2 POP2
 	;redraw JSR2
 
@@ -598,11 +595,11 @@ RTN
 
 	STH2 STH2
 
-	#00 #08
+	#08 #00
 	&ver
-		#00 #08
+		#08 #00
 		&hor
-			GET-ITERATORS 
+			GET-ITER
 			DUP2 STH STH ;size-icns #00 .brush/size LDZ #30 SFT2 ++ #00 STHr ++ LDA #07 STHr SUB SFT #01 AND #00 = ,&skip JCN
 			DUP2 [ TOS ROT TOS SWP2 ] STH2kr SWP2r STH2kr SWP2r ADD-POSITIONS OVR2 OVR2 ;patternize JSR2 #00 = ,&no-pixel JCN
 					.brush/oper LDZ2 JSR2  
@@ -611,15 +608,12 @@ RTN
 					POP2 POP2
 				&skip
 				POP2
-			INCR
-			LTHk ,&hor JCN
+			#01 + GTHk ,&hor JCN
 			POP2
-		INCR
-		LTHk ,&ver JCN
+		#01 + GTHk ,&ver JCN
 	POP2
 
 	POP2r POP2r
-
 	;draw-canvas JSR2
 
 RTN
@@ -634,18 +628,16 @@ RTN
 
 	STH2 STH2
 
-	#00 .brush/size LDZ
+	.brush/size LDZ #00
 	&ver
-		#00 .brush/size LDZ
+		.brush/size LDZ #00 
 		&hor
-			GET-ITERATORS [ TOS ROT TOS ]
+			GET-ITER [ TOS ROT TOS ]
 			STH2kr SWP2r STH2kr SWP2r ADD-POSITIONS
 			;clean-pixel JSR2
-			INCR
-			LTHk ,&hor JCN
+			#01 + GTHk ,&hor JCN
 			POP2
-		INCR
-		LTHk ,&ver JCN
+		#01 + GTHk ,&ver JCN
 	POP2
 
 	POP2r POP2r
@@ -785,19 +777,16 @@ RTN
 	#2c ;draw-filepath JSR2 
 
 	STH2
-	#00 #0c
+	#0c #00
 	&loop
-		OVR DUP TOS STH2kr ++ LDA SWP .path/name + STZ
-		INCR
-		LTHk ,&loop JCN
-	.path/length STZ POP 
+		DUP DUP TOS STH2kr ++ LDA
+		SWP .path/name + STZ
+		#01 + GTHk ,&loop JCN
+	( end ) #00 SWP .path/name + STZ 
+	.path/length STZ 
 	POP2r
-
-	#00 .path/name #0c + STZ
 	RESET-STATE
-
 	;clear JSR2
-	;draw-state JSR2
 
 RTN
 
@@ -955,13 +944,12 @@ RTN
 	;tool-icns .Screen/addr DEO2
 
 	( stash selection ) .brush/tool LDZ STH
-	#00 #06
+	#06 #00
 	&loop
-		OVR STHkr = #01 + .Screen/sprite DEO
+		DUP STHkr = #01 + .Screen/sprite DEO
 		.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		.Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
-		INCR
-		LTHk ,&loop JCN
+		#01 + GTHk ,&loop JCN
 	POP2 
 	.zoom/active LDZ #01 ! ,&no-zoom JCN
 		.Screen/x DEI2 #0008 -- .Screen/x DEO2
@@ -986,13 +974,12 @@ RTN
 	;patt-icns .Screen/addr DEO2
 
 	( stash selection ) .brush/patt LDZ STH
-	#00 #08
+	#08 #00 
 	&loop
-		OVR STHkr = #01 + .Screen/sprite DEO
+		DUP STHkr = #01 + .Screen/sprite DEO
 		.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		.Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
-		INCR
-		LTHk ,&loop JCN
+		#01 + GTHk ,&loop JCN
 	POP2
 	( pop selection ) POPr
 
@@ -1012,13 +999,12 @@ RTN
 	;size-icns .brush/mode LDZ #40 * TOS ++ .Screen/addr DEO2
 
 	( stash selection ) .brush/size LDZ STH
-	#00 #08
+	#08 #00 
 	&loop
-		OVR STHkr = #01 + .Screen/sprite DEO
+		DUP STHkr = #01 + .Screen/sprite DEO
 		.Screen/x DEI2 #0008 ++ .Screen/x DEO2
 		.Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
-		INCR
-		LTHk ,&loop JCN
+		#01 + GTHk ,&loop JCN
 	POP2
 	( pop selection ) POPr
 
@@ -1186,24 +1172,22 @@ RTN
 
 @line-hor ( x0* x1* y* color -- )
 	
-	STH .Screen/y DEO2
+	STH .Screen/y DEO2 SWP2
 	&loop
-		( save ) OVR2 .Screen/x DEO2
+		( save ) DUP2 .Screen/x DEO2
 		( draw ) STHkr .Screen/pixel DEO
-		( incr ) SWP2 #0002 ++ SWP2
-		LTH2k ,&loop JCN
+		#0002 ++ GTH2k ,&loop JCN
 	POP2 POP2 POPr
 
 RTN
 
 @line-ver ( x* y0* y1* color -- )
 	
-	STH ROT2 .Screen/x DEO2
+	STH ROT2 .Screen/x DEO2 SWP2
 	&loop
-		( save ) OVR2 .Screen/y DEO2
+		( save ) DUP2 .Screen/y DEO2
 		( draw ) STHkr .Screen/pixel DEO
-		( incr ) SWP2 #0002 ++ SWP2
-		LTH2k ,&loop JCN
+		#0002 ++ GTH2k ,&loop JCN
 	POP2 POP2 POPr
 
 RTN
