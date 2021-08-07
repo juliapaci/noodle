@@ -18,6 +18,7 @@
 %++ { ADD2 } %-- { SUB2 } %** { MUL2 } %// { DIV2 }
 %<< { LTH2 } %>> { GTH2 } %== { EQU2 } %!! { NEQ2 }
 
+%2**  { #10 SFT2 } %2// { #01 SFT2 }
 %8**  { #30 SFT2 } %8// { #03 SFT2 }
 %TOS  { #00 SWP }  %TOB { SWP POP }
 
@@ -27,7 +28,6 @@
 %LTS2 { #8000 ++ SWP2 #8000 ++ >> }
 %GTS2 { #8000 ++ SWP2 #8000 ++ << }
 %MOD8 { #0007 AND2  }
-%INCR2 { SWP2 #0001 ++ SWP2 }
 
 %GET-ITER { OVR2 SWP POP OVR SWP }
 %ADD-POSITIONS { ROT2 ++ ROT2 ROT2 ++ SWP2 } 
@@ -56,8 +56,6 @@
 
 |0000
 
-@color $1 
-
 @state
 	&timer $1
 	&blink $1
@@ -74,15 +72,14 @@
 	&mode $1
 	&drag $1
 @cursor 
-	&x $2 
-	&y $2 
-	&x0 $2 
-	&y0 $2 
+	&x $2  &y $2 
+	&x0 $2 &y0 $2 
 	&last $1 
 @zoom 
 	&active $1 
-	&x $2 
-	&y $2
+	&x $2 &y $2
+@theme
+	&r $1 &g $1 &b $1
 
 @canvas   [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 &w $2 &h $2 ]
 @toolpane [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
@@ -90,6 +87,7 @@
 @sizepane [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
 @rect [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 ]
 @line [ &x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2 ]
+@color $1 
 
 ( program )
 
@@ -213,15 +211,15 @@ BRK
 
 @on-drag ( -> )
 	
-	.Mouse/x DEI2 DUP2 .Screen/width DEI2 #0002 // STH2k #0010 ++ >> ,&no-clamp-x JCN
+	.Mouse/x DEI2 DUP2 .Screen/width DEI2 2// STH2k #0010 ++ >> ,&no-clamp-x JCN
 		POP2 STH2kr #0010 ++ 
 		&no-clamp-x 
-	STH2r -- #0002 ** 8// #0001 ++ .canvas/w STZ2 
+	STH2r -- 2** 8// #0001 ++ .canvas/w STZ2 
 
-	.Mouse/y DEI2 DUP2 .Screen/height DEI2 #0002 // STH2k #0010 ++ >> ,&no-clamp-y JCN
+	.Mouse/y DEI2 DUP2 .Screen/height DEI2 2// STH2k #0010 ++ >> ,&no-clamp-y JCN
 		POP2 STH2kr #0010 ++ 
 		&no-clamp-y 
-	STH2r -- #0002 ** 8// #0001 ++ .canvas/h STZ2 
+	STH2r -- 2** 8// #0001 ++ .canvas/h STZ2 
 
 	( draw size )
 	.Screen/width DEI2 #0078 -- .Screen/x DEO2
@@ -488,19 +486,53 @@ RTN
 
 	;draw-background JSR2
 
-	.Screen/width DEI2 #0002 // .canvas/w LDZ2 #30 SFT2 #01 SFT2 -- .canvas/x1 STZ2
-	.Screen/height DEI2 #0002 // .canvas/h LDZ2 #30 SFT2 #01 SFT2 -- .canvas/y1 STZ2
+	.Screen/width DEI2 2// .canvas/w LDZ2 #30 SFT2 #01 SFT2 -- .canvas/x1 STZ2
+	.Screen/height DEI2 2// .canvas/h LDZ2 #30 SFT2 #01 SFT2 -- .canvas/y1 STZ2
 
-	,fit-canvas JSR
+	;fit-canvas JSR2
 
 RTN
 
 @present ( -- )
 	
 	.state/presentation TOGGLE
-	.System/r DEI2 .System/r DEO2
-	;draw-background JSR2
-	,fit-canvas JSR
+
+	.state/presentation LDZ ,&hide JCN
+	,&show JMP
+
+	&show
+		( load theme )
+		.theme/r LDZ .System/r DEO
+		.theme/g LDZ .System/g DEO
+		.theme/b LDZ .System/b DEO
+		;draw-background JSR2
+		;fit-canvas JSR2
+		RTN
+
+	&hide
+		( save theme )
+		.System/r DEI DUP .theme/r STZ #0f AND .System/r DEO
+		.System/g DEI DUP .theme/g STZ #0f AND .System/g DEO
+		.System/b DEI DUP .theme/b STZ #0f AND .System/b DEO
+		( clear panes )
+		.toolpane/x1 LDZ2 #0002 -- 
+		.toolpane/y1 LDZ2 #0002 -- 
+		.toolpane/x2 LDZ2 #0001 ++
+		.toolpane/y2 LDZ2 #0001 ++
+			#00 ;fill-rect JSR2
+		.sizepane/x1 LDZ2 #0002 -- 
+		.sizepane/y1 LDZ2 #0002 -- 
+		.sizepane/x2 LDZ2 #0001 ++
+		.sizepane/y2 LDZ2 #0001 ++
+			#00 ;fill-rect JSR2
+		.pattpane/x1 LDZ2 #0002 -- 
+		.pattpane/y1 LDZ2 #0002 -- 
+		.pattpane/x2 LDZ2 #0001 ++
+		.pattpane/y2 LDZ2 #0001 ++
+			#00 ;fill-rect JSR2
+		;draw-background JSR2
+		,fit-canvas JSR
+		RTN
 
 RTN
 
@@ -534,13 +566,13 @@ RTN
 
 	.line/x1 LDZ2 .line/x2 LDZ2 -- ABS2 .line/dx STZ2
 	.line/y1 LDZ2 .line/y2 LDZ2 -- ABS2 #0000 SWP2 -- .line/dy STZ2
-	#ffff #00 .line/x2 LDZ2 .line/x1 LDZ2 LTS2 #0002 ** ++ .line/sx STZ2
-	#ffff #00 .line/y2 LDZ2 .line/y1 LDZ2 LTS2 #0002 ** ++ .line/sy STZ2
+	#ffff #00 .line/x2 LDZ2 .line/x1 LDZ2 LTS2 2** ++ .line/sx STZ2
+	#ffff #00 .line/y2 LDZ2 .line/y1 LDZ2 LTS2 2** ++ .line/sy STZ2
 	.line/dx LDZ2 .line/dy LDZ2 ++ .line/e1 STZ2
 	&loop
 		( paint ) .line/x2 LDZ2 .line/y2 LDZ2 .brush/oper LDZ2 JSR2
 		.line/x2 LDZ2 .line/x1 LDZ2 == .line/y2 LDZ2 .line/y1 LDZ2 == #0101 == ,&end JCN
-		.line/e1 LDZ2 #0002 ** .line/e2 STZ2
+		.line/e1 LDZ2 2** .line/e2 STZ2
 		.line/e2 LDZ2 .line/dy LDZ2 LTS2 ,&skipy JCN
 			.line/e1 LDZ2 .line/dy LDZ2 ++ .line/e1 STZ2
 			.line/x2 LDZ2 .line/sx LDZ2 ++ .line/x2 STZ2
@@ -875,11 +907,11 @@ RTN
 	.canvas/y1 LDZ2 .Screen/y DEO2
 	.canvas/h LDZ2 .zoom/y LDZ2 STH2k ++ STH2r
 	&ver
-		( save ) DUP2 STH2
+		( save ) STH2k
 		.canvas/x1 LDZ2 .Screen/x DEO2
 		.canvas/w LDZ2 .zoom/x LDZ2 STH2k ++ STH2r
 		&hor
-			( save ) DUP2 STH2
+			( save ) STH2k
 			( incr ) ;bigpixel-icns #0008 #00 STH2r STH2kr ;get-pixel JSR2 ** ++ .Screen/addr DEO2
 			( draw ) #09 .Screen/sprite DEO
 			.Screen/x DEI2 #0008 ++ .Screen/x DEO2
@@ -1035,12 +1067,12 @@ RTN
 	( draw hor line )
 	#0000 
 	.Screen/width DEI2 
-	.Screen/height DEI2 #0002 // 
+	.Screen/height DEI2 2// 
 	.state/presentation LDZ #00 = 
 		;line-hor JSR2
 
 	( draw ver line )
-	.Screen/width DEI2 #0002 // 
+	.Screen/width DEI2 2// 
 	#0000 
 	.Screen/height DEI2 
 	.state/presentation LDZ #00 = 
@@ -1108,28 +1140,6 @@ RTN
 
 RTN
 
-@line-rect ( x1* y1* x2* y2* color -- )
-
-	( load ) .color STZ DUP2 STH2 .rect/y2 STZ2 .rect/x2 STZ2 DUP2 STH2 .rect/y1 STZ2 .rect/x1 STZ2
-	STH2r STH2r SWP2
-	&ver
-		( save ) DUP2 .Screen/y DEO2
-		( draw ) .rect/x1 LDZ2 .Screen/x DEO2 .color LDZ DUP .Screen/pixel DEO
-		( draw ) .rect/x2 LDZ2 .Screen/x DEO2 .Screen/pixel DEO
-		( incr ) #0001 ++
-		OVR2 OVR2 GTS2 ,&ver JCN
-	POP2 POP2
-	.rect/x1 LDZ2 .rect/x2 LDZ2 SWP2
-	&hor
-		( save ) DUP2 .Screen/x DEO2
-		( draw ) .rect/y1 LDZ2 .Screen/y DEO2 .color LDZ DUP .Screen/pixel DEO
-		( draw ) .rect/y2 LDZ2 .Screen/y DEO2 .Screen/pixel DEO
-		( incr ) #0001 ++
-		OVR2 OVR2 #0001 ++ GTS2 ,&hor JCN
-	POP2 POP2
-
-RTN
-
 @draw-short ( short* color -- )
 
 	STH SWP 
@@ -1152,17 +1162,41 @@ RTN
 			#09 SUB #40 ADD #20 - TOS 8** ;font ++ RTN
 
 RTN
+
+@line-rect ( x1* y1* x2* y2* color -- )
+
+	( load ) .color STZ 
+	STH2k .rect/y2 STZ2 .rect/x2 STZ2 
+	STH2k .rect/y1 STZ2 .rect/x1 STZ2
+	STH2r STH2r SWP2
+	&ver
+		( save ) DUP2 .Screen/y DEO2
+		( draw ) .rect/x1 LDZ2 .Screen/x DEO2 .color LDZ DUP .Screen/pixel DEO
+		( draw ) .rect/x2 LDZ2 .Screen/x DEO2 .Screen/pixel DEO
+		( incr ) #0001 ++
+		OVR2 OVR2 GTS2 ,&ver JCN
+	POP2 POP2
+	.rect/x1 LDZ2 .rect/x2 LDZ2 SWP2
+	&hor
+		( save ) DUP2 .Screen/x DEO2
+		( draw ) .rect/y1 LDZ2 .Screen/y DEO2 .color LDZ DUP .Screen/pixel DEO
+		( draw ) .rect/y2 LDZ2 .Screen/y DEO2 .Screen/pixel DEO
+		( incr ) #0001 ++
+		OVR2 OVR2 GTS2 ,&hor JCN
+	POP2 POP2
+
+RTN
 	
 @fill-rect ( x1* y1* x2* y2* color -- )
 	
-	.color STZ
+	,&color STR
 	( x1 x2 y1 y2 ) ROT2
 	&ver
 		( save ) DUP2 .Screen/y DEO2
 		STH2 STH2 OVR2 OVR2 SWP2
 		&hor
 			( save ) DUP2 .Screen/x DEO2
-			( draw ) .color LDZ .Screen/pixel DEO
+			( draw ) ,&color LDR .Screen/pixel DEO
 			( incr ) #0001 ++
 			OVR2 OVR2 GTS2 ,&hor JCN
 		POP2 POP2 STH2r STH2r
@@ -1171,6 +1205,7 @@ RTN
 	POP2 POP2 POP2 POP2
 
 RTN
+	&color $1
 
 @line-hor ( x0* x1* y* color -- )
 	
