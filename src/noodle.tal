@@ -20,7 +20,7 @@
 
 %2**  { #10 SFT2 } %2// { #01 SFT2 }
 %8**  { #30 SFT2 } %8// { #03 SFT2 }
-%TOS  { #00 SWP }  %TOB { SWP POP }
+%TOS  { #00 SWP }  
 
 %RTN  { JMP2r }
 %SFL  { #40 SFT SFT }
@@ -29,7 +29,7 @@
 %GTS2 { #8000 ++ SWP2 #8000 ++ << }
 %MOD8 { #0007 AND2  }
 
-%GET-ITER { OVR2 SWP POP OVR SWP }
+%GET-ITER { OVR2 NIP OVR SWP }
 %ADD-POSITIONS { ROT2 ++ ROT2 ROT2 ++ SWP2 } 
 
 %SET-STATE { #01 .state/changed STZ ;draw-state JSR2 }
@@ -162,9 +162,9 @@ BRK
 			#01 .brush/drag STZ 
 			&no-edge
 		( conver to bytes )
-		STH2 8// TOB STH2r 8// TOB
+		STH2 8// NIP STH2r 8// NIP
 		DUP #02 = ;on-touch-top JCN2
-		DUP .Screen/height DEI2 8// TOB #02 - = ;on-touch-bottom JCN2
+		DUP .Screen/height DEI2 8// NIP #02 - = ;on-touch-bottom JCN2
 		POP2
 		&no-mouse-down
 
@@ -299,9 +299,9 @@ BRK
 		;draw-toolpane JSR2
 		RELEASE-MOUSE BRK
 		&no-size
-	DUP [ .Screen/width DEI2 8// TOB #0c - ] < ,&no-pattern JCN
-	DUP [ .Screen/width DEI2 8// TOB #05 - ] > ,&no-pattern JCN
-		.Screen/width DEI2 8// TOB #0c - - .brush/patt STZ
+	DUP [ .Screen/width DEI2 8// NIP #0c - ] < ,&no-pattern JCN
+	DUP [ .Screen/width DEI2 8// NIP #05 - ] > ,&no-pattern JCN
+		.Screen/width DEI2 8// NIP #0c - - .brush/patt STZ
 		.brush/tool LDZ ,&no-switch2 JCN
 			#01 .brush/tool STZ 
 			&no-switch2
@@ -316,7 +316,7 @@ BRK
 @on-touch-bottom ( x y -> )
 	
 	POP
-	#ff SWP .Screen/width DEI2 8// TOB - - 
+	#ff SWP .Screen/width DEI2 8// NIP - - 
 	DUP #02 ! ,&no-save JCN
 		;path/name ;save-file JSR2
 		RELEASE-MOUSE POP BRK 
@@ -332,7 +332,7 @@ BRK
 		RELEASE-MOUSE POP BRK 
 		&no-blank
 	POP
-	.Mouse/x DEI2 8// TOB .Screen/width DEI2 8// TOB #05 - > ,&no-rename JCN
+	.Mouse/x DEI2 8// NIP .Screen/width DEI2 8// NIP #05 - > ,&no-rename JCN
 		#00 ;draw-filepath JSR2 
 		;on-frame-trap .Screen/vector DEO2
 		;on-button-trap .Controller/vector DEO2
@@ -710,10 +710,10 @@ RTN
 		-- #0003 AND2 #0000 == RTN &notone5
 	DUP #06 ! ,&notone6 JCN
 		POP SWP2r POP2r STH2r
-		#0001 AND2 TOB RTN &notone6
+		#0001 AND2 NIP RTN &notone6
 	DUP #07 ! ,&notone7 JCN
 		POP POP2r STH2r 
-		#0001 AND2 TOB RTN &notone7
+		#0001 AND2 NIP RTN &notone7
 	POP POP2r POP2r
 	#00
 
@@ -755,8 +755,8 @@ RTN
 	( clamp ) OVR2 8// .canvas/w LDZ2 >> ,&skip JCN
 
 	OVR2 OVR2
-	TOB #07 AND STH
-	TOB #07 AND STH SWPr
+	NIP #07 AND STH
+	NIP #07 AND STH SWPr
 	( get tile ) 
 	#03 SFT2 SWP2
 	#03 SFT2 SWP2
@@ -779,7 +779,7 @@ RTN
 	( get tile addr ) ;data STH2kr #03 SFT2 SWP2r STH2kr #03 SFT2 
 		.canvas/w LDZ2 ** ++ #30 SFT2 STH2r MOD8 ++ ++
 	( load ) LDAk
-	( mask ) #01 #07 STH2r MOD8 TOB SUB SFL ORA
+	( mask ) #01 #07 STH2r MOD8 NIP SUB SFL ORA
 	( save ) ROT ROT STA
 	RTN
 	&skip
@@ -796,7 +796,7 @@ RTN
 	( get tile addr ) ;data STH2kr #03 SFT2 SWP2r STH2kr #03 SFT2 
 		.canvas/w LDZ2 ** ++ #30 SFT2 STH2r MOD8 ++ ++
 	( load ) LDAk
-	( mask ) #01 #07 STH2r MOD8 TOB SUB SFL #ff EOR AND
+	( mask ) #01 #07 STH2r MOD8 NIP SUB SFL #ff EOR AND
 	( save ) ROT ROT STA
 	RTN
 	&skip
