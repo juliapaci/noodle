@@ -43,7 +43,6 @@
 %RESET-STATE { #00 .state/changed STZ ;draw-state JSR2 }
 
 %TOGGLE { LDZk #00 = SWP STZ }
-%FILESIZE { .canvas/w LDZ2 .canvas/h LDZ2 ** 8** }
 %RELEASE-MOUSE { #00 .Mouse/state DEO }
 
 %SIZE-TO-RECT {
@@ -459,9 +458,21 @@ BRK
 
 BRK
 
+@get-filesize ( -- length )
+	
+	#0000
+	.canvas/h LDZ2 #0000
+	&loop
+		ROT2 .canvas/w LDZ2 ++ ROT2 ROT2
+		#0001 ++ GTH2k ,&loop JCN
+	POP2 POP2
+	8**
+
+RTN
+
 @clear ( -- )
 	
-	;data STH2k FILESIZE ++ STH2r
+	;data STH2k ;get-filesize JSR2 ++ STH2r
 	&loop
 		( save ) DUP2 #00 ROT ROT STA
 		#0001 ++ GTH2k ,&loop JCN
@@ -472,7 +483,7 @@ RTN
 
 @invert ( -- )
 	
-	;data STH2k FILESIZE ++ STH2r
+	;data STH2k ;get-filesize JSR2 ++ STH2r
 	&loop
 		( load ) DUP2 DUP2 LDA #ff EOR
 		( save ) ROT ROT STA
@@ -834,7 +845,7 @@ RTN
 @load-file ( path* -- )
 
 	;path/name .File/name DEO2 
-	FILESIZE .File/length DEO2 
+	;get-filesize JSR2 .File/length DEO2 
 	;data .File/load DEO2
 
 	RESET-STATE
@@ -847,7 +858,7 @@ RTN
 @save-file ( path* -- )
 
 	.File/name DEO2 
-	FILESIZE .File/length DEO2 
+	;get-filesize JSR2 .File/length DEO2 
 	;data .File/save DEO2
 
 	RESET-STATE
