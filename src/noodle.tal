@@ -35,6 +35,7 @@
 %LTS2 { #8000 ++ SWP2 #8000 ++ >> }
 %GTS2 { #8000 ++ SWP2 #8000 ++ << }
 %8MOD2 { #0007 AND2 }
+%8MOD { #07 AND }
 
 %GET-ITER { OVR2 NIP OVR SWP }
 %ADD-POSITIONS { ROT2 ++ ROT2 ROT2 ++ SWP2 } 
@@ -772,32 +773,38 @@ RTN
 	( clamp ) DUP2 8// .canvas/h LDZ2 >> ,&skip JCN
 	( clamp ) OVR2 8// .canvas/w LDZ2 >> ,&skip JCN
 
-	OVR2 OVR2
-	NIP #07 AND STH
-	NIP #07 AND STH SWPr
-	( get tile ) 
-	8// SWP2
-	8// SWP2
-	.canvas/w LDZ2 ** ++ 8**
-	( add addr ) ;data ++
-	#00 STHr ++ LDA #07 STHr SUB SFT #01 AND
+	( keep x* ) OVR2 NIP 8MOD STH
+	,get-tile JSR
+
+	( load ) LDA
+	#07 STHr SUB SFT #01 AND
 	RTN
 	&skip
 	POP2 POP2 #01
 
 RTN
 
+@get-tile ( x* y* -- addr* )
+
+	STH2k
+	8// SWP2
+	8// SWP2 
+	.canvas/w LDZ2 ** ++ 8**
+	STH2r 8MOD2 ++
+	;data ++ 
+
+RTN
 
 @add-pixel ( x* y* -- )
 	
 	( clamp ) DUP2 8// .canvas/h LDZ2 << #00 = ,&skip JCN
 	( clamp ) OVR2 8// .canvas/w LDZ2 << #00 = ,&skip JCN
 
-	STH2 STH2
-	( get tile addr ) ;data STH2kr 8// SWP2r STH2kr 8// 
-		.canvas/w LDZ2 ** ++ 8** STH2r 8MOD2 ++ ++
+	( keep x* ) OVR2 NIP 8MOD STH
+	,get-tile JSR
+
 	( load ) LDAk
-	( mask ) #01 #07 STH2r 8MOD2 NIP SUB SFL ORA
+	( mask ) #01 #07 STHr SUB SFL ORA
 	( save ) ROT ROT STA
 	RTN
 	&skip
@@ -810,11 +817,11 @@ RTN
 	( clamp ) DUP2 8// .canvas/h LDZ2 << #00 = ,&skip JCN
 	( clamp ) OVR2 8// .canvas/w LDZ2 << #00 = ,&skip JCN
 
-	STH2 STH2
-	( get tile addr ) ;data STH2kr 8// SWP2r STH2kr 8// 
-		.canvas/w LDZ2 ** ++ 8** STH2r 8MOD2 ++ ++
+	( keep x* ) OVR2 NIP 8MOD STH
+	,get-tile JSR
+
 	( load ) LDAk
-	( mask ) #01 #07 STH2r 8MOD2 NIP SUB SFL #ff EOR AND
+	( mask ) #01 #07 STHr SUB SFL #ff EOR AND
 	( save ) ROT ROT STA
 	RTN
 	&skip
