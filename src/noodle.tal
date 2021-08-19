@@ -47,6 +47,9 @@
 %SET-STATE { #01 .state/changed STZ ;draw-state JSR2 }
 %RESET-STATE { #00 .state/changed STZ ;draw-state JSR2 }
 
+%GET-FRAME-SIZE { .canvas/h LDZ2 .canvas/w LDZ2 ** 8** } ( -- length* )
+%GET-FRAME-ADDR { TOS GET-FRAME-SIZE ** ;data ++ } ( frame -- addr* )
+
 %TOGGLE { LDZk #00 = SWP STZ }
 %RELEASE-MOUSE { #00 .Mouse/state DEO }
 
@@ -135,18 +138,18 @@
 	.Screen/width DEI2 #0050 -- #000f #0040 #0008 SIZE-TO-RECT ;pattpane ;set-rect JSR2
 	#0011 .Screen/height DEI2 #0010 -- #0020 #0008 SIZE-TO-RECT ;animpane ;set-rect JSR2
 
-	.anim/frame LDZ ;get-frame-addr JSR2 .anim/addr STZ2
+	.anim/frame LDZ GET-FRAME-ADDR .anim/addr STZ2
 
 	( ready. )
 	;center JSR2
 	;clear JSR2
-	;draw-state JSR2
 
 	( load default file )
 	;untitled-txt ;new-file JSR2
 
 	( theme support )
 	;load-theme JSR2
+	;draw-state JSR2
 
 BRK
 
@@ -492,27 +495,15 @@ BRK
 
 	.anim/frame LDZ 
 	DUP #00 = ,&rewind JCN
-	#01 - ,get-frame-addr JSR RTN
+	#01 - GET-FRAME-ADDR RTN
 	&rewind
-		POP .anim/limit LDZ ,get-frame-addr JSR
-
-RTN
-
-@get-frame-addr ( frame -- addr* )
-
-	TOS ,get-frame-size JSR ** ;data ++
-
-RTN
-
-@get-frame-size ( -- length* )
-	
-	.canvas/h LDZ2 .canvas/w LDZ2 ** 8**
+		POP .anim/limit LDZ GET-FRAME-ADDR
 
 RTN
 
 @clear ( -- )
 	
-	.anim/addr LDZ2 STH2k ;get-frame-size JSR2 ++ STH2r
+	.anim/addr LDZ2 STH2k GET-FRAME-SIZE ++ STH2r
 	&loop
 		( save ) DUP2 #00 ROT ROT STA
 		INC2 GTH2k ,&loop JCN
@@ -523,7 +514,7 @@ RTN
 
 @invert ( -- )
 	
-	.anim/addr LDZ2 STH2k ;get-frame-size JSR2 ++ STH2r
+	.anim/addr LDZ2 STH2k GET-FRAME-SIZE ++ STH2r
 	&loop
 		( load ) DUP2 DUP2 LDA #ff EOR
 		( save ) ROT ROT STA
@@ -621,7 +612,7 @@ RTN
 		.anim/limit LDZ 
 	&end
 		DUP .anim/frame STZ 
-		;get-frame-addr JSR2 .anim/addr STZ2
+		GET-FRAME-ADDR .anim/addr STZ2
 		;redraw JSR2 
 
 RTN
@@ -631,7 +622,7 @@ RTN
 	.anim/limit LDZ + DUP .anim/limit STZ
 
 	( get maximum frames that can fit in memory )
-	#fff0 ;data -- ;get-frame-size JSR2 DIV2 #0001 -- NIP
+	#fff0 ;data -- GET-FRAME-SIZE DIV2 #0001 -- NIP
 	GTH ,&clamp JCN
 	;redraw JSR2 
 	RTN
@@ -922,7 +913,7 @@ RTN
 @load-file ( path* -- )
 
 	;path/name .File/name DEO2 
-	;get-frame-size JSR2 .File/length DEO2 
+	GET-FRAME-SIZE .File/length DEO2 
 	;data .File/load DEO2
 
 	RESET-STATE
@@ -935,7 +926,7 @@ RTN
 @save-file ( path* -- )
 
 	.File/name DEO2 
-	;get-frame-size JSR2 .File/length DEO2 
+	GET-FRAME-SIZE .File/length DEO2 
 	;data .File/save DEO2
 
 	RESET-STATE
