@@ -1171,6 +1171,7 @@ RTN
 @draw-background ( -- )
 	
 	;draw-state JSR2
+	;draw-animpane JSR2
 
 	.state/presentation LDZ #00 = #01 JCN [ RTN ]
 
@@ -1214,7 +1215,6 @@ RTN
 	;draw-toolpane JSR2
 	;draw-pattpane JSR2
 	;draw-sizepane JSR2
-	;draw-animpane JSR2
 
 RTN
 
