@@ -620,6 +620,7 @@ RTN
 
 @mod-limit ( mod -- )
 
+	( reset ) #00 .anim/frame STZ
 	.anim/limit LDZ + DUP .anim/limit STZ
 
 	( get maximum frames that can fit in memory )
