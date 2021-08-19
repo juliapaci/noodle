@@ -47,7 +47,8 @@
 %SET-STATE { #01 .state/changed STZ ;draw-state JSR2 }
 %RESET-STATE { #00 .state/changed STZ ;draw-state JSR2 }
 
-%GET-FRAME-SIZE { .canvas/h LDZ2 .canvas/w LDZ2 ** 8** } ( -- length* )
+%GET-FRAME-SIZE { .canvas/h LDZ2 .canvas/w LDZ2 MUL2 8** } ( -- length* )
+%GET-ANIM-SIZE { GET-FRAME-SIZE .anim/limit LDZ #01 + TOS MUL2 } ( -- length* )
 %GET-FRAME-ADDR { TOS GET-FRAME-SIZE ** ;data ++ } ( frame -- addr* )
 
 %TOGGLE { LDZk #00 = SWP STZ }
@@ -913,7 +914,7 @@ RTN
 @load-file ( path* -- )
 
 	;path/name .File/name DEO2 
-	GET-FRAME-SIZE .File/length DEO2 
+	GET-ANIM-SIZE .File/length DEO2 
 	;data .File/load DEO2
 
 	RESET-STATE
@@ -926,7 +927,7 @@ RTN
 @save-file ( path* -- )
 
 	.File/name DEO2 
-	GET-FRAME-SIZE .File/length DEO2 
+	GET-ANIM-SIZE .File/length DEO2 
 	;data .File/save DEO2
 
 	RESET-STATE
