@@ -608,7 +608,7 @@ RTN
 	DUP #ff = #00 .anim/frame LDZ = #0101 == ,&cc JCN
 	.anim/frame LDZ ADD ,&end JMP
 	&c
-		#00 ,&end JMP
+		POP #00 ,&end JMP
 	&cc
 		.anim/limit LDZ 
 	&end
