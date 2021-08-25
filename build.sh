@@ -14,5 +14,11 @@ then
     echo "Installed in $HOME/roms" 
 fi
 
+if [ "${1}" = '--push' ]; 
+then
+	echo "Pushing.."
+	~/Applications/butler push bin/noodle.rom hundredrabbits/noodle:uxn
+fi
+
 echo "Running.."
 uxnemu bin/noodle.rom
