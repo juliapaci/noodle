@@ -3,6 +3,7 @@
 	
 	right-click - erase
 	arrows - move zoom
+	alt+arrows - resize canvas
 	space - toogle zoom
 	tab - invert image
 	enter - next frame
@@ -381,7 +382,10 @@ BRK
 
 @on-button ( -> )
 
-	.Controller/button DEI #01 AND ;on-control JCN2
+	.Controller/button DEI 
+		DUP #01 AND ;on-control JCN2
+		DUP #02 AND ;on-alt JCN2
+	POP
 	
 	( control zoom )
 	.zoom/active LDZ #00 = ,&skip-zoom JCN
@@ -431,8 +435,9 @@ BRK
 
 BRK
 
-@on-control ( -> )
+@on-control ( button -> )
 	
+	POP
 	.Controller/key DEI
 	DUP [ LIT 'r ] ! ,&no-name JCN
 		#00 ;draw-filepath JSR2 
@@ -460,6 +465,29 @@ BRK
 		;path/name ;save-file JSR2 
 		;draw-state JSR2 POP BRK  &no-save
 	POP 
+
+BRK
+
+@on-alt ( button -> )
+
+	#04 SFT
+	#01 !~ ,&no-up JCN
+		.canvas/h LDZ2 #0001 -- .canvas/h STZ2
+		;center JSR2
+		&no-up
+	#02 !~ ,&no-down JCN
+		.canvas/h LDZ2 INC2 .canvas/h STZ2
+		;center JSR2
+		&no-down
+	#04 !~ ,&no-left JCN
+		.canvas/w LDZ2 #0001 -- .canvas/w STZ2
+		;center JSR2
+		&no-left
+	#08 !~ ,&no-right JCN
+		.canvas/w LDZ2 INC2 .canvas/w STZ2
+		;center JSR2
+		&no-right
+	POP
 
 BRK
 
@@ -533,6 +561,13 @@ RTN
 	.canvas/x2 LDZ2 #0002 ++ 
 	.canvas/y2 LDZ2 #0002 ++ 
 		#00 ;fill-rect JSR2
+
+	( clamp-max )
+	.canvas/w LDZ2 .Screen/width DEI2 8// LTH2k #01 JCN SWP2 POP2 .canvas/w STZ2
+	.canvas/h LDZ2 .Screen/height DEI2 8// #0006 -- LTH2k #01 JCN SWP2 POP2 .canvas/h STZ2
+	( clamp-min )
+	.canvas/w LDZ2 #0002 GTH2k #01 JCN SWP2 POP2 .canvas/w STZ2
+	.canvas/h LDZ2 #0002 GTH2k #01 JCN SWP2 POP2 .canvas/h STZ2
 
 	;draw-background JSR2
 
