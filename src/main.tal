@@ -23,17 +23,19 @@
 %<< { LTH2 } %>> { GTH2 } %== { EQU2 } %!! { NEQ2 }
 %!~ { NEQk NIP }
 
-%DEBUG  { ;print-hex JSR2 #0a .Console/write DEO }
-%DEBUG2 { SWP ;print-hex JSR2 ;print-hex JSR2 #0a .Console/write DEO }
+%DEBUG  { ;print-hex/byte JSR2 #0a .Console/write DEO }
+%DEBUG2 { ;print-hex/short JSR2 #0a .Console/write DEO }
 
 %2*   { #10 SFT }
 %8*   { #30 SFT }
 %20*  { #50 SFT } 
+%40*  { #60 SFT }
 %2**  { #10 SFT2 } %2// { #01 SFT2 }
 %8**  { #30 SFT2 } %8// { #03 SFT2 }
 %TOS  { #00 SWP }  
 
 %SWP? { #01 JCN SWP }
+%BRK? { #01 JCN BRK }
 %RTN  { JMP2r }
 %SFL  { #40 SFT SFT }
 %ABS2 { DUP2 #0f SFT2 = #05 JCN #0000 SWP2 -- }
@@ -49,7 +51,7 @@
 %RESET-STATE { #00 .state/changed STZ ;draw-state JSR2 }
 
 %GET-FRAME-SIZE { .canvas/h LDZ2 .canvas/w LDZ2 MUL2 8** } ( -- length* )
-%GET-ANIM-SIZE { GET-FRAME-SIZE .anim/limit LDZ #01 + TOS MUL2 } ( -- length* )
+%GET-ANIM-SIZE { GET-FRAME-SIZE .anim/limit LDZ INC TOS MUL2 } ( -- length* )
 %GET-FRAME-ADDR { TOS GET-FRAME-SIZE ** ;data ++ } ( frame -- addr* )
 
 %TOGGLE { LDZk #00 = SWP STZ }
@@ -115,10 +117,7 @@
 
 |0100
 	
-	( vectors ) 
-	;on-frame .Screen/vector DEO2
-	;on-button .Controller/vector DEO2
-	;on-mouse .Mouse/vector DEO2
+	;untrap JSR2
 
 	( colors )
 	#70fa .System/r DEO2 
@@ -155,8 +154,43 @@
 
 BRK
 
+@untrap ( -- )
+	
+	( vectors ) 
+	;on-frame .Screen/vector DEO2
+	;on-button .Controller/vector DEO2
+	;on-mouse .Mouse/vector DEO2
+
+	( filepath )
+	#00 .state/blink STZ 
+	#01 ;draw-filepath JSR2
+	RELEASE-MOUSE
+
+RTN
+
+@trap ( -- )
+
+	( vectors ) 
+	;on-frame-trap .Screen/vector DEO2
+	;on-button-trap .Controller/vector DEO2
+	;on-mouse-trap .Mouse/vector DEO2
+
+	( clear brush )
+	.cursor/x LDZ2 .Screen/x DEO2 
+	.cursor/y LDZ2 .Screen/y DEO2 
+	#40 .Screen/sprite DEO
+
+	( filepath )
+	#01 .state/blink STZ 
+	#01 ;draw-filepath JSR2
+	RELEASE-MOUSE
+
+RTN
+
 @on-frame ( -> )
+
 	( inactive )
+
 BRK
 
 @on-frame-trap ( -> )
@@ -168,6 +202,13 @@ BRK
 		#01 .state/blink LDZ 8* + ;draw-filepath JSR2
 		#00 .state/timer STZ 
 		&no-toggle
+	
+BRK
+
+@on-mouse-trap ( -> )
+
+	.Mouse/state DEI #01 JCN BRK
+	;untrap JSR2
 	
 BRK
 
@@ -373,9 +414,7 @@ BRK
 	POP
 	#07 < ,&no-rename JCN
 		#00 ;draw-filepath JSR2 
-		;on-frame-trap .Screen/vector DEO2
-		;on-button-trap .Controller/vector DEO2
-		RELEASE-MOUSE BRK 
+		;trap JSR2 BRK 
 		&no-rename
 
 BRK
@@ -441,8 +480,7 @@ BRK
 	.Controller/key DEI
 	DUP [ LIT 'r ] ! ,&no-name JCN
 		#00 ;draw-filepath JSR2 
-		;on-frame-trap .Screen/vector DEO2
-		;on-button-trap .Controller/vector DEO2
+		;trap JSR2
 		POP BRK
 		&no-name
 	DUP [ LIT 'R ] ! ,&no-rename JCN
@@ -450,8 +488,7 @@ BRK
 		#00 .Controller/key DEO
 		#00 .path/length STZ
 		#0000 .path/name STZ2
-		;on-frame-trap .Screen/vector DEO2
-		;on-button-trap .Controller/vector DEO2
+		;trap JSR2
 		POP BRK
 		&no-rename
 	DUP [ LIT 'n ] ! ,&no-new JCN
@@ -505,10 +542,7 @@ BRK
 		#01 ;draw-filepath JSR2 POP BRK
 		&no-edit-backspace
 	DUP ( special ) #20 > ,&no-edit-enter JCN
-		;on-frame .Screen/vector DEO2
-		;on-button .Controller/vector DEO2
-		#00 .state/blink STZ 
-		#01 ;draw-filepath JSR2 POP BRK
+		;untrap JSR2 POP BRK
 		&no-edit-enter
 	( clamp ) .path/length LDZ #1f = ,&edit-end JCN
 	DUP .path/name .path/length LDZ STHk + STZ
@@ -1172,7 +1206,7 @@ RTN
 
 	.sizepane/x1 LDZ2 .Screen/x DEO2 
 	.sizepane/y1 LDZ2 .Screen/y DEO2 
-	;size-icns .brush/mode LDZ 20* TOS ++ .Screen/addr DEO2
+	;size-icns .brush/mode LDZ 40* TOS ++ .Screen/addr DEO2
 
 	( stash selection ) .brush/size LDZ STH
 	#08 #00 
@@ -1373,7 +1407,7 @@ RTN
 	&loop
 		( save ) DUP2 .Screen/x DEO2
 		( draw ) STHkr .Screen/pixel DEO
-		#0002 ++ GTH2k ,&loop JCN
+		INC2 INC2 GTH2k ,&loop JCN
 	POP2 POP2 POPr
 
 RTN
@@ -1384,7 +1418,7 @@ RTN
 	&loop
 		( save ) DUP2 .Screen/y DEO2
 		( draw ) STHkr .Screen/pixel DEO
-		#0002 ++ GTH2k ,&loop JCN
+		INC2 INC2 GTH2k ,&loop JCN
 	POP2 POP2 POPr
 
 RTN
@@ -1399,13 +1433,20 @@ RTN
 
 RTN
 
-@print-hex ( value -- )
+@print-hex ( value* -- )
 	
+	&short ( value* -- )
+		SWP ,&echo JSR 
+	&byte ( value -- )
+		,&echo JSR
+	RTN
+
+	&echo ( value -- )
 	STHk #04 SFT ,&parse JSR .Console/write DEO
 	STHr #0f AND ,&parse JSR .Console/write DEO
 	RTN
 	&parse ( value -- char )
-		DUP #09 GTH ,&above JCN #30 ADD RTN &above #09 SUB #60 ADD RTN
+		DUP #09 GTH ,&above JCN #30 + RTN &above #09 - #60 + RTN
 
 RTN
 
