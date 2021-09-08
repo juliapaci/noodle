@@ -35,6 +35,7 @@
 %TOS  { #00 SWP }  
 
 %SWP? { #01 JCN SWP }
+%SWP2? { #01 JCN SWP2 }
 %BRK? { #01 JCN BRK }
 %RTN  { JMP2r }
 %SFL  { #40 SFT SFT }
@@ -134,10 +135,14 @@
 	#00 .brush/tool STZ
 
 	( setup panes )
-	#0011 #000f #0030 #0008 SIZE-TO-RECT ;toolpane ;set-rect JSR2
-	#0048 #000f #0040 #0008 SIZE-TO-RECT ;sizepane ;set-rect JSR2
-	.Screen/width DEI2 #0050 -- #000f #0040 #0008 SIZE-TO-RECT ;pattpane ;set-rect JSR2
-	#0011 .Screen/height DEI2 #0010 -- #0020 #0008 SIZE-TO-RECT ;animpane ;set-rect JSR2
+	#0011 #000f #0030 #0008 SIZE-TO-RECT 
+	 .toolpane/y2 STZ2 .toolpane/x2 STZ2 .toolpane/y1 STZ2 .toolpane/x1 STZ2 
+	#0048 #000f #0040 #0008 SIZE-TO-RECT
+		.sizepane/y2 STZ2 .sizepane/x2 STZ2 .sizepane/y1 STZ2 .sizepane/x1 STZ2 
+	.Screen/width DEI2 #0050 -- #000f #0040 #0008 SIZE-TO-RECT 
+		.pattpane/y2 STZ2 .pattpane/x2 STZ2 .pattpane/y1 STZ2 .pattpane/x1 STZ2 
+	#0011 .Screen/height DEI2 #0010 -- #0020 #0008 SIZE-TO-RECT
+		.animpane/y2 STZ2 .animpane/x2 STZ2 .animpane/y1 STZ2 .animpane/x1 STZ2 
 
 	.anim/frame LDZ GET-FRAME-ADDR .anim/addr STZ2
 
@@ -175,15 +180,15 @@ RTN
 	;on-button-trap .Controller/vector DEO2
 	;on-mouse-trap .Mouse/vector DEO2
 
-	( clear brush )
-	.cursor/x LDZ2 .Screen/x DEO2 
-	.cursor/y LDZ2 .Screen/y DEO2 
-	#40 .Screen/sprite DEO
-
 	( filepath )
 	#01 .state/blink STZ 
 	#01 ;draw-filepath JSR2
 	RELEASE-MOUSE
+
+	( clear brush )
+	.cursor/x LDZ2 .Screen/x DEO2 
+	.cursor/y LDZ2 .Screen/y DEO2 
+	#40 .Screen/sprite DEO
 
 RTN
 
@@ -207,7 +212,8 @@ BRK
 
 @on-mouse-trap ( -> )
 
-	.Mouse/state DEI #01 JCN BRK
+	( release trap on click )
+	.Mouse/state DEI BRK?
 	;untrap JSR2
 	
 BRK
@@ -227,7 +233,7 @@ BRK
 		OVR2 .canvas/x2 LDZ2 #0008 -- -- #0008 >> ,&no-edge JCN
 			#01 .brush/drag STZ 
 			&no-edge
-		( conver to bytes )
+		( convert to bytes )
 		STH2 8// NIP STH2r 8// NIP
 		DUP #02 = ;on-touch-top JCN2
 		DUP .Screen/height DEI2 8// NIP #02 - = ;on-touch-bottom JCN2
@@ -259,7 +265,7 @@ BRK
 		;draw-state JSR2
 		&no-mouse-up
 
-	.Mouse/state DEI DUP .cursor/last STZ #01 JCN [ BRK ]
+	.Mouse/state DEI DUP .cursor/last STZ BRK?
 
 	.brush/drag LDZ 
 		;on-drag JCN2
@@ -303,10 +309,8 @@ BRK
 @on-touch-canvas ( -> )
 	
 	( set erase from right-click/mode )
-	;remove-pixel .Mouse/state DEI #01 > .brush/mode LDZ + ,&no-rightclick JCN 
-		POP2 ;add-pixel 
-		&no-rightclick 
-	.brush/oper STZ2
+	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #10 = .brush/mode LDZ + SWP2?
+		POP2 .brush/oper STZ2
 
 	.brush/tool LDZ 
 	DUP ,&no-touch-pen JCN
@@ -333,7 +337,7 @@ BRK
 		POP BRK 
 		&no-touch-magic
 	[ #05 ] !~ ,&no-touch-zoom JCN
-		.zoom/active LDZ #00 = .zoom/active STZ
+		.zoom/active TOGGLE
 		( release ) #00 .Mouse/state DEO
 		.Mouse/x DEI2 .canvas/x1 LDZ2 -- .canvas/w LDZ2 #01 SFT2 -- .zoom/x STZ2
 		.Mouse/y DEI2 .canvas/y1 LDZ2 -- .canvas/h LDZ2 #01 SFT2 -- .zoom/y STZ2
@@ -355,7 +359,7 @@ BRK
 	DUP #06 > OVR #0f < #0101 !! ,&no-size JCN
 		#07 -
 		DUP .brush/size LDZ ! ,&no-toggle JCN
-			.brush/mode LDZ #00 = .brush/mode STZ
+			.brush/mode TOGGLE
 			&no-toggle
 		.brush/size STZ
 		.brush/tool LDZ ,&no-switch1 JCN
@@ -456,20 +460,20 @@ BRK
 	DUP #09 ! ,&no-invert JCN
 		( invert ) POP ;invert JSR2 BRK &no-invert
 	DUP #20 ! ,&no-space JCN
-		( toggle zoom ) .zoom/active LDZ #00 = .zoom/active STZ ;redraw JSR2 &no-space
+		( toggle zoom ) .zoom/active TOGGLE ;redraw JSR2 &no-space
 	DUP #71 ! ,&no-qkey JCN
 		( tool0 ) #00 .brush/tool STZ ;draw-toolpane JSR2 &no-qkey
 	DUP #77 ! ,&no-wkey JCN
-		( tool0 ) #01 .brush/tool STZ ;draw-toolpane JSR2 &no-wkey
+		( tool1 ) #01 .brush/tool STZ ;draw-toolpane JSR2 &no-wkey
 	DUP #65 ! ,&no-ekey JCN
-		( tool0 ) #02 .brush/tool STZ ;draw-toolpane JSR2 &no-ekey
+		( tool2 ) #02 .brush/tool STZ ;draw-toolpane JSR2 &no-ekey
 	DUP #72 ! ,&no-rkey JCN
-		( tool0 ) #03 .brush/tool STZ ;draw-toolpane JSR2 &no-rkey
+		( tool3 ) #03 .brush/tool STZ ;draw-toolpane JSR2 &no-rkey
 	DUP #74 ! ,&no-tkey JCN
-		( tool0 ) #04 .brush/tool STZ ;draw-toolpane JSR2 &no-tkey
+		( tool4 ) #04 .brush/tool STZ ;draw-toolpane JSR2 &no-tkey
 	DUP
 		DUP #30 > SWP #39 < #0101 !! ,&no-numkey JCN
-		( size ) .Controller/key DEI #31 SUB .brush/size STZ ;draw-sizepane JSR2 &no-numkey
+		( size ) DUP #31 SUB .brush/size STZ ;draw-sizepane JSR2 &no-numkey
 	POP
 
 BRK
@@ -597,17 +601,15 @@ RTN
 		#00 ;fill-rect JSR2
 
 	( clamp-max )
-	.canvas/w LDZ2 .Screen/width DEI2 8// LTH2k #01 JCN SWP2 POP2 .canvas/w STZ2
-	.canvas/h LDZ2 .Screen/height DEI2 8// #0006 -- LTH2k #01 JCN SWP2 POP2 .canvas/h STZ2
+	.canvas/w LDZ2 .Screen/width DEI2 8// LTH2k SWP2? POP2 .canvas/w STZ2
+	.canvas/h LDZ2 .Screen/height DEI2 8// #0006 -- LTH2k SWP2? POP2 .canvas/h STZ2
 	( clamp-min )
-	.canvas/w LDZ2 #0002 GTH2k #01 JCN SWP2 POP2 .canvas/w STZ2
-	.canvas/h LDZ2 #0002 GTH2k #01 JCN SWP2 POP2 .canvas/h STZ2
-
+	.canvas/w LDZ2 #0002 GTH2k SWP2? POP2 .canvas/w STZ2
+	.canvas/h LDZ2 #0002 GTH2k SWP2? POP2 .canvas/h STZ2
 	;draw-background JSR2
 
 	.Screen/width DEI2 2// .canvas/w LDZ2 8** #01 SFT2 -- .canvas/x1 STZ2
 	.Screen/height DEI2 2// .canvas/h LDZ2 8** #01 SFT2 -- .canvas/y1 STZ2
-
 	;fit-canvas JSR2
 
 RTN
@@ -1420,16 +1422,6 @@ RTN
 		( draw ) STHkr .Screen/pixel DEO
 		INC2 INC2 GTH2k ,&loop JCN
 	POP2 POP2 POPr
-
-RTN
-
-@set-rect ( x1 y1 x2 y2 addr -- )
-
-	DUP2 ROT2 SWP2 #0006 ++ STA2
-	DUP2 ROT2 SWP2 #0004 ++ STA2
-	DUP2 ROT2 SWP2 #0002 ++ STA2
-	DUP2 ROT2 SWP2 STA2
-	POP2
 
 RTN
 
