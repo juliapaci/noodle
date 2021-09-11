@@ -275,28 +275,39 @@ BRK
 	;draw-cursor JSR2
 
 	.Mouse/x DEI2 .Mouse/y DEI2 
+
+	( begin with canvas )
 	OVR2 OVR2 .canvas ;within-rect JSR2
 		;on-touch-canvas JCN2
-	( only use on click )
-	.Mouse/state DEI ,&continue JCN
-		POP2 POP2 BRK
-		&continue
-	( continue )
+
+	( disable without click )
+	.Mouse/state DEI #00 = ,&end JCN
+
+	( anim enabled in presentation )
+	OVR2 OVR2 .animpane ;within-rect JSR2
+		;on-touch-animpane JCN2
+
+	( disable with presentation )
+	.state/presentation LDZ ,&end-present JCN
+		
 	OVR2 OVR2 .toolpane ;within-rect JSR2
 		;on-touch-toolpane JCN2
 	OVR2 OVR2 .sizepane ;within-rect JSR2
 		;on-touch-sizepane JCN2
 	OVR2 OVR2 .pattpane ;within-rect JSR2
 		;on-touch-pattpane JCN2
-	OVR2 OVR2 .animpane ;within-rect JSR2
-		;on-touch-animpane JCN2
 	OVR2 OVR2 .filepane ;within-rect JSR2
 		;on-touch-filepane JCN2
 	OVR2 OVR2 .namepane ;within-rect JSR2
 		;on-touch-namepane JCN2
-	POP2 POP2
+
+	&end-present
+
 	( toggle present mode )
 	;present JSR2
+
+	&end
+	POP2 POP2
 	RELEASE-MOUSE
 
 BRK
