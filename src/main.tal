@@ -315,8 +315,7 @@ BRK
 @on-touch-canvas ( x* y* -> )
 
 	( set erase from right-click/mode )
-	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #10 = .brush/mode LDZ + SWP2?
-		POP2 .brush/oper STZ2
+	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #10 = .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
 	( get mouse state )
 	.Mouse/state DEI #00 > #10 SFT .cursor/last LDZ #00 > + #00 SWP 2**
 	( non hover states )
@@ -727,6 +726,7 @@ RTN
 	.line/dx LDZ2 .line/dy LDZ2 ++ .line/e1 STZ2
 	&loop
 		( paint ) .line/x2 LDZ2 .line/y2 LDZ2 .brush/oper LDZ2 JSR2
+		.line/x2 LDZ2 .line/y2 LDZ2 ;draw-tile JSR2
 		.line/x2 LDZ2 .line/x1 LDZ2 == .line/y2 LDZ2 .line/y1 LDZ2 == #0101 == ,&end JCN
 		.line/e1 LDZ2 2** .line/e2 STZ2
 		.line/e2 LDZ2 .line/dy LDZ2 LTS2 ,&skipy JCN
@@ -739,8 +739,6 @@ RTN
 			&skipx
 		;&loop JMP2
 	&end
-
-	;draw-canvas JSR2
 
 RTN
 
@@ -774,7 +772,8 @@ RTN
 			GET-ITER
 			DUP2 STH STH ;size-icns #00 .brush/size LDZ 8** ++ #00 STHr ++ LDA #07 STHr SUB SFT #01 AND #00 = ,&skip JCN
 			DUP2 [ TOS ROT TOS SWP2 ] STH2kr SWP2r STH2kr SWP2r ADD-POSITIONS OVR2 OVR2 ;patternize JSR2 #00 = ,&no-pixel JCN
-					.brush/oper LDZ2 JSR2  
+					OVR2 OVR2 .brush/oper LDZ2 JSR2 
+					;draw-tile JSR2
 					,&skip JMP
 					&no-pixel
 					POP2 POP2
@@ -784,9 +783,7 @@ RTN
 			POP2
 		INC GTHk ,&ver JCN
 	POP2
-
 	POP2r POP2r
-	;draw-canvas JSR2
 
 RTN
 
@@ -844,8 +841,12 @@ RTN
 		INC GTHk ,&ver JCN
 	POP2
 
+	( draw )
+	STH2kr OVR2r STH2r ;draw-tile JSR2
+	STH2kr #0008 ++ OVR2r STH2r ;draw-tile JSR2
+	STH2kr OVR2r STH2r #0008 ++ ;draw-tile JSR2
+	STH2kr #0008 ++ OVR2r STH2r #0008 ++ ;draw-tile JSR2
 	POP2r POP2r
-	;draw-canvas JSR2
 
 RTN
 
@@ -937,6 +938,23 @@ RTN
 	RTN
 	&skip
 	POP2 POP2
+
+RTN
+
+@draw-tile ( x* y* -- )
+
+	.zoom/active LDZ #00 = ,&no-zoom JCN
+		OVR2 OVR2 ;get-pixel JSR2 #00 SWP 8** ;bigpixel-icns ++ .Screen/addr DEO2
+		.zoom/y LDZ2 -- 8** .canvas/y1 LDZ2 ++ #33 SFT2 .Screen/y DEO2
+		.zoom/x LDZ2 -- 8** .canvas/x1 LDZ2 ++ #33 SFT2 .Screen/x DEO2
+		#05 .Screen/sprite DEO
+		RTN
+		&no-zoom
+	#33 SFT2 SWP2 #33 SFT2 SWP2
+	OVR2 OVR2 ;get-tile JSR2 .Screen/addr DEO2
+	.canvas/y1 LDZ2 ++ .Screen/y DEO2
+	.canvas/x1 LDZ2 ++ .Screen/x DEO2
+	#05 .Screen/sprite DEO
 
 RTN
 
@@ -1196,7 +1214,7 @@ RTN
 	.animpane/y1 LDZ2 .Screen/y DEO2 
 
 	.animpane/x1 LDZ2 STH2k .Screen/x DEO2 
-	;eyes-icns .anim/onion LDZ TOS #0008 MUL2 ++ .Screen/addr DEO2
+	;eyes-icns .anim/onion LDZ TOS 8** ++ .Screen/addr DEO2
 	#01 .Screen/sprite DEO
 
 	STH2kr #0010 ++ .Screen/x DEO2 
