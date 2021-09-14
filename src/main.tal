@@ -943,13 +943,9 @@ RTN
 
 @draw-tile ( x* y* -- )
 
-	DUP2 .canvas/h LDZ2 8** << ,&within-y JCN
+	;tile-visible JSR2 ,&continue JCN
 		POP2 POP2 RTN
-		&within-y
-	OVR2 .canvas/w LDZ2 8** << ,&within-x JCN
-		POP2 POP2 RTN
-		&within-x
-
+		&continue
 	.zoom/active LDZ #00 = ,&no-zoom JCN
 		OVR2 OVR2 ;get-pixel JSR2 #00 SWP 8** ;bigpixel-icns ++ .Screen/addr DEO2
 		.zoom/y LDZ2 -- 8** .canvas/y1 LDZ2 ++ #33 SFT2 .Screen/y DEO2
@@ -962,6 +958,23 @@ RTN
 	.canvas/y1 LDZ2 ++ .Screen/y DEO2
 	.canvas/x1 LDZ2 ++ .Screen/x DEO2
 	#05 .Screen/sprite DEO
+
+RTN
+
+@tile-visible ( x* y* -- x* y* flag )
+
+	.zoom/active LDZ #00 = ,&no-zoom JCN
+		DUP2 .zoom/y LDZ2 << ,&invisible JCN
+		DUP2 .zoom/y LDZ2 .canvas/h LDZ2 ++ #0001 -- >> ,&invisible JCN
+		OVR2 .zoom/x LDZ2 << ,&invisible JCN
+		OVR2 .zoom/x LDZ2 .canvas/w LDZ2 ++ #0001 -- >> ,&invisible JCN
+		#01 RTN
+		&no-zoom
+	DUP2 .canvas/h LDZ2 8** >> ,&invisible JCN
+	OVR2 .canvas/w LDZ2 8** >> ,&invisible JCN
+		#01 RTN
+	&invisible
+		#00
 
 RTN
 
