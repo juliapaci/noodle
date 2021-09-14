@@ -936,41 +936,6 @@ RTN
 
 RTN
 
-@draw-tile ( x* y* -- )
-
-	;tile-visible JSR2 ,&continue JCN
-		POP2 POP2 RTN
-		&continue
-	.zoom/active LDZ #00 = ,&no-zoom JCN
-		OVR2 OVR2 ;get-pixel JSR2 #00 SWP 8** ;bigpixel-icns ++ .Screen/addr DEO2
-		.zoom/y LDZ2 -- 8** .canvas/y1 LDZ2 ++ #33 SFT2 .Screen/y DEO2
-		.zoom/x LDZ2 -- 8** .canvas/x1 LDZ2 ++ #33 SFT2 .Screen/x DEO2
-		#09 .Screen/sprite DEO
-		RTN
-		&no-zoom
-	#33 SFT2 SWP2 #33 SFT2 SWP2
-	OVR2 OVR2 ;get-tile JSR2 .Screen/addr DEO2
-	.canvas/y1 LDZ2 ++ .Screen/y DEO2
-	.canvas/x1 LDZ2 ++ .Screen/x DEO2
-	#09 .Screen/sprite DEO
-
-RTN
-
-@tile-visible ( x* y* -- x* y* flag )
-
-	.zoom/active LDZ #00 = ,&no-zoom JCN
-		OVR2 .zoom/x LDZ2 -- .canvas/w LDZ2 #0001 -- >> ,&invisible JCN
-		DUP2 .zoom/y LDZ2 -- .canvas/h LDZ2 #0001 -- >> ,&invisible JCN
-		#01 RTN
-		&no-zoom
-	DUP2 .canvas/h LDZ2 8** >> ,&invisible JCN
-	OVR2 .canvas/w LDZ2 8** >> ,&invisible JCN
-		#01 RTN
-	&invisible
-		#00
-
-RTN
-
 ( file )
 
 @new-file ( path* -- )
@@ -1076,12 +1041,10 @@ RTN
 		&hor
 			DUP2 .Screen/x DEO2
 			STHkr .Screen/sprite DEO
-			#0008 ++
-			.Screen/addr DEI2 #0008 ++ .Screen/addr DEO2
-			GTH2k ,&hor JCN
+			.Screen/addr DEI2 #0008 ++ .Screen/addr DEO2 
+			#0008 ++ GTH2k ,&hor JCN
 		POP2 POP2
-		#0008 ++
-		GTH2k ,&ver JCN
+		#0008 ++ GTH2k ,&ver JCN
 	POP2 POP2
 	POPr
 
@@ -1096,24 +1059,57 @@ RTN
 @draw-canvas-zoom ( -- )
 
 	.canvas/y1 LDZ2 .Screen/y DEO2
-	.canvas/h LDZ2 .zoom/y LDZ2 STH2k ++ STH2r
+	.canvas/h LDZ2 #0000
 	&ver
 		( save ) STH2k
 		.canvas/x1 LDZ2 .Screen/x DEO2
-		.canvas/w LDZ2 .zoom/x LDZ2 STH2k ++ STH2r
+		.canvas/w LDZ2 #0000
 		&hor
-			( save ) STH2k
-			( incr ) #00 STH2r STH2kr ;get-pixel JSR2 8** ;bigpixel-icns ++ .Screen/addr DEO2
+			DUP2 .zoom/x LDZ2 ++ 
+			STH2kr .zoom/y LDZ2 ++ 
+				;get-pixel JSR2 TOS 8** 
+				;bigpixel-icns ++ .Screen/addr DEO2
 			( draw ) #09 .Screen/sprite DEO
 			.Screen/x DEI2 #0008 ++ .Screen/x DEO2
-			INC2
-			OVR2 OVR2 GTS2 ,&hor JCN
+			INC2 GTH2k ,&hor JCN
 		POP2 POP2
 		POP2r
 		.Screen/y DEI2 #0008 ++ .Screen/y DEO2
-		INC2
-		OVR2 OVR2 GTS2 ,&ver JCN
+		INC2 GTH2k ,&ver JCN
 	POP2 POP2
+
+RTN
+
+@draw-tile ( x* y* -- )
+
+	;tile-visible JSR2 ,&continue JCN
+		POP2 POP2 RTN
+		&continue
+	.zoom/active LDZ #00 = ,&no-zoom JCN
+		OVR2 OVR2 ;get-pixel JSR2 #00 SWP 8** ;bigpixel-icns ++ .Screen/addr DEO2
+		.zoom/y LDZ2 -- 8** .canvas/y1 LDZ2 ++ #33 SFT2 .Screen/y DEO2
+		.zoom/x LDZ2 -- 8** .canvas/x1 LDZ2 ++ #33 SFT2 .Screen/x DEO2
+		#09 .Screen/sprite DEO
+		RTN
+		&no-zoom
+	#33 SFT2 SWP2 #33 SFT2 SWP2
+	OVR2 OVR2 ;get-tile JSR2 .Screen/addr DEO2
+	.canvas/y1 LDZ2 ++ .Screen/y DEO2
+	.canvas/x1 LDZ2 ++ .Screen/x DEO2
+	#09 .Screen/sprite DEO
+
+RTN
+
+@tile-visible ( x* y* -- x* y* flag )
+
+	.zoom/active LDZ #00 = ,&no-zoom JCN
+		OVR2 .zoom/x LDZ2 -- .canvas/w LDZ2 << ,&within-y-zoom JCN [ #00 RTN ] &within-y-zoom
+		DUP2 .zoom/y LDZ2 -- .canvas/h LDZ2 << ,&within-x-zoom JCN [ #00 RTN ] &within-x-zoom
+		#01 RTN
+		&no-zoom
+	DUP2 .canvas/h LDZ2 8** << ,&within-y JCN [ #00 RTN ] &within-y
+	OVR2 .canvas/w LDZ2 8** << ,&within-x JCN [ #00 RTN ] &within-x
+		#01 RTN
 
 RTN
 
