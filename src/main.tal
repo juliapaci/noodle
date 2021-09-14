@@ -943,6 +943,13 @@ RTN
 
 @draw-tile ( x* y* -- )
 
+	DUP2 .canvas/h LDZ2 8** << ,&within-y JCN
+		POP2 POP2 RTN
+		&within-y
+	OVR2 .canvas/w LDZ2 8** << ,&within-x JCN
+		POP2 POP2 RTN
+		&within-x
+
 	.zoom/active LDZ #00 = ,&no-zoom JCN
 		OVR2 OVR2 ;get-pixel JSR2 #00 SWP 8** ;bigpixel-icns ++ .Screen/addr DEO2
 		.zoom/y LDZ2 -- 8** .canvas/y1 LDZ2 ++ #33 SFT2 .Screen/y DEO2
