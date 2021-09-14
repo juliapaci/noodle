@@ -964,10 +964,8 @@ RTN
 @tile-visible ( x* y* -- x* y* flag )
 
 	.zoom/active LDZ #00 = ,&no-zoom JCN
-		DUP2 .zoom/y LDZ2 << ,&invisible JCN
-		DUP2 .zoom/y LDZ2 .canvas/h LDZ2 ++ #0001 -- >> ,&invisible JCN
-		OVR2 .zoom/x LDZ2 << ,&invisible JCN
-		OVR2 .zoom/x LDZ2 .canvas/w LDZ2 ++ #0001 -- >> ,&invisible JCN
+		OVR2 .zoom/x LDZ2 -- .canvas/w LDZ2 #0001 -- >> ,&invisible JCN
+		DUP2 .zoom/y LDZ2 -- .canvas/h LDZ2 #0001 -- >> ,&invisible JCN
 		#01 RTN
 		&no-zoom
 	DUP2 .canvas/h LDZ2 8** >> ,&invisible JCN
