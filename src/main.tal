@@ -835,17 +835,12 @@ RTN
 		&hor
 			GET-ITER [ TOS ROT TOS ]
 			STH2kr SWP2r STH2kr SWP2r ADD-POSITIONS
-			,clean-pixel JSR
+			OVR2 OVR2 ,clean-pixel JSR
+			;draw-tile JSR2
 			INC GTHk ,&hor JCN
 			POP2
 		INC GTHk ,&ver JCN
 	POP2
-
-	( draw )
-	STH2kr OVR2r STH2r ;draw-tile JSR2
-	STH2kr #0008 ++ OVR2r STH2r ;draw-tile JSR2
-	STH2kr OVR2r STH2r #0008 ++ ;draw-tile JSR2
-	STH2kr #0008 ++ OVR2r STH2r #0008 ++ ;draw-tile JSR2
 	POP2r POP2r
 
 RTN
@@ -950,14 +945,14 @@ RTN
 		OVR2 OVR2 ;get-pixel JSR2 #00 SWP 8** ;bigpixel-icns ++ .Screen/addr DEO2
 		.zoom/y LDZ2 -- 8** .canvas/y1 LDZ2 ++ #33 SFT2 .Screen/y DEO2
 		.zoom/x LDZ2 -- 8** .canvas/x1 LDZ2 ++ #33 SFT2 .Screen/x DEO2
-		#05 .Screen/sprite DEO
+		#09 .Screen/sprite DEO
 		RTN
 		&no-zoom
 	#33 SFT2 SWP2 #33 SFT2 SWP2
 	OVR2 OVR2 ;get-tile JSR2 .Screen/addr DEO2
 	.canvas/y1 LDZ2 ++ .Screen/y DEO2
 	.canvas/x1 LDZ2 ++ .Screen/x DEO2
-	#05 .Screen/sprite DEO
+	#09 .Screen/sprite DEO
 
 RTN
 
@@ -1477,7 +1472,6 @@ RTN
 		.cursor/y1 STZ2 .cursor/x1 STZ2
 	&up
 		.brush/oper LDZ2 JSR2
-		;draw-canvas JSR2
 		BRK
 	&drag
 		OVR2 OVR2 STH2 STH2
