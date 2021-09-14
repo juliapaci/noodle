@@ -280,8 +280,8 @@ BRK
 	OVR2 OVR2 .canvas ;within-rect JSR2
 		;on-touch-canvas JCN2
 
-	( disable without click )
-	.Mouse/state DEI #00 = ,&end JCN
+	( only when click originates in pane )
+	.Mouse/state DEI .cursor/last LDZ #0100 !! ,&end JCN
 
 	( anim enabled in presentation )
 	OVR2 OVR2 .animpane ;within-rect JSR2
@@ -308,7 +308,6 @@ BRK
 
 	&end
 	POP2 POP2
-	RELEASE-MOUSE
 
 BRK
 
@@ -652,6 +651,7 @@ RTN
 		.theme/b LDZ .System/b DEO
 		;draw-background JSR2
 		;draw-canvas-outside JSR2
+		RELEASE-MOUSE
 		RTN
 
 	&hide
@@ -665,6 +665,7 @@ RTN
 		.pattpane #00 ;fill-rect JSR2
 		;draw-background JSR2
 		;draw-canvas-outside JSR2
+		RELEASE-MOUSE
 		RTN
 
 RTN
