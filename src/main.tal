@@ -836,8 +836,14 @@ RTN
 		&hor
 			GET-ITER [ TOS ROT TOS ]
 			STH2kr SWP2r STH2kr SWP2r ADD-POSITIONS
-			OVR2 OVR2 ,clean-pixel JSR
-			;draw-tile JSR2
+
+			( skip blanks ) 
+			OVR2 OVR2 ;get-pixel JSR2 #00 = ,&blank JCN
+				OVR2 OVR2 ,clean-pixel JSR
+				OVR2 OVR2 ;draw-tile JSR2
+				&blank
+			POP2 POP2
+
 			INC GTHk ,&hor JCN
 			POP2
 		INC GTHk ,&ver JCN
@@ -847,32 +853,20 @@ RTN
 RTN
 
 @clean-pixel ( x* y* -- )
-	
-	( skip blanks ) OVR2 OVR2 ;get-pixel JSR2 ,&valid JCN [ POP2 POP2 RTN ] &valid
 
-	( NE )
+	( get neighbors )
 	OVR2 OVR2 #0001 -- ,get-pixel JSR STH
-	OVR2 INC2 OVR2 ,get-pixel JSR STHr
-	#0101 !! ,&no-se JCN 
-		,&remove JMP &no-se
-	( NW )
-	OVR2 OVR2 #0001 --  ,get-pixel JSR STH
-	OVR2 #0001 -- OVR2 ,get-pixel JSR STHr
-	#0101 !! ,&no-sw JCN 
-		,&remove JMP &no-sw
-	( SE )
-	OVR2 OVR2 INC2 ,get-pixel JSR STH
-	OVR2 INC2 OVR2 ,get-pixel JSR STHr
-	#0101 !! ,&no-ne JCN 
-		,&remove JMP &no-ne
-	( SW )
-	OVR2 OVR2 INC2  ,get-pixel JSR STH
-	OVR2 #0001 -- OVR2 ,get-pixel JSR STHr
-	#0101 !! ,&no-nw JCN 
-		,&remove JMP &no-nw
-	POP2 POP2 RTN
+	OVR2 INC2 OVR2 ,get-pixel JSR #10 SFT STH ADDr
+	OVR2 OVR2 INC2 ,get-pixel JSR #20 SFT STH ADDr
+	OVR2 #0001 -- OVR2 ,get-pixel JSR #30 SFT STH ADDr
+	STHr
+	DUP #03 = ,&remove JCN
+	DUP #06 = ,&remove JCN
+	DUP #09 = ,&remove JCN
+	DUP #0c = ,&remove JCN
+	POP POP2 POP2 RTN
 	&remove
-		OVR2 OVR2 ;remove-pixel JSR2 [ POP2 POP2 RTN ]
+		POP ;remove-pixel JSR2 RTN 
 
 RTN
 
@@ -1465,10 +1459,10 @@ RTN
 @pencil ( x* y* -> )
 
 	&down
-		OVR2 OVR2 
-		.cursor/y1 STZ2 .cursor/x1 STZ2
+		OVR2 OVR2 .cursor/y1 STZ2 .cursor/x1 STZ2
+		OVR2 OVR2 .brush/oper LDZ2 JSR2
+		;draw-tile JSR2
 	&up
-		.brush/oper LDZ2 JSR2
 		BRK
 	&drag
 		OVR2 OVR2 STH2 STH2
