@@ -38,6 +38,7 @@
 %SWP? { #01 JCN SWP }
 %SWP2? { #01 JCN SWP2 }
 %BRK? { #01 JCN BRK }
+%RTN? { #01 JCN RTN }
 %DEC2 { #0001 -- }
 %RTN  { JMP2r }
 %MIN2 { GTH2k SWP2? POP2 }
@@ -1538,15 +1539,26 @@ BRK
 		( erase guide ) .guide #40 ;line-rect JSR2
 		.cursor/y2 STZ2 .cursor/x2 STZ2
 		( update guide )
-		.cursor/x1 LDZ2 #30 .zoom/active LDZ MUL SFT2 .canvas/x1 LDZ2 ++ INC2 .guide/x1 STZ2
-		.cursor/y1 LDZ2 #30 .zoom/active LDZ MUL SFT2 .canvas/y1 LDZ2 ++ INC2 .guide/y1 STZ2
-		.cursor/x2 LDZ2 #30 .zoom/active LDZ MUL SFT2 .canvas/x1 LDZ2 ++ .guide/x2 STZ2
-		.cursor/y2 LDZ2 #30 .zoom/active LDZ MUL SFT2 .canvas/y1 LDZ2 ++ .guide/y2 STZ2
+		.cursor/x1 LDZ2 .cursor/y1 LDZ2 ,to-canvas JSR INC2 .guide/y1 STZ2 INC2 .guide/x1 STZ2
+		.cursor/x2 LDZ2 .cursor/y2 LDZ2 ,to-canvas JSR .guide/y2 STZ2 .guide/x2 STZ2
 		( draw guide ) .guide #43 ;line-rect JSR2
 		BRK
 	&hover 
 		
 BRK
+
+@to-canvas ( x* y* -- x* y* )
+	
+	.zoom/active LDZ ,&on-zoom JCN
+		.canvas/y1 LDZ2 ++ SWP2 
+		.canvas/x1 LDZ2 ++ SWP2 
+	RTN
+
+	&on-zoom
+		.zoom/y LDZ2 -- 8** .canvas/y1 LDZ2 ++ SWP2 
+		.zoom/x LDZ2 -- 8** .canvas/x1 LDZ2 ++ SWP2
+
+RTN
 
 @magnify ( x* y* -> )
 
