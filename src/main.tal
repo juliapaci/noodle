@@ -1472,6 +1472,7 @@ BRK
 @marker ( x* y* -> )
 
 	&up
+		BRK
 	&down
 	&drag
 		#0003 -- SWP2 #0003 -- SWP2 
