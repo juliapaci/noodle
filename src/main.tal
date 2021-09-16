@@ -155,7 +155,7 @@
 
 	( above panes )
 	#0010 #000c #0030 PAD ++ #0008 PAD ++ SIZE-TO-RECT 
-	 .toolpane/y2 STZ2 .toolpane/x2 STZ2 .toolpane/y1 STZ2 .toolpane/x1 STZ2 
+		.toolpane/y2 STZ2 .toolpane/x2 STZ2 .toolpane/y1 STZ2 .toolpane/x1 STZ2 
 	#0048 #000c #0040 PAD ++ #0008 PAD ++ SIZE-TO-RECT
 		.sizepane/y2 STZ2 .sizepane/x2 STZ2 .sizepane/y1 STZ2 .sizepane/x1 STZ2 
 	.Screen/width DEI2 #0053 -- #000c #0040 PAD ++ #0008 PAD ++ SIZE-TO-RECT 
@@ -168,6 +168,8 @@
 		.filepane/y2 STZ2 .filepane/x2 STZ2 .filepane/y1 STZ2 .filepane/x1 STZ2 
 	#0038 .Screen/height DEI2 #0010 -- .Screen/width DEI2 #0070 -- #0008 SIZE-TO-RECT
 		.namepane/y2 STZ2 .namepane/x2 STZ2 .namepane/y1 STZ2 .namepane/x1 STZ2 
+
+	( starting frame )
 	.anim/frame LDZ GET-FRAME-ADDR .anim/addr STZ2
 
 	( default size )
@@ -1079,11 +1081,12 @@ RTN
 		&continue
 	.zoom/active LDZ #00 = ,&no-zoom JCN
 		OVR2 OVR2 ;get-pixel JSR2 #00 SWP 8** ;bigpixel-icns ++ .Screen/addr DEO2
-		.zoom/y LDZ2 -- 8** .canvas/y1 LDZ2 ++ #33 SFT2 .Screen/y DEO2
-		.zoom/x LDZ2 -- 8** .canvas/x1 LDZ2 ++ #33 SFT2 .Screen/x DEO2
+		.zoom/y LDZ2 -- 8** .canvas/y1 LDZ2 ++ #22 SFT2 .Screen/y DEO2
+		.zoom/x LDZ2 -- 8** .canvas/x1 LDZ2 ++ #22 SFT2 .Screen/x DEO2
 		#09 .Screen/sprite DEO
 		RTN
 		&no-zoom
+	( TODO: Draw onionskin )
 	#33 SFT2 SWP2 #33 SFT2 SWP2
 	OVR2 OVR2 ;get-row JSR2 .Screen/addr DEO2
 	.canvas/y1 LDZ2 ++ .Screen/y DEO2
@@ -1252,7 +1255,7 @@ RTN
 		.filepane/x1 LDZ2 #0018 ++ .Screen/x DEO2
 		.filepane/y1 LDZ2 .Screen/y DEO2
 		;save-icn .Screen/addr DEO2
-		#0f05 .state/changed LDZ SWP? POP .Screen/sprite DEO
+		#0a05 .state/changed LDZ SWP? POP .Screen/sprite DEO
 
 RTN
 
@@ -1468,6 +1471,7 @@ RTN
 		OVR2 OVR2 .brush/oper LDZ2 JSR2
 	&up
 		;draw-tile JSR2
+		SET-STATE
 		BRK
 	&drag
 		OVR2 OVR2 STH2 STH2
@@ -1482,7 +1486,8 @@ BRK
 @marker ( x* y* -> )
 
 	&up
-		POP2 POP2 BRK
+		POP2 POP2 
+		SET-STATE BRK
 	&down
 	&drag
 		#0003 -- SWP2 #0003 -- SWP2 
@@ -1501,6 +1506,7 @@ BRK
 		STH2 STH2
 		.cursor/x1 LDZ2 .cursor/y1 LDZ2 STH2r STH2r 
 		;paint-line JSR2
+		SET-STATE
 		BRK
 	&drag
 		POP2 POP2
@@ -1512,6 +1518,7 @@ BRK
 @magic ( x* y* -> )
 	
 	&up
+		SET-STATE
 	&down
 	&drag
 		#0003 -- SWP2 #0003 -- SWP2 
@@ -1533,6 +1540,7 @@ BRK
 		( erase guide ) .guide #40 ;line-rect JSR2
 		.cursor/y2 STZ2 .cursor/x2 STZ2
 		;fill-selection JSR2
+		SET-STATE
 		BRK
 	&drag
 		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
