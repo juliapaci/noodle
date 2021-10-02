@@ -96,7 +96,6 @@
 	&patt $1 
 	&oper $2 
 	&mode $1
-	&drag $1
 @cursor 
 	&x1 $2 &y1 $2 
 	&x2 $2 &y2 $2 
@@ -133,7 +132,6 @@
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2
 @line
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
-@color $1 
 
 ( program )
 
@@ -1021,26 +1019,26 @@ RTN
 	( full )
 	.zoom/active LDZ ,&zoom JCN
 		.anim/limit LDZ ,&full-onion JCN
-			#09 ;draw-canvas-full JSR2 
+			#09 ,draw-canvas-full JSR
 			RTN
 			&full-onion
 			( onion )
-			;prev-frame JSR2
-			#0b ;draw-canvas-full JSR2
-			;next-frame JSR2
-			#05 ;draw-canvas-full JSR2
+			;prev-frame JSR2 
+			#0b ,draw-canvas-full JSR
+			;next-frame JSR2 
+			#05 ,draw-canvas-full JSR
 		RTN
 		&zoom
 	( zoom )
 	.anim/limit LDZ ,&zoom-onion JCN
-		#09 ;draw-canvas-zoom JSR2 
+		#09 ,draw-canvas-zoom JSR
 		RTN
 		&zoom-onion
 		( onion )
 		;prev-frame JSR2
-		#0b ;draw-canvas-zoom JSR2
+		#0b ,draw-canvas-zoom JSR
 		;next-frame JSR2
-		#05 ;draw-canvas-zoom JSR2
+		#05 ,draw-canvas-zoom JSR
 	RTN
 
 RTN
@@ -1070,7 +1068,7 @@ RTN
 
 RTN
 
-@draw-canvas-zoom ( addr* color -- )
+@draw-canvas-zoom ( color -- )
 
 	( auto x ) #01 .Screen/auto DEO
 
@@ -1201,7 +1199,7 @@ RTN
 		#05 STHkr = INC .Screen/sprite DEO
 		&no-zoom
 	( pop selection ) POPr
-	( auto x addr ) #00 .Screen/auto DEO
+	( auto none ) #00 .Screen/auto DEO
 
 RTN
 
@@ -1613,8 +1611,6 @@ BRK
 @save-icn      1054 28c6 2854 1000 
 @make-icn      fe82 8282 848a f400 
 @load-icn      feaa d6aa d4aa f400 
-@edge-icn      0000 0000 0103 070f
-@drag-icn      1010 10ee 1010 1000
 @untitled-txt  "untitled.bit $1
 
 @bigpixel-icns
