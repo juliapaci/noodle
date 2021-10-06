@@ -1411,9 +1411,13 @@ RTN
 
 RTN
 
-@line-slow ( x1 y1 x2 y2 color -- )
+@line-diag ( rect color -- )
 	
-	( load ) .line-guide/color STZ #0001 SUB2 .line-guide/y0 STZ2 #0001 SUB2 .line-guide/x0 STZ2 .line-guide/y STZ2 .line-guide/x STZ2
+	( load ) .line-guide/color STZ 
+	( x0 ) LDZ2k .line-guide/x STZ2
+	( y0 ) INC INC LDZ2k .line-guide/y STZ2 
+	( x1 ) INC INC LDZ2k #0001 SUB2 .line-guide/x0 STZ2 
+	( y1 ) INC INC LDZ2 #0001 SUB2 .line-guide/y0 STZ2 
 	.line-guide/x0 LDZ2 .line-guide/x LDZ2 SUB2 ABS2 .line-guide/dx STZ2
 	.line-guide/y0 LDZ2 .line-guide/y LDZ2 SUB2 ABS2 #0000 SWP2 SUB2 .line-guide/dy STZ2
 	#ffff #00 .line-guide/x LDZ2 .line-guide/x0 LDZ2 LTS2 2** ADD2 .line-guide/sx STZ2
@@ -1553,24 +1557,24 @@ BRK
 
 	&down
 		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
-		( erase guide ) .guide/x1 LDZ2 .guide/y1 LDZ2 .guide/x2 LDZ2 .guide/y2 LDZ2 #40 ;line-slow JSR2
+		( erase guide ) .guide #40 ;line-diag JSR2
 		.cursor/y1 STZ2 .cursor/x1 STZ2
 		BRK
 	&up
 		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
-		( erase guide ) .guide/x1 LDZ2 .guide/y1 LDZ2 .guide/x2 LDZ2 .guide/y2 LDZ2 #40 ;line-slow JSR2
+		( erase guide ) .guide #40 ;line-diag JSR2
 		.cursor/y2 STZ2 .cursor/x2 STZ2
 		.cursor/x1 LDZ2 .cursor/y1 LDZ2 .cursor/x2 LDZ2 .cursor/y2 LDZ2 ;paint-line JSR2
 		SET-STATE
 		BRK
 	&drag
 		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
-		( erase guide ) .guide/x1 LDZ2 .guide/y1 LDZ2 .guide/x2 LDZ2 .guide/y2 LDZ2 #40 ;line-slow JSR2
+		( erase guide ) .guide #40 ;line-diag JSR2
 		.cursor/y2 STZ2 .cursor/x2 STZ2
 		( update guide )
 		.cursor/x1 LDZ2 .cursor/y1 LDZ2 ;to-canvas JSR2 INC2 .guide/y1 STZ2 INC2 .guide/x1 STZ2
 		.cursor/x2 LDZ2 .cursor/y2 LDZ2 ;to-canvas JSR2 .guide/y2 STZ2 .guide/x2 STZ2
-		( erase guide ) .guide/x1 LDZ2 .guide/y1 LDZ2 .guide/x2 LDZ2 .guide/y2 LDZ2 #43 ;line-slow JSR2
+		( erase guide ) .guide #43 ;line-diag JSR2
 		BRK
 	&hover 
 		
