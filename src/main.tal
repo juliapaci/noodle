@@ -132,6 +132,8 @@
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2
 @line
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
+@line-guide 
+	&x0 $2 &y0 $2 &x $2 &y $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2 &color $1
 
 ( program )
 
@@ -1409,6 +1411,32 @@ RTN
 
 RTN
 
+@line-slow ( x1 y1 x2 y2 color -- )
+	
+	( load ) .line-guide/color STZ #0001 SUB2 .line-guide/y0 STZ2 #0001 SUB2 .line-guide/x0 STZ2 .line-guide/y STZ2 .line-guide/x STZ2
+	.line-guide/x0 LDZ2 .line-guide/x LDZ2 SUB2 ABS2 .line-guide/dx STZ2
+	.line-guide/y0 LDZ2 .line-guide/y LDZ2 SUB2 ABS2 #0000 SWP2 SUB2 .line-guide/dy STZ2
+	#ffff #00 .line-guide/x LDZ2 .line-guide/x0 LDZ2 LTS2 2** ADD2 .line-guide/sx STZ2
+	#ffff #00 .line-guide/y LDZ2 .line-guide/y0 LDZ2 LTS2 2** ADD2 .line-guide/sy STZ2
+	.line-guide/dx LDZ2 .line-guide/dy LDZ2 ADD2 .line-guide/e1 STZ2
+	&loop
+		.line-guide/x LDZ2 .Screen/x DEO2 .line-guide/y LDZ2 .Screen/y DEO2 .line-guide/color LDZ .Screen/pixel DEO
+		.line-guide/x LDZ2 .line-guide/x0 LDZ2 EQU2 .line-guide/y LDZ2 .line-guide/y0 LDZ2 EQU2 #0101 EQU2 ,&end JCN
+		.line-guide/e1 LDZ2 2** .line-guide/e2 STZ2
+		.line-guide/e2 LDZ2 .line-guide/dy LDZ2 LTS2 ,&skipy JCN
+			.line-guide/e1 LDZ2 .line-guide/dy LDZ2 ADD2 .line-guide/e1 STZ2
+			.line-guide/x LDZ2 .line-guide/sx LDZ2 ADD2 .line-guide/x STZ2
+		&skipy
+		.line-guide/e2 LDZ2 .line-guide/dx LDZ2 GTS2 ,&skipx JCN
+			.line-guide/e1 LDZ2 .line-guide/dx LDZ2 ADD2 .line-guide/e1 STZ2
+			.line-guide/y LDZ2 .line-guide/sy LDZ2 ADD2 .line-guide/y STZ2
+		&skipx
+		;&loop JMP2
+
+	&end
+
+RTN
+
 @line-rect ( rect color -- )
 
 	STH STH
@@ -1524,16 +1552,25 @@ BRK
 @stroke ( x* y* -> )
 
 	&down
+		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
+		( erase guide ) .guide/x1 LDZ2 .guide/y1 LDZ2 .guide/x2 LDZ2 .guide/y2 LDZ2 #40 ;line-slow JSR2
 		.cursor/y1 STZ2 .cursor/x1 STZ2
 		BRK
 	&up
-		STH2 STH2
-		.cursor/x1 LDZ2 .cursor/y1 LDZ2 STH2r STH2r 
-		;paint-line JSR2
+		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
+		( erase guide ) .guide/x1 LDZ2 .guide/y1 LDZ2 .guide/x2 LDZ2 .guide/y2 LDZ2 #40 ;line-slow JSR2
+		.cursor/y2 STZ2 .cursor/x2 STZ2
+		.cursor/x1 LDZ2 .cursor/y1 LDZ2 .cursor/x2 LDZ2 .cursor/y2 LDZ2 ;paint-line JSR2
 		SET-STATE
 		BRK
 	&drag
-		POP2 POP2
+		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
+		( erase guide ) .guide/x1 LDZ2 .guide/y1 LDZ2 .guide/x2 LDZ2 .guide/y2 LDZ2 #40 ;line-slow JSR2
+		.cursor/y2 STZ2 .cursor/x2 STZ2
+		( update guide )
+		.cursor/x1 LDZ2 .cursor/y1 LDZ2 ;to-canvas JSR2 INC2 .guide/y1 STZ2 INC2 .guide/x1 STZ2
+		.cursor/x2 LDZ2 .cursor/y2 LDZ2 ;to-canvas JSR2 .guide/y2 STZ2 .guide/x2 STZ2
+		( erase guide ) .guide/x1 LDZ2 .guide/y1 LDZ2 .guide/x2 LDZ2 .guide/y2 LDZ2 #43 ;line-slow JSR2
 		BRK
 	&hover 
 		
@@ -1611,7 +1648,7 @@ BRK
 @save-icn      1054 28c6 2854 1000 
 @make-icn      fe82 8282 848a f400 
 @load-icn      feaa d6aa d4aa f400 
-@untitled-txt  "untitled.bit $1
+@untitled-txt  "untitled.icn $1
 
 @bigpixel-icns
 	5580 0080 0080 0080 
