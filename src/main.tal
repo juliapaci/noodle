@@ -748,7 +748,7 @@ RTN
 
 RTN
 
-@fill-selection ( -- )
+@paint-rect ( -- )
 
 	.cursor/y2 LDZ2 .cursor/y1 LDZ2 ( flip sign ) GTH2k SWP2?
 	&ver
@@ -1444,6 +1444,15 @@ RTN
 @line-rect ( rect color -- )
 
 	STH STH
+
+	( not empty )
+	STHkr LDZ2 STHkr #04 + LDZ2 !! ,&has-width JCN
+		POP2r RTN
+		&has-width
+	STHkr #02 + LDZ2 STHkr #06 + LDZ2 !! ,&has-height JCN
+		POP2r RTN
+		&has-height
+
 	( y2 ) STHkr #06 + LDZ2
 	( y1 ) STHkr #02 + LDZ2 #0001 -- ( flip sign ) GTH2k SWP2?
 	&ver
@@ -1604,7 +1613,7 @@ BRK
 		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
 		( erase guide ) .guide #40 ;line-rect JSR2
 		.cursor/y2 STZ2 .cursor/x2 STZ2
-		;fill-selection JSR2
+		;paint-rect JSR2
 		SET-STATE
 		BRK
 	&drag
