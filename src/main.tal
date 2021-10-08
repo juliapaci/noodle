@@ -132,8 +132,8 @@
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2
 @line
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
-@line-guide 
-	&x0 $2 &y0 $2 &x $2 &y $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2 &color $1
+@line-guide
+	&x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2 &color $1
 
 ( program )
 
@@ -1414,29 +1414,29 @@ RTN
 @line-diag ( rect color -- )
 	
 	( load ) .line-guide/color STZ 
-	( x0 ) LDZ2k .line-guide/x STZ2
-	( y0 ) INC INC LDZ2k .line-guide/y STZ2 
-	( x1 ) INC INC LDZ2k #0001 SUB2 .line-guide/x0 STZ2 
-	( y1 ) INC INC LDZ2 #0001 SUB2 .line-guide/y0 STZ2 
-	.line-guide/x0 LDZ2 .line-guide/x LDZ2 SUB2 ABS2 .line-guide/dx STZ2
-	.line-guide/y0 LDZ2 .line-guide/y LDZ2 SUB2 ABS2 #0000 SWP2 SUB2 .line-guide/dy STZ2
-	#ffff #00 .line-guide/x LDZ2 .line-guide/x0 LDZ2 LTS2 2** ADD2 .line-guide/sx STZ2
-	#ffff #00 .line-guide/y LDZ2 .line-guide/y0 LDZ2 LTS2 2** ADD2 .line-guide/sy STZ2
-	.line-guide/dx LDZ2 .line-guide/dy LDZ2 ADD2 .line-guide/e1 STZ2
+	( x0 ) LDZ2k  #0001 SUB2 .line-guide/x2 STZ2
+	( y0 ) INC INC LDZ2k #0001 SUB2  .line-guide/y2 STZ2 
+	( x1 ) INC INC LDZ2k .line-guide/x1 STZ2 
+	( y1 ) INC INC LDZ2 .line-guide/y1 STZ2 
+
+	.line-guide/x1 LDZ2 .line-guide/x2 LDZ2 -- ABS2 .line-guide/dx STZ2
+	.line-guide/y1 LDZ2 .line-guide/y2 LDZ2 -- ABS2 #0000 SWP2 -- .line-guide/dy STZ2
+	#ffff #00 .line-guide/x2 LDZ2 .line-guide/x1 LDZ2 LTS2 2** ++ .line-guide/sx STZ2
+	#ffff #00 .line-guide/y2 LDZ2 .line-guide/y1 LDZ2 LTS2 2** ++ .line-guide/sy STZ2
+	.line-guide/dx LDZ2 .line-guide/dy LDZ2 ++ .line-guide/e1 STZ2
 	&loop
-		.line-guide/x LDZ2 .Screen/x DEO2 .line-guide/y LDZ2 .Screen/y DEO2 .line-guide/color LDZ .Screen/pixel DEO
-		.line-guide/x LDZ2 .line-guide/x0 LDZ2 EQU2 .line-guide/y LDZ2 .line-guide/y0 LDZ2 EQU2 #0101 EQU2 ,&end JCN
+		( paint ) .line-guide/x2 LDZ2 .Screen/x DEO2 .line-guide/y2 LDZ2 .Screen/y DEO2 .line-guide/color LDZ .Screen/pixel DEO
+		.line-guide/x2 LDZ2 .line-guide/x1 LDZ2 == .line-guide/y2 LDZ2 .line-guide/y1 LDZ2 == #0101 == ,&end JCN
 		.line-guide/e1 LDZ2 2** .line-guide/e2 STZ2
 		.line-guide/e2 LDZ2 .line-guide/dy LDZ2 LTS2 ,&skipy JCN
-			.line-guide/e1 LDZ2 .line-guide/dy LDZ2 ADD2 .line-guide/e1 STZ2
-			.line-guide/x LDZ2 .line-guide/sx LDZ2 ADD2 .line-guide/x STZ2
-		&skipy
+			.line-guide/e1 LDZ2 .line-guide/dy LDZ2 ++ .line-guide/e1 STZ2
+			.line-guide/x2 LDZ2 .line-guide/sx LDZ2 ++ .line-guide/x2 STZ2
+			&skipy
 		.line-guide/e2 LDZ2 .line-guide/dx LDZ2 GTS2 ,&skipx JCN
-			.line-guide/e1 LDZ2 .line-guide/dx LDZ2 ADD2 .line-guide/e1 STZ2
-			.line-guide/y LDZ2 .line-guide/sy LDZ2 ADD2 .line-guide/y STZ2
-		&skipx
+			.line-guide/e1 LDZ2 .line-guide/dx LDZ2 ++ .line-guide/e1 STZ2
+			.line-guide/y2 LDZ2 .line-guide/sy LDZ2 ++ .line-guide/y2 STZ2
+			&skipx
 		;&loop JMP2
-
 	&end
 
 RTN
