@@ -139,6 +139,8 @@
 
 |0100
 	
+	( vectors )
+	;on-console .Console/vector DEO2
 	;untrap JSR2
 
 	( colors )
@@ -172,6 +174,7 @@
 
 	( starting frame )
 	.anim/frame LDZ GET-FRAME-ADDR .anim/addr STZ2
+		#01 .anim/onion STZ
 
 	( default size )
 	.Screen/width DEI2 8// #0004 -- 
@@ -222,6 +225,27 @@ RTN
 	#40 .Screen/sprite DEO
 
 RTN
+
+@on-console ( -- )
+
+	#00 ;draw-filepath JSR2
+	.Console/read DEI DUP 
+	#0a = ,&counter LDR #20 = #0000 == ,&no-end JCN
+		( set length ) ,&counter LDR .path/length STZ
+		( null char ) #00 .path ,&counter LDR INC + STZ
+		( reset counter ) #00 ,&counter STR 
+		( load ) ;load-file JSR2
+		POP BRK
+		&no-end
+	,&counter LDR 
+		( length ) DUP .path/length STZ
+		INC 
+			( inc counter ) DUP ,&counter STR 
+			( write ) .path + STZ
+	#01 ;draw-filepath JSR2
+
+BRK
+	&counter $1
 
 @on-frame ( -> )
 
@@ -1020,7 +1044,7 @@ RTN
 
 	( full )
 	.zoom/active LDZ ,&zoom JCN
-		.anim/limit LDZ ,&full-onion JCN
+			.anim/onion LDZ ,&full-onion JCN
 			#09 ,draw-canvas-full JSR
 			RTN
 			&full-onion
@@ -1032,7 +1056,7 @@ RTN
 		RTN
 		&zoom
 	( zoom )
-	.anim/limit LDZ ,&zoom-onion JCN
+		.anim/onion LDZ ,&zoom-onion JCN
 		#09 ,draw-canvas-zoom JSR
 		RTN
 		&zoom-onion
@@ -1687,8 +1711,8 @@ BRK
 	0000 1838 7838 1800
 	0000 181c 1e1c 1800
 @eyes-icns
-	0038 4492 2810 0000
 	0000 0082 4438 0000
+	0038 4492 2810 0000
 @patt-icns
 	fefe fefe fefe fe00
 	fed6 aad6 aad6 fe00
