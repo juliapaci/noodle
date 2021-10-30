@@ -23,7 +23,8 @@ sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/roms/noodle.rom sd_card/uxn
 - `space`, toogle zoom
 - `tab`, invert image
 - `backspace`, blank canvas
-- `1-8`, select brush size
+- `1-8`, select brush pattern
+- `[]`, set brush size
 - `ctrl+n`, clear
 - `ctrl+r`, rename
 - `ctrl+o`, load
