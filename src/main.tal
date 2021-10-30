@@ -242,12 +242,12 @@ BRK
 
 @on-frame-trap ( -> )
 
-	( incr ) .state/timer LDZ INC 
-	DUP #08 ! ,&no-toggle JCN
-		.state/blink TOGGLE
-		#01 .state/blink LDZ 8* + ;draw-filepath JSR2
-		( reset ) POP #00
-		&no-toggle
+	.state/timer LDZ INC 
+	DUP 8MOD ,&no-blink JCN
+		.state/blink LDZ #00 =
+			DUP 8* INC ;draw-filepath JSR2
+			.state/blink STZ
+		&no-blink
 	.state/timer STZ 
 
 BRK
@@ -458,6 +458,14 @@ BRK
 	.Controller/button DEI 
 		DUP #01 AND ;on-control JCN2
 		DUP #02 AND ;on-alt JCN2
+		DUP #04 ! ,&no-shift JCN
+			.zoom/active TOGGLE 
+			;redraw JSR2
+			&no-shift
+		DUP #08 ! ,&no-esc JCN
+			.brush/mode TOGGLE 
+			;draw-toolpane JSR2
+			&no-esc
 	POP
 	
 	( control zoom )
