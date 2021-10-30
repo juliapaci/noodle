@@ -499,16 +499,18 @@ BRK
 		( invert ) POP ;invert JSR2 BRK &no-invert
 	DUP #20 ! ,&no-space JCN
 		( toggle zoom ) .zoom/active TOGGLE ;redraw JSR2 &no-space
-	DUP #71 ! ,&no-qkey JCN
+	DUP LIT 'q ! ,&no-qkey JCN
 		( tool0 ) #00 ;select-tool JSR2 &no-qkey
-	DUP #77 ! ,&no-wkey JCN
+	DUP LIT 'w ! ,&no-wkey JCN
 		( tool1 ) #01 ;select-tool JSR2 &no-wkey
-	DUP #65 ! ,&no-ekey JCN
+	DUP LIT 'e ! ,&no-ekey JCN
 		( tool2 ) #02 ;select-tool JSR2 &no-ekey
-	DUP #72 ! ,&no-rkey JCN
+	DUP LIT 'r ! ,&no-rkey JCN
 		( tool3 ) #03 ;select-tool JSR2 &no-rkey
-	DUP #74 ! ,&no-tkey JCN
+	DUP LIT 't ! ,&no-tkey JCN
 		( tool4 ) #04 ;select-tool JSR2 &no-tkey
+	DUP LIT 'y ! ,&no-ykey JCN
+		( tool5 ) #05 ;select-tool JSR2 &no-ykey
 	DUP LIT '[ ! ,&no-lbracket JCN
 		.brush/size LDZ #01 - ;select-size JSR2 &no-lbracket
 	DUP LIT '] ! ,&no-rbracket JCN
