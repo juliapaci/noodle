@@ -40,8 +40,8 @@
 %RTN? { #01 JCN RTN }
 %DEC2 { #0001 -- }
 %RTN  { JMP2r }
-%MIN2 { GTH2k SWP2? POP2 }
-%MAX2 { LTH2k SWP2? POP2 }
+%MIN2 { GTH2k JMP SWP2 POP2 }
+%MAX2 { LTH2k JMP SWP2 POP2 }
 %SFL  { #40 SFT SFT }
 %ABS2 { DUP2 #0f SFT2 = #05 JCN #0000 SWP2 -- }
 %LTS2 { #8000 ++ SWP2 #8000 ++ >> }
@@ -771,10 +771,10 @@ RTN
 
 @paint-rect ( -- )
 
-	.cursor/y2 LDZ2 .cursor/y1 LDZ2 ( flip sign ) GTH2k SWP2?
+	.cursor/y2 LDZ2 .cursor/y1 LDZ2 ( flip sign ) GTH2k JMP SWP2
 	&ver
 		STH2k
-		.cursor/x2 LDZ2 .cursor/x1 LDZ2 ( flip sign ) GTH2k SWP2?
+		.cursor/x2 LDZ2 .cursor/x1 LDZ2 ( flip sign ) GTH2k JMP SWP2
 		&hor
 			DUP2 STH2kr ;patternize JSR2 #00 = ,&no-pixel JCN
 				DUP2 STH2kr .brush/oper LDZ2 JSR2 
@@ -1475,7 +1475,7 @@ RTN
 		&has-height
 
 	( y2 ) STHkr #06 + LDZ2
-	( y1 ) STHkr #02 + LDZ2 #0001 -- ( flip sign ) GTH2k SWP2?
+	( y1 ) STHkr #02 + LDZ2 #0001 -- ( flip sign ) GTH2k JMP SWP2
 	&ver
 		( save ) DUP2 .Screen/y DEO2
 		( x1 ) STHkr LDZ2 #0001 -- .Screen/x DEO2 
@@ -1486,7 +1486,7 @@ RTN
 		INC2 GTH2k ,&ver JCN
 	POP2
 	( x2 ) STHkr #04 + LDZ2
-	( x1 ) STHkr LDZ2 #0001 -- ( flip sign ) GTH2k SWP2?
+	( x1 ) STHkr LDZ2 #0001 -- ( flip sign ) GTH2k JMP SWP2
 	&hor
 		( save ) DUP2 .Screen/x DEO2
 		( y1 ) STHkr #02 + LDZ2 #0001 -- .Screen/y DEO2 
