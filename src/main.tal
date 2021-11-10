@@ -1,10 +1,10 @@
 (
 	app/noodle : illustration program
 	
-	right-click - erase
+	right-click or escape - erase
 	arrows - move zoom
 	alt+arrows - resize canvas
-	space - toogle zoom
+	space or shift - toogle zoom
 	tab - invert image
 	enter - next frame
 	backspace - blank canvas
@@ -14,6 +14,12 @@
 	ctrl+r - rename
 	ctrl+o - load
 	ctrl+s - save
+	q - pen tool
+	w - brush tool
+	e - line tool
+	r - magic tool
+	t - rectangle tool
+	y - zoom tool
 )
 
 %+  { ADD } %-   { SUB }

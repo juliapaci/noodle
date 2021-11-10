@@ -18,9 +18,9 @@ sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/roms/noodle.rom sd_card/uxn
 
 ## Controls
 
-- `right-click`, erase
+- `right-click` or `escape`, erase
 - `arrows`, move zoom
-- `space`, toogle zoom
+- `space` or `shift`, toogle zoom
 - `tab`, invert image
 - `backspace`, blank canvas
 - `1-8`, select brush pattern
@@ -29,3 +29,9 @@ sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/roms/noodle.rom sd_card/uxn
 - `ctrl+r`, rename
 - `ctrl+o`, load
 - `ctrl+s`, save
+- `q`, pen tool
+- `w`, brush tool
+- `e`, line tool
+- `r`, magic tool
+- `t`, rectangle tool
+- `y`, zoom tool
