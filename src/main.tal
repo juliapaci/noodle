@@ -15,11 +15,9 @@
 	ctrl+s - save
 )
 
-%** { MUL2 } ( could be ;mul2_by_shifting JSR2 )
-
 %+  { ADD } %-   { SUB }
 %<  { LTH } %>   { GTH }  %=  { EQU }  %!  { NEQ }
-%++ { ADD2 } %-- { SUB2 } 
+%++ { ADD2 } %-- { SUB2 } %** { MUL2 }
 %<< { LTH2 } %>> { GTH2 } %== { EQU2 } %!! { NEQ2 }
 %!~ { NEQk NIP }
 
