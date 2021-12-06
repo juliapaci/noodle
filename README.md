@@ -29,6 +29,7 @@ sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/roms/noodle.rom sd_card/uxn
 - `ctrl+r`, rename
 - `ctrl+o`, load
 - `ctrl+s`, save
+- `ctrl+p`, snarf [glyph](https://wiki.xxiivv.com/site/left.html)
 - `q`, pen tool
 - `w`, brush tool
 - `e`, line tool

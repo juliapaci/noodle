@@ -14,6 +14,7 @@
 	ctrl+r - rename
 	ctrl+o - load
 	ctrl+s - save
+	ctrl+p - snarf glyph
 	q - pen tool
 	w - brush tool
 	e - line tool
@@ -22,38 +23,19 @@
 	y - zoom tool
 )
 
-%+  { ADD } %-   { SUB }
-%<  { LTH } %>   { GTH }  %=  { EQU }  %!  { NEQ }
-%++ { ADD2 } %-- { SUB2 } %** { MUL2 }
-%<< { LTH2 } %>> { GTH2 } %== { EQU2 } %!! { NEQ2 }
-%!~ { NEQk NIP }
+~src/utils.tal
 
-%DEBUG  { ;print-hex/byte JSR2 #0a .Console/write DEO }
-%DEBUG2 { ;print-hex/short JSR2 #0a .Console/write DEO }
-
-%2*   { #10 SFT }
-%8*   { #30 SFT }
-%20*  { #50 SFT }
-%40*  { #60 SFT }
-%2**  { #10 SFT2 } %2// { #01 SFT2 }
-%8**  { #30 SFT2 } %8// { #03 SFT2 }
 %2++  { INC2 INC2 }
-%TOS  { #00 SWP }
 
 %SWP? { #01 JCN SWP }
 %SWP2? { #01 JCN SWP2 }
 %BRK? { #01 JCN BRK }
 %RTN? { #01 JCN RTN }
 %DEC2 { #0001 -- }
-%RTN  { JMP2r }
-%MIN2 { GTH2k JMP SWP2 POP2 }
-%MAX2 { LTH2k JMP SWP2 POP2 }
 %SFL  { #40 SFT SFT }
 %ABS2 { DUP2 #0f SFT2 = #05 JCN #0000 SWP2 -- }
 %LTS2 { #8000 ++ SWP2 #8000 ++ >> }
 %GTS2 { #8000 ++ SWP2 #8000 ++ << }
-%8MOD2 { #0007 AND2 }
-%8MOD { #07 AND }
 
 %PAD { #0003 }
 
@@ -67,9 +49,6 @@
 %GET-ANIM-SIZE { GET-FRAME-SIZE .anim/limit LDZ INC TOS MUL2 } ( -- length* )
 %GET-FRAME-ADDR { TOS GET-FRAME-SIZE ** ;data ++ } ( frame -- addr* )
 
-%TOGGLE { LDZk #00 = SWP STZ }
-%RELEASE-MOUSE { #00 .Mouse/state DEO }
-
 %SIZE-TO-RECT {
 	STH2 STH2 OVR2 STH2r ++ OVR2 STH2r ++
 } ( x y w h -- x1 y1 x2 y2 )
@@ -81,7 +60,7 @@
 |20 @Screen     &vector $2 &width   $2 &height $2 &auto  $1 &pad   $1 &x     $2 &y $2 &addr $2 &pixel $1 &sprite $1
 |80 @Controller &vector $2 &button  $1 &key    $1
 |90 @Mouse      &vector $2 &x       $2 &y      $2 &state $1 &chord $1
-|a0 @File       &vector $2 &success $2 &offset $2 &pad   $2 &name  $2 &length $2 &load $2 &save $2
+|a0 @File       [ &vector $2 &success  $2 &stat   $2 &delete $1 &append $1 &name  $2 &length $2 &read $2 &write $2 ]
 
 ( variables )
 
@@ -555,6 +534,8 @@ BRK
 	DUP [ LIT 's ] ! ,&no-save JCN
 		;path/name ;save-file JSR2
 		;draw-filepane/state JSR2 POP BRK  &no-save
+	DUP [ LIT 'p ] ! ,&no-copy JCN
+		;glyph-snarf JSR2 POP BRK  &no-copy
 	POP
 
 BRK
@@ -986,7 +967,7 @@ RTN
 
 	;path/name .File/name DEO2
 	GET-ANIM-SIZE .File/length DEO2
-	;data .File/load DEO2
+	;data .File/read DEO2
 
 	RESET-STATE
 
@@ -999,7 +980,7 @@ RTN
 
 	.File/name DEO2
 	GET-ANIM-SIZE .File/length DEO2
-	;data .File/save DEO2
+	;data .File/write DEO2
 
 	RESET-STATE
 	;draw-filepane/state JSR2
@@ -1014,7 +995,7 @@ RTN
 
 	;theme-txt .File/name DEO2
 	#0006 .File/length DEO2
-	#fffa .File/load DEO2
+	#fffa .File/read DEO2
 
 	.File/success DEI2 #0006 !! ,&ignore JCN
 		#fffa LDA2 .System/r DEO2
@@ -1529,20 +1510,84 @@ RTN
 
 RTN
 
+@glyph-snarf ( -- )
+
+	( a col is 4 bytes )
+	;snarf-txt .File/name DEO2
+	#0001 .File/length DEO2
+
+	.canvas/h LDZ2 8** #0000
+	&ver
+		.canvas/w LDZ2 8** #0000
+		&hor
+			( get x,y ) STH2 OVR2 STH2r SWP2 OVR2 SWP2 
+			( write ) ,write-col JSR
+			INC2 GTH2k ,&hor JCN
+		POP2 POP2
+		( linebreak ) ;&lb .File/write DEO2
+		#0010 ++ GTH2k ,&ver JCN
+	POP2 POP2
+
+RTN
+	&lb 0a
+
+@write-col ( x* y* -- )
+
+	;&y STA2 ;&x STA2
+
+	( create bytes )
+	#0400
+	&loop
+		( y ) DUP #40 SFT #80 + STH
+		#0400
+		&loop-pixels
+			( pixel ) ;&x LDA2 ;&y LDA2 ;get-pixel JSR2
+			( merge ) OVR #40 SFT SFT STH ADDr
+			( incr ) ;&y LDA2k INC2 SWP2 STA2
+			INC GTHk ,&loop-pixels JCN
+		POP2
+		( create ) STHr 
+		( write ) OVR #00 SWP ;&bytes ++ STA 
+		INC GTHk ,&loop JCN
+	POP2
+
+	( set advance bit to last byte with pixels )
+	#0004
+	&loop-count
+		DUP #00 SWP ;&bytes ++ LDA #0f AND ,&found JCN
+		#01 - LTHk ,&loop-count JCN
+	&found
+
+	( store advance bit ) NIP #00 SWP ;&bytes ++ LDAk #40 + ROT ROT STA
+
+	( write )
+	#0400
+	&loop-write
+		DUP #00 SWP ;&bytes ++
+		LDAk #80 = ,&skip JCN
+		LDAk #90 = ,&skip JCN
+		LDAk #a0 = ,&skip JCN
+		LDAk #b0 = ,&skip JCN
+		DUP2 .File/write DEO2
+		&skip
+		POP2
+		INC GTHk ,&loop-write JCN
+	POP2
+
+RTN
+	&x $2 &y $2 &bytes $4 $1
+
+@snarf-txt ".snarf $1
+
 @print-hex ( value* -- )
-
-	&short ( value* -- )
-		SWP ,&echo JSR
-	&byte ( value -- )
-		,&echo JSR
+	
+	SWP ,&byte JSR 
+	&byte ( byte -- )
+		STHk #04 SFT ,&parse JSR #18 DEO
+		STHr #0f AND ,&parse JSR #18 DEO
 	RTN
-
-	&echo ( value -- )
-	STHk #04 SFT ,&parse JSR .Console/write DEO
-	STHr #0f AND ,&parse JSR .Console/write DEO
-	RTN
-	&parse ( value -- char )
-		DUP #09 GTH ,&above JCN #30 + RTN &above #09 - #60 + RTN
+	&parse ( byte -- char ) DUP #09 GTH ,&above JCN #30 + RTN 
+	&above #57 + RTN
 
 RTN
 
