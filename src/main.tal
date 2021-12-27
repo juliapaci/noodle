@@ -1569,18 +1569,6 @@ RTN
 
 @snarf-txt ".snarf $1
 
-@print-hex ( value* -- )
-	
-	SWP ,&byte JSR 
-	&byte ( byte -- )
-		STHk #04 SFT ,&parse JSR #18 DEO
-		STHr #0f AND ,&parse JSR #18 DEO
-	RTN
-	&parse ( byte -- char ) DUP #09 GTH ,&above JCN #30 + RTN 
-	&above #57 + RTN
-
-RTN
-
 ( Tools )
 
 @tools
@@ -1734,15 +1722,13 @@ RTN
 
 @mcpy ( src* dst* len* -- )
 
-	SWP2 STH2 SWP2 STH2
-	#0000
-	&loop 
-		( src ) STH2kr LDA
-		( dst ) OVR2r STH2r STA
-		( inc ) INC2r SWP2r INC2r SWP2r
+	SWP2 STH2
+	OVR2 ++ SWP2
+	&loop
+		LDAk STH2kr STA INC2r
 		INC2 GTH2k ,&loop JCN
 	POP2 POP2
-	POP2r POP2r
+	POP2r
 
 RTN
 
@@ -1771,6 +1757,18 @@ RTN
 
 	( clamp ) LDAk #00 ! JMP RTN
 	#00 ROT ROT ,scap JSR #0001 -- STA
+
+RTN
+
+@print-hex ( value* -- )
+	
+	SWP ,&byte JSR 
+	&byte ( byte -- )
+		STHk #04 SFT ,&parse JSR #18 DEO
+		STHr #0f AND ,&parse JSR #18 DEO
+	RTN
+	&parse ( byte -- char ) DUP #09 GTH ,&above JCN #30 + RTN 
+	&above #57 + RTN
 
 RTN
 
