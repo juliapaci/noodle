@@ -260,7 +260,7 @@ BRK
 		#01 ;draw-filepath JSR2
 		POP BRK
 		&no-edit-backspace
-	( special ) #20 >~ ,&no-edit-enter JCN
+	( special ) DUP IS-VALID ,&no-edit-enter JCN
 		;untrap JSR2
 		POP BRK
 		&no-edit-enter
@@ -316,7 +316,7 @@ BRK
 @on-touch-canvas ( x* y* -> )
 
 	( set erase from right-click/mode )
-	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #10 = .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
+	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
 	( get mouse state )
 	.Mouse/state DEI #00 > #10 SFT .cursor/last LDZ #00 > + #00 SWP 2**
 	( non hover states )
@@ -398,7 +398,7 @@ BRK
 		RELEASE-MOUSE POP BRK
 		&no-next
 	[ #03 ] !~ ,&no-frame JCN
-		.Mouse/state DEI ;mod-limit JSR2
+		.Mouse/state DEI #00 ! ;mod-limit JSR2
 		RELEASE-MOUSE POP BRK
 		&no-frame
 	POP
@@ -1156,7 +1156,7 @@ RTN
 		.cursor/x2 LDZ2 #0003 -- .Screen/x DEO2
 		.cursor/y2 LDZ2 #0003 -- .Screen/y DEO2
 		;brush-icns #00 .brush/size LDZ 8** ++ .Screen/addr DEO2
-		.Mouse/state DEI DUP 2* #41 ADD .Screen/sprite DEO
+		.Mouse/state DEI #00 ! DUP 2* #41 ADD .Screen/sprite DEO
 		#00 = ,&outside-canvas JCN RTN
 	&outside-canvas
 
