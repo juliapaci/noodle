@@ -154,7 +154,6 @@
 		;set-size JSR2
 
 	( ready. )
-	;clear JSR2
 	;draw-filepane/state JSR2
 
 	( load default file )
@@ -413,16 +412,14 @@ BRK
 
 	[ #00 ] !~ ,&no-blank JCN
 		;new-file JSR2
-		;draw-canvas JSR2
 		RELEASE-MOUSE POP BRK
 		&no-blank
 	[ #01 ] !~ ,&no-load JCN
 		;load-file JSR2
-		;draw-canvas JSR2
 		RELEASE-MOUSE POP BRK
 		&no-load
 	[ #03 ] !~ ,&no-save JCN
-		;path/name ;save-file JSR2
+		;save-file JSR2
 		RELEASE-MOUSE POP BRK
 		&no-save
 	POP
@@ -476,8 +473,6 @@ BRK
 		POP BRK &continue
 	DUP #1b ! ,&no-escape JCN
 		;load-theme JSR2 POP BRK &no-escape
-	DUP #08 ! ,&no-backspace JCN
-		( erase ) POP ;clear JSR2 BRK &no-backspace
 	DUP #0d ! ,&no-enter JCN
 		POP ;next-frame JSR2 ;redraw JSR2 BRK &no-enter
 	DUP #09 ! ,&no-invert JCN
@@ -524,13 +519,11 @@ BRK
 		&no-rename
 	DUP [ LIT 'n ] ! ,&no-new JCN
 		#25 ;draw-filepath JSR2
-		;new-file JSR2
-		;redraw JSR2 POP BRK &no-new
+		;new-file JSR2 POP BRK &no-new
 	DUP [ LIT 'o ] ! ,&no-open JCN
-		;load-file JSR2
-		;redraw JSR2 POP BRK &no-open
+		;load-file JSR2 POP BRK &no-open
 	DUP [ LIT 's ] ! ,&no-save JCN
-		;path/name ;save-file JSR2
+		;save-file JSR2
 		;draw-filepane/state JSR2 POP BRK  &no-save
 	DUP [ LIT 'p ] ! ,&no-copy JCN
 		;glyph-snarf JSR2 POP BRK  &no-copy
@@ -616,17 +609,6 @@ RTN
 	.anim/frame LDZ INC
 		DUP GET-FRAME-ADDR .anim/addr STZ2
 		.anim/frame STZ
-
-RTN
-
-@clear ( -- )
-
-	.anim/addr LDZ2 STH2k GET-FRAME-SIZE ++ STH2r
-	&loop
-		( save ) DUP2 #00 ROT ROT STA
-		INC2 GTH2k ,&loop JCN
-	POP2 POP2
-	;redraw JSR2
 
 RTN
 
@@ -948,32 +930,35 @@ RTN
 	( rename to untitled.txt )
 	;path/name #0020 ;mclr JSR2
 	;untitled-txt ;path/name #000c ;mcpy JSR2
+	( erase data )
+	;data GET-ANIM-SIZE ;mclr JSR2
 	RESET-STATE
-	;clear JSR2
+	( draw )
+	;redraw JSR2
 
 RTN
 
-@load-file ( path* -- )
+@load-file ( -- )
 
+	( erase data )
+	;data GET-ANIM-SIZE ;mclr JSR2
+	RESET-STATE
+	( load )
 	;path/name .File/name DEO2
 	GET-ANIM-SIZE .File/length DEO2
 	;data .File/read DEO2
-
-	RESET-STATE
-
-	;draw-canvas JSR2
-	;draw-filepane/state JSR2
+	( draw )
+	;redraw JSR2
 
 RTN
 
 @save-file ( path* -- )
 
-	.File/name DEO2
+	;path/name .File/name DEO2
 	GET-ANIM-SIZE .File/length DEO2
 	;data .File/write DEO2
-
-	RESET-STATE
-	;draw-filepane/state JSR2
+	( draw )
+	;redraw JSR2
 
 RTN
 
