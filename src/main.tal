@@ -246,6 +246,11 @@ BRK
 	OVR2 OVR2 .canvas ;within-rect JSR2
 		;on-touch-canvas JCN2
 
+	( record mouse release outside of canvas )
+	.Mouse/state DEI #00 ! ,skip JCN
+		#00 .cursor/last STZ
+		@skip
+
 	( only when click originates in pane )
 	.Mouse/state DEI .cursor/last LDZ #0100 !! ,&end JCN
 
