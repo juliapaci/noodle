@@ -10,6 +10,8 @@ You must have the [Uxn](https://git.sr.ht/~rabbits/uxn/) assembler and emulator.
 uxnasm noodle.tal noodle.rom && uxnemu noodle.rom
 ```
 
+If do not wish to assemble it yourself, you can download [noodle.rom](https://rabbits.srht.site/noodle/noodle.rom).
+
 ## Load on SD Card(Nintendo DS)
 
 ```

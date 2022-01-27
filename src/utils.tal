@@ -33,6 +33,7 @@
 %IS-SPACER   { #21 < } ( char -- flag )
 %IS-LABEL    { STHk #40 = STHr #26 = ORA } ( char -- flag )
 %NOT-LINEBREAK { STHk #0d ! STHr #0a ! AND } ( char -- flag )
+%STANDARD-LB { DUP #0d = #03 * - }
 
 %TOGGLE { LDZk #00 = SWP STZ }
 %TOS { #00 SWP }
@@ -44,6 +45,7 @@
 %MAX { LTHk JMP SWP POP }
 %MIN2 { GTH2k JMP SWP2 POP2 }
 %MAX2 { LTH2k JMP SWP2 POP2 }
+%DEC2 { #0001 -- }
 
 %RELEASE-MOUSE { #0096 DEO }
 
@@ -51,4 +53,4 @@
 %AUTO-X { #01 .Screen/auto DEO }
 %AUTO-Y { #02 .Screen/auto DEO }
 %AUTO-ADDR { #04 .Screen/auto DEO }
-%AUTO-Y-ADDR { #06 .Screen/auto DEO }
+%AUTO-YADDR { #06 .Screen/auto DEO }
