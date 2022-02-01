@@ -6,7 +6,7 @@ sources:
     - https://git.sr.ht/~rabbits/noodle
 tasks:
     - prepare: |
-        curl -fsS https://rabbits.srht.site/uxn/uxn-linux-amd64.tar.gz | tar -zx
+        curl -fsS https://rabbits.srht.site/uxn/uxn-lin64.tar.gz | tar -zx
     - build: |
         cd noodle
         ../uxn/uxnasm src/main.tal ../noodle.rom
