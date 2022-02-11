@@ -211,12 +211,6 @@ BRK
 
 RTN
 
-@on-frame ( -> )
-
-	( inactive )
-
-BRK
-
 @on-frame-trap ( -> )
 
 	.state/timer LDZ
@@ -224,6 +218,12 @@ BRK
 		DUP 8/ 2MOD 8* INC ;draw-filepath JSR2
 		&no-blink
 	INC .state/timer STZ
+
+BRK
+
+@on-frame ( -> )
+
+	( inactive )
 
 BRK
 
@@ -459,9 +459,7 @@ BRK
 
 @on-button-arrow ( button -> )
 
-	.zoom/active LDZ ,&is-zoom JCN
-		POP BRK
-		&is-zoom
+	.zoom/active LDZ ,&is-zoom JCN POP BRK &is-zoom
 
 	DUP #04 SFT #01 AND #01 ! ,&no-u JCN .zoom/y LDZ2k DEC2 ROT STZ2 &no-u
 	DUP #05 SFT #01 AND #01 ! ,&no-d JCN .zoom/y LDZ2k INC2 ROT STZ2 &no-d
@@ -573,7 +571,9 @@ RTN
 	( draw size )
 	.Screen/width DEI2 #0078 -- .Screen/x DEO2
 	#000d .Screen/y DEO2
+	AUTO-X
 	.canvas/w LDZ2 #80 SFT2 .canvas/h LDZ2 ++ #01 ;draw-short JSR2
+	AUTO-NONE
 
 	( frame )
 	.canvas #01 ;line-rect JSR2
@@ -952,7 +952,7 @@ RTN
 
 @draw-canvas-full ( color -- )
 
-	( auto x addr ) #05 .Screen/auto DEO
+	AUTO-XADDR
 
 	STH
 	.anim/addr LDZ2 .Screen/addr DEO2
@@ -971,13 +971,13 @@ RTN
 	POP2
 	POPr
 
-	( auto none ) #00 .Screen/auto DEO
+	AUTO-NONE
 
 RTN
 
 @draw-canvas-zoom ( color -- )
 
-	( auto x ) #01 .Screen/auto DEO
+	AUTO-X
 
 	STH
 
@@ -1001,7 +1001,7 @@ RTN
 	POP2
 	POPr
 
-	( auto none ) #00 .Screen/auto DEO
+	AUTO-NONE
 
 RTN
 
@@ -1093,7 +1093,7 @@ RTN
 	.toolpane/y1 LDZ2 INC2 INC2 .Screen/y DEO2
 	;tool-icns .Screen/addr DEO2
 
-	( auto x addr ) #05 .Screen/auto DEO
+	AUTO-XADDR
 	( stash selection ) .brush/tool LDZ STH
 	#06 #00
 	&loop
@@ -1106,7 +1106,7 @@ RTN
 		#05 STHkr = INC .Screen/sprite DEO
 		&no-zoom
 	( pop selection ) POPr
-	( auto none ) #00 .Screen/auto DEO
+	AUTO-NONE
 
 RTN
 
@@ -1119,7 +1119,7 @@ RTN
 	.sizepane/y1 LDZ2 INC2 INC2 .Screen/y DEO2
 	;size-icns .brush/mode LDZ 40* TOS ++ .Screen/addr DEO2
 
-	( auto x addr ) #05 .Screen/auto DEO
+	AUTO-XADDR
 	( stash selection ) .brush/size LDZ STH
 	#08 #00
 	&loop
@@ -1127,7 +1127,7 @@ RTN
 		INC GTHk ,&loop JCN
 	POP2
 	( pop selection ) POPr
-	( auto none ) #00 .Screen/auto DEO
+	AUTO-NONE
 
 RTN
 
@@ -1140,7 +1140,7 @@ RTN
 	.pattpane/y1 LDZ2 INC2 INC2 .Screen/y DEO2
 	;patt-icns .Screen/addr DEO2
 
-	( auto x addr ) #05 .Screen/auto DEO
+	AUTO-XADDR
 	( stash selection ) .brush/patt LDZ STH
 	#08 #00
 	&loop
@@ -1148,7 +1148,7 @@ RTN
 		INC GTHk ,&loop JCN
 	POP2
 	( pop selection ) POPr
-	( auto none ) #00 .Screen/auto DEO
+	AUTO-NONE
 
 RTN
 
@@ -1160,10 +1160,11 @@ RTN
 	;eyes-icns .anim/onion LDZ TOS 8** ++ .Screen/addr DEO2
 	#01 .Screen/sprite DEO
 
-	STH2kr #0010 ++ .Screen/x DEO2
+	AUTO-X
+	STH2r #0010 ++ .Screen/x DEO2
 	.anim/frame LDZ #02 ;draw-hex JSR2
-	STH2r #0018 ++ .Screen/x DEO2
 	.anim/limit LDZ #08 ;draw-hex JSR2
+	AUTO-NONE
 
 RTN
 
@@ -1234,54 +1235,41 @@ RTN
 	STH
 	#0038 .Screen/x DEO2
 	.Screen/height DEI2 #0010 -- .Screen/y DEO2
-	;filepath STHr ,draw-text JSR
+	;filepath STHr ,draw-str JSR
 
 RTN
 
 ( strings )
 
-@draw-text ( text* color -- )
+@draw-str ( text* color -- )
 
 	STH
+	AUTO-X
 	&while
 		LDAk STHkr ,draw-char JSR
 		INC2 LDAk ,&while JCN
 	POP2
+	AUTO-NONE
 	POPr
 
 RTN
 
 @draw-short ( short* color -- )
 
-	STH 
-	SWP STHkr ,draw-byte JSR 
-	STHr 
+	STH  SWP STHkr ,draw-byte JSR STHr 
 
 @draw-byte ( byte color -- )
 
-	STH 
-	DUP #04 SFT STHkr ,draw-hex JSR #0f AND 
-	STHr 
+	STH DUP #04 SFT STHkr ,draw-hex JSR STHr 
 
 @draw-hex ( char color -- )
 
-	SWP 
-	,hexchar JSR 
-	SWP
+	SWP #0f AND [ DUP #09 > #27 * + #30 + ] SWP
 
 @draw-char ( char color -- )
 
 	SWP #20 - TOS 8** ;font ++ .Screen/addr DEO2
 	.Screen/sprite DEO
-	.Screen/x DEI2k #0008 ++ ROT DEO2
-
-RTN
-
-@hexchar ( char -- hexchar )
-
-	DUP #09 > ,&above JCN 
-		#30 + RTN 
-	&above #57 +
 
 RTN
 
@@ -1678,15 +1666,11 @@ RTN
 
 RTN
 
-@print-hex ( value* -- )
-	
-	SWP ,&byte JSR
-	&byte ( byte -- )
-		STHk #04 SFT ,&parse JSR #18 DEO
-		STHr #0f AND ,&parse JSR #18 DEO
-	RTN
-	&parse ( byte -- char ) DUP #09 GTH ,&above JCN #30 + RTN
-	&above #57 + RTN
+@print ( short* -- )
+
+	&short ( short* -- ) SWP ,&byte JSR
+	&byte ( byte -- ) DUP #04 SFT ,&char JSR
+	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD EMIT
 
 RTN
 
