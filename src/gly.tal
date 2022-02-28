@@ -1,0 +1,68 @@
+( gly support )
+
+@glyph-snarf ( -- )
+
+	( a col is 4 bytes )
+	;snarf-txt .File/name DEO2
+	#0001 .File/length DEO2
+
+	.canvas/h LDZ2 8** #0000
+	&ver
+		.canvas/w LDZ2 8** #0000
+		&hor
+			( get x,y ) STH2 OVR2 STH2r SWP2 OVR2 SWP2
+			( write ) ,write-col JSR
+			INC2 GTH2k ,&hor JCN
+		POP2 POP2
+		( linebreak ) ;&lb .File/write DEO2
+		#0010 ++ GTH2k ,&ver JCN
+	POP2 POP2
+
+RTN
+	&lb 0a
+
+@write-col ( x* y* -- )
+
+	;&y STA2 ;&x STA2
+
+	( create bytes )
+	#0400
+	&loop
+		( y ) DUP #40 SFT #80 + STH
+		#0400
+		&loop-pixels
+			( pixel ) ;&x LDA2 ;&y LDA2 ;get-pixel JSR2
+			( merge ) OVR #40 SFT SFT STH ADDr
+			( incr ) ;&y LDA2k INC2 SWP2 STA2
+			INC GTHk ,&loop-pixels JCN
+		POP2
+		( create ) STHr
+		( write ) OVR #00 SWP ;&bytes ++ STA
+		INC GTHk ,&loop JCN
+	POP2
+
+	( set advance bit to last byte with pixels )
+	#0004
+	&loop-count
+		DUP #00 SWP ;&bytes ++ LDA #0f AND ,&found JCN
+		#01 - LTHk ,&loop-count JCN
+	&found
+
+	( store advance bit ) NIP #00 SWP ;&bytes ++ LDAk #40 + ROT ROT STA
+
+	( write )
+	#0400
+	&loop-write
+		DUP #00 SWP ;&bytes ++
+		LDAk #80 = ,&skip JCN
+		LDAk #90 = ,&skip JCN
+		LDAk #a0 = ,&skip JCN
+		LDAk #b0 = ,&skip JCN
+		DUP2 .File/write DEO2
+		&skip
+		POP2
+		INC GTHk ,&loop-write JCN
+	POP2
+
+RTN
+	&x $2 &y $2 &bytes $4 $1

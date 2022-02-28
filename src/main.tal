@@ -134,6 +134,7 @@
 
 	( theme support )
 	;load-theme JSR2
+	;redraw JSR2
 
 BRK
 
@@ -412,7 +413,7 @@ BRK
 			&no-shift
 		DUP #08 ! ,&no-esc JCN
 			.brush/mode TOGGLE
-			;draw-toolpane JSR2
+			;draw-sizepane JSR2
 			&no-esc
 	POP
 
@@ -889,25 +890,6 @@ RTN
 
 RTN
 
-( theme )
-
-@theme-txt ".theme $1
-
-@load-theme ( -- )
-
-	;theme-txt .File/name DEO2
-	#0006 .File/length DEO2
-	#fffa .File/read DEO2
-
-	.File/success DEI2 #0006 !! ,&ignore JCN
-		#fffa LDA2 .System/r DEO2
-		#fffc LDA2 .System/g DEO2
-		#fffe LDA2 .System/b DEO2
-		&ignore
-	;redraw JSR2
-
-RTN
-
 ( Drawing )
 
 @redraw ( -- )
@@ -1261,11 +1243,11 @@ RTN
 
 @draw-short ( short* color -- )
 
-	STH  SWP STHkr ,draw-byte JSR STHr 
+	STH  SWP STHkr ,draw-byte JSR STHr
 
 @draw-byte ( byte color -- )
 
-	STH DUP #04 SFT STHkr ,draw-hex JSR STHr 
+	STH DUP #04 SFT STHkr ,draw-hex JSR STHr
 
 @draw-hex ( char color -- )
 
@@ -1410,73 +1392,6 @@ RTN
 
 RTN
 
-@glyph-snarf ( -- )
-
-	( a col is 4 bytes )
-	;snarf-txt .File/name DEO2
-	#0001 .File/length DEO2
-
-	.canvas/h LDZ2 8** #0000
-	&ver
-		.canvas/w LDZ2 8** #0000
-		&hor
-			( get x,y ) STH2 OVR2 STH2r SWP2 OVR2 SWP2
-			( write ) ,write-col JSR
-			INC2 GTH2k ,&hor JCN
-		POP2 POP2
-		( linebreak ) ;&lb .File/write DEO2
-		#0010 ++ GTH2k ,&ver JCN
-	POP2 POP2
-
-RTN
-	&lb 0a
-
-@write-col ( x* y* -- )
-
-	;&y STA2 ;&x STA2
-
-	( create bytes )
-	#0400
-	&loop
-		( y ) DUP #40 SFT #80 + STH
-		#0400
-		&loop-pixels
-			( pixel ) ;&x LDA2 ;&y LDA2 ;get-pixel JSR2
-			( merge ) OVR #40 SFT SFT STH ADDr
-			( incr ) ;&y LDA2k INC2 SWP2 STA2
-			INC GTHk ,&loop-pixels JCN
-		POP2
-		( create ) STHr
-		( write ) OVR #00 SWP ;&bytes ++ STA
-		INC GTHk ,&loop JCN
-	POP2
-
-	( set advance bit to last byte with pixels )
-	#0004
-	&loop-count
-		DUP #00 SWP ;&bytes ++ LDA #0f AND ,&found JCN
-		#01 - LTHk ,&loop-count JCN
-	&found
-
-	( store advance bit ) NIP #00 SWP ;&bytes ++ LDAk #40 + ROT ROT STA
-
-	( write )
-	#0400
-	&loop-write
-		DUP #00 SWP ;&bytes ++
-		LDAk #80 = ,&skip JCN
-		LDAk #90 = ,&skip JCN
-		LDAk #a0 = ,&skip JCN
-		LDAk #b0 = ,&skip JCN
-		DUP2 .File/write DEO2
-		&skip
-		POP2
-		INC GTHk ,&loop-write JCN
-	POP2
-
-RTN
-	&x $2 &y $2 &bytes $4 $1
-
 @snarf-txt ".snarf $1
 
 ( Tools )
@@ -1618,69 +1533,10 @@ RTN
 
 BRK
 
-( memory generics )
-
-@mclr ( addr* len* -- )
-
-	OVR2 ++ SWP2
-	&loop
-		STH2k #00 STH2r STA
-		INC2 GTH2k ,&loop JCN
-	POP2 POP2
-
-RTN
-
-@mcpy ( src* dst* len* -- )
-
-	SWP2 STH2
-	OVR2 ++ SWP2
-	&loop
-		LDAk STH2kr STA INC2r
-		INC2 GTH2k ,&loop JCN
-	POP2 POP2
-	POP2r
-
-RTN
-
-( string generics )
-
-@slen ( str* -- len* )
-
-	DUP2 ,scap JSR SWP2 --
-
-RTN
-
-@scap ( str* -- str-end* )
-
-	LDAk #00 ! JMP RTN
-	&while INC2 LDAk ,&while JCN
-
-RTN
-
-@sput ( str* char -- )
-
-	ROT ROT ,scap JSR STA
-
-RTN
-
-@spop ( str* -- )
-
-	LDAk ,&no-null JCN
-		POP2 RTN &no-null
-	#00 ROT ROT ,scap JSR #0001 -- STA
-
-RTN
-
-@print ( short* -- )
-
-	&short ( short* -- ) SWP ,&byte JSR
-	&byte ( byte -- ) DUP #04 SFT ,&char JSR
-	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD EMIT
-
-RTN
-
 @untitled-txt  "untitled.icn $1
 
+~src/stdlib.tal
+~src/gly.tal
 ~src/assets.tal
 
 @data
