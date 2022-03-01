@@ -42,27 +42,27 @@
 	&timer $1 &presentation $1 &changed $1
 @brush
 	&tool $1 &size $1 &patt $1 &oper $2 &mode $1
+@cursor
+	&x1 $2 &y1 $2 &x2 $2 &y2 $2 &last $1 &drag $1
+@zoom
+	&active $1 &x $2 &y $2
+
 @filepath $40
 
-@cursor
-	&x1 $2 &y1 $2
-	&x2 $2 &y2 $2
-	&last $1
-	&drag $1
-@zoom
-	&active $1
-	&x $2 &y $2
 @theme
 	&r $1 &g $1 &b $1
+
 @center
 	&x $2 &y $2
 @canvas
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2
 	&w $1 &w-short $1 &h $1 &h-short $1
-@guide
-	&x1 $2 &y1 $2 &x2 $2 &y2 $2
 @panel
 	&x $2 &y $2 &x2 $2 &y2 $2
+
+@guide
+	&x1 $2 &y1 $2 &x2 $2 &y2 $2
+
 @filepane
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2
 @namepane
@@ -1057,6 +1057,7 @@ RTN
 
 @draw-filepane ( -- )
 
+	AUTO-NONE
 	( file i/o )
 	.filepane/x1 LDZ2 .Screen/x DEO2
 	.filepane/y1 LDZ2 .Screen/y DEO2
@@ -1092,23 +1093,6 @@ RTN
 
 	;draw-filepane/state JSR2
 	;draw-filepane JSR2
-
-	.state/presentation LDZ #00 = #01 JCN [ RTN ]
-
-	( draw hor line )
-	#0000
-	.Screen/width DEI2
-	.center/y LDZ2
-	.state/presentation LDZ #00 =
-		;line-hor JSR2
-
-	( draw ver line )
-	.center/x LDZ2
-	#0000
-	.Screen/height DEI2
-	.state/presentation LDZ #00 =
-		;line-ver JSR2
-
 	;draw-namepane JSR2
 
 RTN
@@ -1132,14 +1116,13 @@ RTN
 		LDAk STHkr ,draw-char JSR
 		INC2 LDAk ,&while JCN
 	POP2
-	AUTO-NONE
 	POPr
 
 RTN
 
 @draw-short ( short* color -- )
 
-	STH  SWP STHkr ,draw-byte JSR STHr
+	STH SWP STHkr ,draw-byte JSR STHr
 
 @draw-byte ( byte color -- )
 
