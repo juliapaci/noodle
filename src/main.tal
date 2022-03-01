@@ -81,13 +81,10 @@
 
 	#0030 #0030 ;set-viewport-position JSR2
 
-	#28 #14 ;set-viewport-size JSR2
+	#22 #15 ;set-viewport-size JSR2
 	#15 #11 ;set-surface-size JSR2
 
-	( default size )
-	.Screen/width DEI2 8// #0004 --
-	.Screen/height DEI2 8// #0006 --
-		;set-size JSR2
+	;draw-panel JSR2
 
 	( ready. )
 	;draw-filepane/state JSR2
@@ -213,6 +210,7 @@ BRK
 
 	OVR2 OVR2 .panel ;within-rect JSR2 ;on-touch-panel JCN2
 	OVR2 OVR2 .surface ;within-rect JSR2 ;on-touch-surface JCN2
+	OVR2 OVR2 .viewport ;within-rect JSR2 ;on-touch-viewport JCN2
 
 	( record mouse release outside of canvas )
 	.Mouse/state DEI #00 ! ,&skip JCN
@@ -331,6 +329,12 @@ BRK
 
 BRK
 
+@on-touch-viewport ( x* y* -- )
+
+	POP2 POP2
+
+BRK
+
 @on-touch-filepane ( x* y* -- )
 
 	( unused y ) POP2
@@ -415,10 +419,10 @@ BRK
 @on-button-alt ( button -> )
 
 	#04 SFT
-	[ #01 ] !~ ,&no-u JCN .canvas/w LDZ2 .canvas/h LDZ2 DEC2 ;set-size JSR2 &no-u
-	[ #02 ] !~ ,&no-d JCN .canvas/w LDZ2 .canvas/h LDZ2 INC2 ;set-size JSR2 &no-d
-	[ #04 ] !~ ,&no-l JCN .canvas/w LDZ2 DEC2 .canvas/h LDZ2 ;set-size JSR2 &no-l
-	[ #08 ] !~ ,&no-r JCN .canvas/w LDZ2 INC2 .canvas/h LDZ2 ;set-size JSR2 &no-r
+	[ #01 ] !~ ,&no-u JCN ( .canvas/w LDZ2 .canvas/h LDZ2 DEC2 ;set-size ) JSR2 &no-u
+	[ #02 ] !~ ,&no-d JCN ( .canvas/w LDZ2 .canvas/h LDZ2 INC2 ;set-size ) JSR2 &no-d
+	[ #04 ] !~ ,&no-l JCN ( .canvas/w LDZ2 DEC2 .canvas/h LDZ2 ;set-size ) JSR2 &no-l
+	[ #08 ] !~ ,&no-r JCN ( .canvas/w LDZ2 INC2 .canvas/h LDZ2 ;set-size ) JSR2 &no-r
 	POP
 
 BRK
@@ -512,41 +516,11 @@ RTN
 	.viewport/x LDZ2 STH2k #0008 ++ 
 		.viewport/x2 LDZ2 STH2r -- #00 .surface/w LDZ 8* STH2k -- 2// ++
 		DUP2 .surface/x STZ2 
-			STH2r ++ .surface/x2 STZ2
+			STH2r DEC2 ++ .surface/x2 STZ2
 	.viewport/y LDZ2 STH2k #0008 ++ 
 		.viewport/y2 LDZ2 STH2r -- #00 .surface/h LDZ 8* STH2k -- 2// ++
 		DUP2 .surface/y STZ2 
-			STH2r ++ .surface/y2 STZ2
-
-RTN
-
-@set-size ( w* h* -- )
-
-		DUP2 .canvas/h LDZ2 !! ,&changed JCN
-		OVR2 .canvas/w LDZ2 !! ,&changed JCN
-		POP2 POP2 RTN
-	&changed
-
-	( undraw )
-	.canvas #00 ;fill-rect JSR2
-
-	( clamp )
-	[ #0002 ] MIN2 [ .Screen/height DEI2 8// #0006 -- ] MAX2
-		STH2k .canvas/h STZ2
-	[ #0002 ] MIN2 [ .Screen/width DEI2 8// #000a -- ] MAX2
-		STH2k .canvas/w STZ2
-
-	.center/x LDZ2 STH2kr 8** 2// -- .canvas/x1 STZ2
-	STH2r 8** .canvas/x1 LDZ2 ++ .canvas/x2 STZ2
-	.center/y LDZ2 STH2kr 8** 2// -- .canvas/y1 STZ2
-	STH2r 8** .canvas/y1 LDZ2 ++ .canvas/y2 STZ2
-
-	( draw ui )
-	;draw-background JSR2
-
-	;draw-canvas JSR2
-
-	;draw-panel JSR2
+			STH2r DEC2 ++ .surface/y2 STZ2
 
 RTN
 
@@ -771,8 +745,8 @@ RTN
 
 @within-canvas ( x* y* -- x* y* flag )
 
-	( clamp ) DUP2 8// .surface/h LDZ2 << #00 = ,&skip JCN
-	( clamp ) OVR2 8// .surface/w LDZ2 << #00 = ,&skip JCN
+	( clamp ) DUP2 8// #00 .surface/h LDZ << #00 = ,&skip JCN
+	( clamp ) OVR2 8// #00 .surface/w LDZ << #00 = ,&skip JCN
 	#01 RTN
 	&skip
 		#00 RTN
@@ -931,12 +905,12 @@ RTN
 @within-viewport ( x* y* -- x* y* flag )
 
 	.zoom/active LDZ #00 = ,&no-zoom JCN
-		OVR2 .zoom/x LDZ2 -- .canvas/w LDZ2 << ,&within-y-zoom JCN [ #00 RTN ] &within-y-zoom
-		DUP2 .zoom/y LDZ2 -- .canvas/h LDZ2 << ,&within-x-zoom JCN [ #00 RTN ] &within-x-zoom
+		OVR2 .zoom/x LDZ2 -- #00 .surface/w LDZ << ,&within-y-zoom JCN [ #00 RTN ] &within-y-zoom
+		DUP2 .zoom/y LDZ2 -- #00 .surface/h LDZ << ,&within-x-zoom JCN [ #00 RTN ] &within-x-zoom
 		#01 RTN
 		&no-zoom
-	DUP2 .canvas/h LDZ2 8** << ,&within-y JCN [ #00 RTN ] &within-y
-	OVR2 .canvas/w LDZ2 8** << ,&within-x JCN [ #00 RTN ] &within-x
+	DUP2 #00 .surface/h LDZ 8** << ,&within-y JCN [ #00 RTN ] &within-y
+	OVR2 #00 .surface/w LDZ 8** << ,&within-x JCN [ #00 RTN ] &within-x
 		#01 RTN
 
 RTN
@@ -1098,7 +1072,7 @@ RTN
 
 	STH
 	.viewport/x LDZ2 #0006 ++ .Screen/x DEO2
-	.viewport/y LDZ2 #0001 -- .Screen/y DEO2
+	.viewport/y LDZ2 DEC2 .Screen/y DEO2
 	;filepath STHr ;draw-str JSR2
 
 RTN
