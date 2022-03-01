@@ -49,6 +49,7 @@
 	&x1 $2 &y1 $2
 	&x2 $2 &y2 $2
 	&last $1
+	&drag $1
 @zoom
 	&active $1
 	&x $2 &y $2
@@ -235,6 +236,15 @@ BRK
 
 	.Mouse/x DEI2 .Mouse/y DEI2
 
+	.cursor/drag LDZ #00 > .Mouse/state DEI #00 = #0101 !! ,&no-panel-release JCN
+		;stop-drag JSR2 
+		POP2 POP2 BRK
+		&no-panel-release
+
+	.cursor/drag LDZ #00 > .Mouse/state DEI #01 > #0101 == ;on-drag JCN2
+
+	OVR2 OVR2 .panel ;within-rect JSR2 ;on-touch-panel JCN2
+
 	( begin with canvas )
 	OVR2 OVR2 .canvas ;within-rect JSR2
 		;on-touch-canvas JCN2
@@ -244,8 +254,9 @@ BRK
 		#00 .cursor/last STZ
 		&skip
 
+
 	( only when click originates in pane )
-	.Mouse/state DEI .cursor/last LDZ #0100 !! ,&end JCN
+	.Mouse/state DEI #00 > .cursor/last LDZ #0100 !! ,&end JCN
 
 	( anim enabled in presentation )
 	OVR2 OVR2 .animpane ;within-rect JSR2
@@ -254,7 +265,6 @@ BRK
 	( disable with presentation )
 	.state/presentation LDZ ,&end-present JCN
 
-	OVR2 OVR2 .panel ;within-rect JSR2 ;on-touch-panel JCN2
 	OVR2 OVR2 .filepane ;within-rect JSR2 ;on-touch-filepane JCN2
 	OVR2 OVR2 .namepane ;within-rect JSR2 ;on-touch-namepane JCN2
 
@@ -268,7 +278,54 @@ BRK
 
 BRK
 
+@start-drag ( rect -- )
+
+	.cursor/drag STZ
+	.Mouse/x DEI2 .cursor/x1 STZ2
+	.Mouse/y DEI2 .cursor/y1 STZ2
+
+RTN
+
+@stop-drag ( -- )
+
+	#00 .cursor/drag STZ
+
+RTN
+
+@on-drag ( x* y* -> )
+
+	;clear-panel JSR2
+	;draw-background JSR2
+	;draw-canvas-outside JSR2
+
+	DUP2
+	.cursor/y1 LDZ2 -- STH2
+	.cursor/y1 STZ2
+
+	.cursor/drag LDZ #02 + LDZ2 STH2kr ++ .cursor/drag LDZ #02 + STZ2
+	.cursor/drag LDZ #06 + LDZ2 STH2r ++ .cursor/drag LDZ #06 + STZ2
+
+	DUP2
+	.cursor/x1 LDZ2 -- STH2
+	.cursor/x1 STZ2
+
+	.cursor/drag LDZ LDZ2 STH2kr ++ .cursor/drag LDZ STZ2
+	.cursor/drag LDZ #04 + LDZ2 STH2r ++ .cursor/drag LDZ #04 + STZ2
+
+	;draw-panel JSR2
+
+BRK
+
 @on-touch-panel ( x* y* -> )
+
+	.Mouse/state DEI #02 < ,&no-drag JCN
+		.panel ;start-drag JSR2 
+		POP2 POP2 BRK
+		&no-drag
+
+	.Mouse/state DEI #00 ! ,&on-click JCN
+		POP2 POP2 BRK
+		&on-click
 
 	.panel/y LDZ2 -- #0004 -- #000a // NIP
 	ROT ROT
@@ -1040,6 +1097,12 @@ RTN
 
 RTN
 
+@clear-panel ( -- )
+
+	.panel/x LDZ2 .panel/y LDZ2 #01 #0e ;clear-frame JSR2
+
+RTN
+
 @draw-panel ( -- )
 
 	( frame )
@@ -1224,11 +1287,11 @@ RTN
 @within-rect ( x* y* rect -- flag )
 
 	STH
-	( y < rect.y1 ) DUP2 STHkr #02 ADD LDZ2 << ,&skip JCN
-	( y > rect.y2 ) DUP2 STHkr #06 ADD LDZ2 >> ,&skip JCN
+	( y < rect.y1 ) DUP2 STHkr #02 ADD LDZ2 LTS2 ,&skip JCN
+	( y > rect.y2 ) DUP2 STHkr #06 ADD LDZ2 GTS2 ,&skip JCN
 	SWP2
-	( x < rect.x1 ) DUP2 STHkr LDZ2 << ,&skip JCN
-	( x > rect.x2 ) DUP2 STHkr #04 ADD LDZ2 >> ,&skip JCN
+	( x < rect.x1 ) DUP2 STHkr LDZ2 LTS2 ,&skip JCN
+	( x > rect.x2 ) DUP2 STHkr #04 ADD LDZ2 GTS2 ,&skip JCN
 	POP2 POP2 POPr
 	#01
 RTN
