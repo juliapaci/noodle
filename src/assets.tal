@@ -9,10 +9,6 @@
 	&bc 0000 0000 0000 00ff ffff ffff ffff ff00
 	&br 0101 0101 0101 02fc fefe fefe fefe fc00
 
-@drag-icns
-0000 0008 1708 0000
-0000 0000 ff00 0000
-0000 0010 e810 0000
 @save-icn 1054 28c6 2854 1000
 @make-icn fe82 8282 848a f400
 @load-icn feaa d6aa d4aa f400

@@ -270,7 +270,7 @@ BRK
 
 @on-touch-panel ( x* y* -> )
 
-	.panel/y LDZ2 -- #0006 -- #000a // NIP
+	.panel/y LDZ2 -- #0004 -- #000a // NIP
 	ROT ROT
 	.panel/x LDZ2 -- #000a // NIP
 	SWP
@@ -281,9 +281,9 @@ BRK
 	DUP #03 > OVR #08 < AND ,&patt JCN
 	DUP #07 > OVR #0c < AND ,&size JCN
 	BRK
-	&tool 2* + ;select-tool JSR2 BRK
-	&patt #04 - 2* + ;select-patt JSR2 BRK
-	&size #08 - 2* + ;select-size JSR2 BRK
+	&tool 2* + ;select-tool JSR2 RELEASE-MOUSE BRK
+	&patt #04 - 2* + ;select-patt JSR2 RELEASE-MOUSE BRK
+	&size #08 - 2* + ;select-size JSR2 RELEASE-MOUSE BRK
 
 BRK
 
@@ -1043,18 +1043,12 @@ RTN
 @draw-panel ( -- )
 
 	( frame )
-	.panel/x LDZ2 .panel/y LDZ2 #01 #0f ;draw-frame JSR2
-	( draw drag )
-	AUTO-XADDR
-	.panel/x LDZ2 .Screen/x DEO2 
-	.panel/y LDZ2 .Screen/y DEO2
-	;drag-icns .Screen/addr DEO2
-	#05 .Screen/sprite DEOk DEOk DEO
+	.panel/x LDZ2 .panel/y LDZ2 #01 #0e ;draw-frame JSR2
 	( tools )
 	;draw-toolpane JSR2
-	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0028 ++ #01 ;line-hor JSR2
+	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0024 ++ #01 ;line-hor JSR2
 	;draw-pattpane JSR2
-	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0056 ++ #01 ;line-hor JSR2
+	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0052 ++ #01 ;line-hor JSR2
 	;draw-sizepane JSR2
 
 RTN
@@ -1067,7 +1061,7 @@ RTN
 	#0600
 	&tools-loop
 		#00 OVR 2MOD #09 * .panel/x LDZ2 ++ #0004 ++ .Screen/x DEO2
-		#00 OVR 2/ #0a * .panel/y LDZ2 ++ #0009 ++ .Screen/y DEO2
+		#00 OVR 2/ #0a * .panel/y LDZ2 ++ #0004 ++ .Screen/y DEO2
 		DUP STHkr = #0a * #05 + .Screen/sprite DEO
 		INC GTHk ,&tools-loop JCN
 	POP2
@@ -1083,7 +1077,7 @@ RTN
 	#0800
 	&patt-loop
 		#00 OVR 2MOD #09 * .panel/x LDZ2 ++ #0004 ++ .Screen/x DEO2
-		#00 OVR 2/ #0a * .panel/y LDZ2 ++ #002d ++ .Screen/y DEO2
+		#00 OVR 2/ #0a * .panel/y LDZ2 ++ #0029 ++ .Screen/y DEO2
 		DUP STHkr = #0a * #05 + .Screen/sprite DEO
 		INC GTHk ,&patt-loop JCN
 	POP2
@@ -1099,7 +1093,7 @@ RTN
 	#0800
 	&size-loop
 		#00 OVR 2MOD #09 * .panel/x LDZ2 ++ #0004 ++ .Screen/x DEO2
-		#00 OVR 2/ #0a * .panel/y LDZ2 ++ #005a ++ .Screen/y DEO2
+		#00 OVR 2/ #0a * .panel/y LDZ2 ++ #0056 ++ .Screen/y DEO2
 		DUP STHkr = #0a * #05 + .Screen/sprite DEO
 		INC GTHk ,&size-loop JCN
 	POP2
