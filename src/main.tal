@@ -81,7 +81,7 @@
 
 	#0030 #0030 ;set-viewport-position JSR2
 
-	#20 #14 ;set-viewport-size JSR2
+	#28 #14 ;set-viewport-size JSR2
 	#15 #11 ;set-surface-size JSR2
 
 	( default size )
@@ -305,8 +305,6 @@ BRK
 
 @on-touch-surface ( x* y* -> )
 
-
-
 	( set erase from right-click/mode )
 	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
 	( get mouse state )
@@ -506,9 +504,19 @@ RTN
 @set-surface-size ( w h -- )
 
 	( TODO: clear surface )
-	DUP .surface/h STZ #00 SWP 8** .surface/y LDZ2 ++ .surface/y2 STZ2
-	DUP .surface/w STZ #00 SWP 8** .surface/x LDZ2 ++ .surface/x2 STZ2
+	.surface/h STZ
+	.surface/w STZ
 	( TODO: draw surface )
+
+	( center )
+	.viewport/x LDZ2 STH2k #0008 ++ 
+		.viewport/x2 LDZ2 STH2r -- #00 .surface/w LDZ 8* STH2k -- 2// ++
+		DUP2 .surface/x STZ2 
+			STH2r ++ .surface/x2 STZ2
+	.viewport/y LDZ2 STH2k #0008 ++ 
+		.viewport/y2 LDZ2 STH2r -- #00 .surface/h LDZ 8* STH2k -- 2// ++
+		DUP2 .surface/y STZ2 
+			STH2r ++ .surface/y2 STZ2
 
 RTN
 
