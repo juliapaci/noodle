@@ -16,11 +16,13 @@
 	&active $1 &x $2 &y $2
 ( views )
 @panel
-	&x $2 &y $2 &x2 $2 &y2 $2
+	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
 @viewport
 	&x $2 &y $2 &x2 $2 &y2 $2 &w $1 &h $1
 @surface
 	&x $2 &y $2 &x2 $2 &y2 $2 &w $1 &h $1
+@resizer
+	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
 
 @filepath $40
 
@@ -65,6 +67,9 @@
 	( panel )
 	#0008 DUP2 .panel/x STZ2 #0018 ++ .panel/x2 STZ2
 	#0008 DUP2 .panel/y STZ2 #0088 ++ .panel/y2 STZ2
+
+	;on-drag-panel .panel/drag-event STZ2
+	;on-drag-resizer .resizer/drag-event STZ2
 
 	#0030 #0030 ;set-viewport-position JSR2
 
@@ -193,11 +198,12 @@ BRK
 		POP2 POP2 BRK
 		&no-panel-release
 
-	.cursor/drag LDZ #00 > .Mouse/state DEI #01 > #0101 == ;on-drag JCN2
+	.cursor/drag LDZ #00 > .Mouse/state DEI #00 > #0101 == ;on-drag JCN2
 
 	OVR2 OVR2 .panel ;within-rect JSR2 ;on-touch-panel JCN2
 	OVR2 OVR2 .surface ;within-rect JSR2 ;on-touch-surface JCN2
 	OVR2 OVR2 .viewport ;within-rect JSR2 ;on-touch-viewport JCN2
+	OVR2 OVR2 .resizer ;within-rect JSR2 ;on-touch-resizer JCN2
 
 	( record mouse release outside of canvas )
 	.Mouse/state DEI #00 ! ,&skip JCN
@@ -216,12 +222,14 @@ BRK
 	&end-present
 
 	( toggle present mode )
-	;present JSR2
+	( ;present JSR2 )
 
 	&end
 	POP2 POP2
 
 BRK
+
+( drag handlers )
 
 @start-drag ( rect -- )
 
@@ -233,30 +241,43 @@ RTN
 
 @stop-drag ( -- )
 
+	#cc DEBUG
 	#00 .cursor/drag STZ
 
 RTN
 
 @on-drag ( x* y* -> )
 
+	( get event )
+	.cursor/drag LDZ #08 + LDZ2
+	DUP2 #0000 !! ,&has-event JCN
+		POP2 POP2 BRK
+		&has-event
+	JMP2
+
+BRK
+
+@on-drag-panel ( -> )
+
 	;clear-panel JSR2
 	;draw-viewport JSR2
-
 	DUP2
-	.cursor/y1 LDZ2 -- STH2
-	.cursor/y1 STZ2
-
-	.cursor/drag LDZ #02 + LDZ2 STH2kr ++ .cursor/drag LDZ #02 + STZ2
-	.cursor/drag LDZ #06 + LDZ2 STH2r ++ .cursor/drag LDZ #06 + STZ2
-
+	.cursor/y1 LDZ2 -- STH2 .cursor/y1 STZ2
+		.panel/y LDZ2k STH2kr ++ ROT STZ2
+		.panel/y2 LDZ2k STH2r ++ ROT STZ2
 	DUP2
-	.cursor/x1 LDZ2 -- STH2
-	.cursor/x1 STZ2
-
-	.cursor/drag LDZ LDZ2 STH2kr ++ .cursor/drag LDZ STZ2
-	.cursor/drag LDZ #04 + LDZ2 STH2r ++ .cursor/drag LDZ #04 + STZ2
-
+	.cursor/x1 LDZ2 -- STH2 .cursor/x1 STZ2
+		.panel/x LDZ2k STH2kr ++ ROT STZ2
+		.panel/x2 LDZ2k STH2r ++ ROT STZ2
 	;draw-panel JSR2
+
+BRK
+
+@on-drag-resizer ( -> )
+
+	POP2 POP2
+
+	#bb DEBUG
 
 BRK
 
@@ -319,6 +340,16 @@ BRK
 @on-touch-viewport ( x* y* -- )
 
 	POP2 POP2
+
+BRK
+
+@on-touch-resizer ( x* y* -- )
+
+	POP2 POP2
+
+	.Mouse/state DEI #00 ! JMP BRK
+
+	.resizer ;start-drag JSR2 
 
 BRK
 
@@ -427,6 +458,8 @@ BRK
 
 BRK
 
+( helpers )
+
 @select-tool ( tool -- )
 
 	.brush/tool STZ
@@ -479,6 +512,7 @@ RTN
 	DUP .viewport/h STZ #00 SWP 8** .viewport/y LDZ2 ++ .viewport/y2 STZ2
 	DUP .viewport/w STZ #00 SWP 8** .viewport/x LDZ2 ++ .viewport/x2 STZ2
 	( TODO: draw viewport )
+	;update-resizer JSR2
 
 RTN
 
@@ -489,6 +523,15 @@ RTN
 
 	.viewport/x LDZ2 #0008 ++ DUP2 .surface/x STZ2 #00 .surface/w LDZ 8** ++ .surface/x2 STZ2
 	.viewport/y LDZ2 #0008 ++ DUP2 .surface/y STZ2 #00 .surface/h LDZ 8** ++ .surface/y2 STZ2
+
+	;update-resizer JSR2
+
+RTN
+
+@update-resizer ( -- )
+
+	.viewport/x2 LDZ2 DUP2 .resizer/x STZ2 #0008 ++ .resizer/x2 STZ2
+	.viewport/y2 LDZ2 DUP2 .resizer/y STZ2 #0008 ++ .resizer/y2 STZ2
 
 RTN
 
@@ -822,6 +865,12 @@ RTN
 	POP2
 	POPr
 	AUTO-NONE
+
+	( draw drag )
+	;drag-icn .Screen/addr DEO2
+	.viewport/x2 LDZ2 INC2 .Screen/x DEO2
+	.viewport/y2 LDZ2 INC2 .Screen/y DEO2
+	#05 .Screen/sprite DEO
 
 RTN
 
