@@ -1118,47 +1118,45 @@ RTN
 
 @draw-toolpane ( -- )
 
-	AUTO-ADDR
-	( stash selection ) .brush/tool LDZ STH
 	;tool-icns .Screen/addr DEO2
-	#0600
-	&tools-loop
-		#00 OVR 2MOD #09 * .panel/x LDZ2 ++ #0004 ++ .Screen/x DEO2
-		#00 OVR 2/ #0a * .panel/y LDZ2 ++ #0004 ++ .Screen/y DEO2
-		DUP STHkr = #0a * #05 + .Screen/sprite DEO
-		INC GTHk ,&tools-loop JCN
-	POP2
-	POPr
+	#06 .brush/tool LDZ
+	.panel/x LDZ2 #0004 ++ 
+	.panel/y LDZ2 #0004 ++ 
+		,draw-icons JSR
 
 RTN
 
 @draw-pattpane ( -- )
 
-	AUTO-ADDR
-	( stash selection ) .brush/patt LDZ STH
 	;patt-icns .Screen/addr DEO2
-	#0800
-	&patt-loop
-		#00 OVR 2MOD #09 * .panel/x LDZ2 ++ #0004 ++ .Screen/x DEO2
-		#00 OVR 2/ #0a * .panel/y LDZ2 ++ #0029 ++ .Screen/y DEO2
-		DUP STHkr = #0a * #05 + .Screen/sprite DEO
-		INC GTHk ,&patt-loop JCN
-	POP2
-	POPr
+	#08 .brush/patt LDZ
+	.panel/x LDZ2 #0004 ++ 
+	.panel/y LDZ2 #0029 ++ 
+		,draw-icons JSR
 
 RTN
 
 @draw-sizepane ( -- )
 
+	#00 .brush/mode LDZ 40* ;size-icns ++ .Screen/addr DEO2
+	#08 .brush/size LDZ 
+	.panel/x LDZ2 #0004 ++ 
+	.panel/y LDZ2 #0056 ++ 
+		,draw-icons JSR
+
+RTN
+
+@draw-icons ( length selection x* y* -- )
+
 	AUTO-ADDR
-	( stash selection ) .brush/size LDZ STH
-	;size-icns .Screen/addr DEO2
-	#0800
-	&size-loop
-		#00 OVR 2MOD #09 * .panel/x LDZ2 ++ #0004 ++ .Screen/x DEO2
-		#00 OVR 2/ #0a * .panel/y LDZ2 ++ #0056 ++ .Screen/y DEO2
-		DUP STHkr = #0a * #05 + .Screen/sprite DEO
-		INC GTHk ,&size-loop JCN
+	,&anchor-y STR2
+	,&anchor-x STR2
+	STH #00
+	&loop
+		#00 OVR 2MOD #09 * [ LIT2 &anchor-x $2 ] ++ .Screen/x DEO2
+		#00 OVR 2/ #0a * [ LIT2 &anchor-y $2 ] ++ .Screen/y DEO2
+		DUP STHkr = 2* #09 + .Screen/sprite DEO
+		INC GTHk ,&loop JCN
 	POP2
 	POPr
 
