@@ -58,3 +58,35 @@
 %AUTO-XADDR  { #05 .Screen/auto DEO }
 %AUTO-YADDR  { #06 .Screen/auto DEO }
 %AUTO-XYADDR { #07 .Screen/auto DEO }
+
+%SWP? { #01 JCN SWP }
+%SWP2? { #01 JCN SWP2 }
+%BRK? { #01 JCN BRK }
+%RTN? { #01 JCN RTN }
+%SFL  { #40 SFT SFT }
+%ABS2 { DUP2 #0f SFT2 = #05 JCN #0000 SWP2 -- }
+%LTS2 { #8000 ++ SWP2 #8000 ++ >> }
+%GTS2 { #8000 ++ SWP2 #8000 ++ << }
+
+%PAD { #0003 }
+
+%GET-ITER { OVR2 NIP OVR SWP }
+%ADD-POSITIONS { ROT2 ++ ROT2 ROT2 ++ SWP2 }
+
+%SET-STATE { #01 .state/changed STZ ;draw-filepane/state JSR2 }
+%RESET-STATE { #00 .state/changed STZ ;draw-filepane/state JSR2 }
+
+%GET-FRAME-SIZE { .canvas/h LDZ2 .canvas/w LDZ2 MUL2 8** } ( -- length* )
+
+%SIZE-TO-RECT {
+	STH2 STH2 OVR2 STH2r ++ OVR2 STH2r ++
+} ( x y w h -- x1 y1 x2 y2 )
+
+( devices )
+
+|00 @System     &vector $2 &pad     $6 &r      $2 &g     $2 &b     $2
+|10 @Console    &vector $2 &read    $1 &pad    $5 &write $1
+|20 @Screen     &vector $2 &width   $2 &height $2 &auto  $1 &pad   $1 &x     $2 &y $2 &addr $2 &pixel $1 &sprite $1
+|80 @Controller &vector $2 &button  $1 &key    $1
+|90 @Mouse      &vector $2 &x        $2 &y      $2 &state  $1 &pad    $3 &scrollx $2 &scrolly $2
+|a0 @File       &vector $2 &success  $2 &stat   $2 &delete $1 &append $1 &name    $2 &length  $2 &read   $2 &write $2
