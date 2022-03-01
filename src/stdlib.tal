@@ -1,3 +1,57 @@
+( frame )
+
+@draw-frame ( w h -- )
+
+	,&h STR ,&w STR
+	DUP2 .Screen/y DEO2 ,&y STR2
+	DUP2 .Screen/x DEO2 ,&x STR2
+	AUTO-X
+	;frame-chrs/tl .Screen/addr DEO2 #85 .Screen/sprite DEO
+	;frame-chrs/tc .Screen/addr DEO2 [ LIT &w $1 ] ,&repeat JSR
+	AUTO-Y
+	;frame-chrs/tr .Screen/addr DEO2 #85 .Screen/sprite DEO
+	;frame-chrs/mr .Screen/addr DEO2 [ LIT &h $1 ] ,&repeat JSR
+	( left )
+	[ LIT2 &y $2 ] #0008 ++ .Screen/y DEO2
+	[ LIT2 &x $2 ] .Screen/x DEO2
+	;frame-chrs/ml .Screen/addr DEO2 ,&h LDR ,&repeat JSR
+	AUTO-X
+	;frame-chrs/bl .Screen/addr DEO2 #85 .Screen/sprite DEO
+	;frame-chrs/bc .Screen/addr DEO2 ,&w LDR ,&repeat JSR
+	;frame-chrs/br .Screen/addr DEO2 #85 .Screen/sprite DEO
+	( fill )
+	;frame-chrs/mc .Screen/addr DEO2
+	,&x LDR2 #0008 ++ .Screen/x DEO2
+	,&y LDR2 #0008 ++ .Screen/y DEO2
+	#01 ,&h LDR ,fill-frame JSR
+
+RTN
+	&repeat
+		#00 
+		&repeat-loop 
+			#81 .Screen/sprite DEO 
+			INC GTHk ,&repeat-loop JCN 
+		POP2
+	RTN
+
+@fill-frame ( w h -- )
+
+	AUTO-X
+	.Screen/x DEI2 ,&anchor-x STR2
+	SWP ,&w STR #00
+	&ver
+		[ LIT &w $1 ] #00
+		&hor
+			#81 .Screen/sprite DEO
+			INC GTHk ,&hor JCN
+		POP2
+		.Screen/y DEI2k #0008 ++ ROT DEO2
+		[ LIT2 &anchor-x $2 ] .Screen/x DEO2
+		INC GTHk ,&ver JCN
+	POP2
+
+RTN
+
 ( theme )
 
 @theme-txt ".theme $1

@@ -63,12 +63,8 @@
 	&w $1 &w-short $1 &h $1 &h-short $1
 @guide
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2
-@toolpane
-	&x1 $2 &y1 $2 &x2 $2 &y2 $2
-@pattpane
-	&x1 $2 &y1 $2 &x2 $2 &y2 $2
-@sizepane
-	&x1 $2 &y1 $2 &x2 $2 &y2 $2
+@panel
+	&x $2 &y $2 &x2 $2 &y2 $2
 @animpane
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2
 @filepane
@@ -101,14 +97,6 @@
 	.Screen/width DEI2 2// .center/x STZ2
 	.Screen/height DEI2 2// .center/y STZ2
 
-	( above panes )
-	#0010 #000c #0030 PAD ++ #0008 PAD ++ SIZE-TO-RECT
-		.toolpane/y2 STZ2 .toolpane/x2 STZ2 .toolpane/y1 STZ2 .toolpane/x1 STZ2
-	#0048 #000c #0040 PAD ++ #0008 PAD ++ SIZE-TO-RECT
-		.sizepane/y2 STZ2 .sizepane/x2 STZ2 .sizepane/y1 STZ2 .sizepane/x1 STZ2
-	.Screen/width DEI2 #0053 -- #000c #0040 PAD ++ #0008 PAD ++ SIZE-TO-RECT
-		.pattpane/y2 STZ2 .pattpane/x2 STZ2 .pattpane/y1 STZ2 .pattpane/x1 STZ2
-
 	( below panes )
 	#0010 .Screen/height DEI2 #0010 -- #0020 #0008 SIZE-TO-RECT
 		.animpane/y2 STZ2 .animpane/x2 STZ2 .animpane/y1 STZ2 .animpane/x1 STZ2
@@ -116,6 +104,10 @@
 		.filepane/y2 STZ2 .filepane/x2 STZ2 .filepane/y1 STZ2 .filepane/x1 STZ2
 	#0038 .Screen/height DEI2 #0010 -- .Screen/width DEI2 #0070 -- #0008 SIZE-TO-RECT
 		.namepane/y2 STZ2 .namepane/x2 STZ2 .namepane/y1 STZ2 .namepane/x1 STZ2
+
+	( panel )
+	#0008 DUP2 .panel/x STZ2 #0018 ++ .panel/x2 STZ2
+	#0008 DUP2 .panel/y STZ2 #0088 ++ .panel/y2 STZ2
 
 	( starting frame )
 	.anim/frame LDZ GET-FRAME-ADDR .anim/addr STZ2
@@ -262,9 +254,7 @@ BRK
 	( disable with presentation )
 	.state/presentation LDZ ,&end-present JCN
 
-	OVR2 OVR2 .toolpane ;within-rect JSR2 ;on-touch-toolpane JCN2
-	OVR2 OVR2 .sizepane ;within-rect JSR2 ;on-touch-sizepane JCN2
-	OVR2 OVR2 .pattpane ;within-rect JSR2 ;on-touch-pattpane JCN2
+	OVR2 OVR2 .panel ;within-rect JSR2 ;on-touch-panel JCN2
 	OVR2 OVR2 .filepane ;within-rect JSR2 ;on-touch-filepane JCN2
 	OVR2 OVR2 .namepane ;within-rect JSR2 ;on-touch-namepane JCN2
 
@@ -275,6 +265,25 @@ BRK
 
 	&end
 	POP2 POP2
+
+BRK
+
+@on-touch-panel ( x* y* -> )
+
+	.panel/y LDZ2 -- #0006 -- #000a // NIP
+	ROT ROT
+	.panel/x LDZ2 -- #000a // NIP
+	SWP
+	( within x )
+	OVR #02 < ,&valid JCN POP2 BRK &valid
+	( within y )
+	DUP #03 < ,&tool JCN
+	DUP #03 > OVR #08 < AND ,&patt JCN
+	DUP #07 > OVR #0c < AND ,&size JCN
+	BRK
+	&tool 2* + ;select-tool JSR2 BRK
+	&patt #04 - 2* + ;select-patt JSR2 BRK
+	&size #08 - 2* + ;select-size JSR2 BRK
 
 BRK
 
@@ -303,46 +312,6 @@ BRK
 		8// .zoom/x LDZ2 ++ SWP2
 		&no-zoom
 	STH2r JMP2
-
-BRK
-
-@on-touch-toolpane ( x* y* -- )
-
-	( unused y ) POP2
-
-	.toolpane/x1 LDZ2 -- 8// NIP
-
-	DUP #06 < ,&valid JCN
-		POP BRK
-		&valid
-
-	;set-tool JSR2
-	RELEASE-MOUSE
-
-BRK
-
-@on-touch-sizepane ( x* y* -- )
-
-	( unused y ) POP2
-
-	.sizepane/x1 LDZ2 -- 8// NIP
-		;select-size JSR2
-	RELEASE-MOUSE
-
-BRK
-
-@on-touch-pattpane ( x* y* -- )
-
-	( unused y ) POP2
-
-	.pattpane/x1 LDZ2 -- 8// NIP
-
-	DUP #08 < ,&valid JCN
-		POP BRK
-		&valid
-
-	;select-patt JSR2
-	RELEASE-MOUSE
 
 BRK
 
@@ -422,12 +391,12 @@ BRK
 	#0d !~ ,&no-enter JCN POP ;next-frame JSR2 ;redraw JSR2 BRK &no-enter
 	#09 !~ ,&no-invert JCN POP ;invert JSR2 BRK &no-invert
 	#20 !~ ,&no-space JCN .zoom/active TOGGLE ;redraw JSR2 &no-space
-	LIT 'q !~ ,&no-qkey JCN #00 ;set-tool JSR2 &no-qkey
-	LIT 'w !~ ,&no-wkey JCN #01 ;set-tool JSR2 &no-wkey
-	LIT 'e !~ ,&no-ekey JCN #02 ;set-tool JSR2 &no-ekey
-	LIT 'r !~ ,&no-rkey JCN #03 ;set-tool JSR2 &no-rkey
-	LIT 't !~ ,&no-tkey JCN #04 ;set-tool JSR2 &no-tkey
-	LIT 'y !~ ,&no-ykey JCN #05 ;set-tool JSR2 &no-ykey
+	LIT 'q !~ ,&no-qkey JCN #00 ;select-tool JSR2 &no-qkey
+	LIT 'w !~ ,&no-wkey JCN #01 ;select-tool JSR2 &no-wkey
+	LIT 'e !~ ,&no-ekey JCN #02 ;select-tool JSR2 &no-ekey
+	LIT 'r !~ ,&no-rkey JCN #03 ;select-tool JSR2 &no-rkey
+	LIT 't !~ ,&no-tkey JCN #04 ;select-tool JSR2 &no-tkey
+	LIT 'y !~ ,&no-ykey JCN #05 ;select-tool JSR2 &no-ykey
 	LIT '[ !~ ,&no-lbracket JCN .brush/size LDZ #01 - ;select-size JSR2 &no-lbracket
 	LIT '] !~ ,&no-rbracket JCN .brush/size LDZ INC ;select-size JSR2 &no-rbracket
 	DUP
@@ -476,7 +445,7 @@ BRK
 
 BRK
 
-@set-tool ( tool -- )
+@select-tool ( tool -- )
 
 	.brush/tool STZ
 	;draw-toolpane JSR2
@@ -488,7 +457,7 @@ RTN
 	.brush/patt STZ
 	( select brush )
 	.brush/tool LDZ ,&no-switch JCN
-		#01 ;set-tool JSR2
+		#01 ;select-tool JSR2
 		&no-switch
 	;draw-pattpane JSR2
 
@@ -504,7 +473,7 @@ RTN
 	.brush/size STZ
 	( select brush )
 	.brush/tool LDZ ,&no-switch JCN
-		#01 ;set-tool JSR2
+		#01 ;select-tool JSR2
 		&no-switch
 	;draw-sizepane JSR2
 
@@ -563,7 +532,7 @@ RTN
 	( clamp )
 	[ #0002 ] MIN2 [ .Screen/height DEI2 8// #0006 -- ] MAX2
 		STH2k .canvas/h STZ2
-	[ #0002 ] MIN2 [ .Screen/width DEI2 8// #0004 -- ] MAX2
+	[ #0002 ] MIN2 [ .Screen/width DEI2 8// #000a -- ] MAX2
 		STH2k .canvas/w STZ2
 
 	.center/x LDZ2 STH2kr 8** 2// -- .canvas/x1 STZ2
@@ -574,17 +543,20 @@ RTN
 	( draw ui )
 	;draw-background JSR2
 
-	( draw size )
+	( draw size
 	.Screen/width DEI2 #0078 -- .Screen/x DEO2
 	#000d .Screen/y DEO2
 	AUTO-X
 	.canvas/w LDZ2 #80 SFT2 .canvas/h LDZ2 ++ #01 ;draw-short JSR2
 	AUTO-NONE
+	 )
 
 	( frame )
 	.canvas #01 ;line-rect JSR2
 
 	;draw-canvas JSR2
+
+	;draw-panel JSR2
 
 RTN
 
@@ -610,10 +582,6 @@ RTN
 		.System/r DEI DUP .theme/r STZ #0f AND .System/r DEO
 		.System/g DEI DUP .theme/g STZ #0f AND .System/g DEO
 		.System/b DEI DUP .theme/b STZ #0f AND .System/b DEO
-		( clear panes )
-		.toolpane #00 ;fill-rect JSR2
-		.sizepane #00 ;fill-rect JSR2
-		.pattpane #00 ;fill-rect JSR2
 		;draw-background JSR2
 		;draw-canvas-outside JSR2
 		RELEASE-MOUSE
@@ -1072,70 +1040,70 @@ RTN
 
 RTN
 
-@draw-toolpane ( -- )
+@draw-panel ( -- )
 
-	( frame ) .toolpane #01 ;line-rect JSR2
-
-	.toolpane/x1 LDZ2 INC2 INC2 .Screen/x DEO2
-	.toolpane/y1 LDZ2 INC2 INC2 .Screen/y DEO2
-	;tool-icns .Screen/addr DEO2
-
+	( frame )
+	.panel/x LDZ2 .panel/y LDZ2 #01 #0f ;draw-frame JSR2
+	( draw drag )
 	AUTO-XADDR
-	( stash selection ) .brush/tool LDZ STH
-	#06 #00
-	&loop
-		DUP STHkr = INC .Screen/sprite DEO
-		INC GTHk ,&loop JCN
-	POP2
-	.zoom/active LDZ #01 ! ,&no-zoom JCN
-		.Screen/x DEI2 #0008 -- .Screen/x DEO2
-		;tool-icns #0030 ++ .Screen/addr DEO2
-		#05 STHkr = INC .Screen/sprite DEO
-		&no-zoom
-	( pop selection ) POPr
-	AUTO-NONE
+	.panel/x LDZ2 .Screen/x DEO2 
+	.panel/y LDZ2 .Screen/y DEO2
+	;drag-icns .Screen/addr DEO2
+	#05 .Screen/sprite DEOk DEOk DEO
+	( tools )
+	;draw-toolpane JSR2
+	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0028 ++ #01 ;line-hor JSR2
+	;draw-pattpane JSR2
+	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0056 ++ #01 ;line-hor JSR2
+	;draw-sizepane JSR2
 
 RTN
 
-@draw-sizepane ( -- )
+@draw-toolpane ( -- )
 
-	( frame )
-	.sizepane #01 ;line-rect JSR2
-
-	.sizepane/x1 LDZ2 INC2 INC2 .Screen/x DEO2
-	.sizepane/y1 LDZ2 INC2 INC2 .Screen/y DEO2
-	;size-icns .brush/mode LDZ 40* TOS ++ .Screen/addr DEO2
-
-	AUTO-XADDR
-	( stash selection ) .brush/size LDZ STH
-	#08 #00
-	&loop
-		DUP STHkr = INC .Screen/sprite DEO
-		INC GTHk ,&loop JCN
+	AUTO-ADDR
+	( stash selection ) .brush/tool LDZ STH
+	;tool-icns .Screen/addr DEO2
+	#0600
+	&tools-loop
+		#00 OVR 2MOD #09 * .panel/x LDZ2 ++ #0004 ++ .Screen/x DEO2
+		#00 OVR 2/ #0a * .panel/y LDZ2 ++ #0009 ++ .Screen/y DEO2
+		DUP STHkr = #0a * #05 + .Screen/sprite DEO
+		INC GTHk ,&tools-loop JCN
 	POP2
-	( pop selection ) POPr
-	AUTO-NONE
+	POPr
 
 RTN
 
 @draw-pattpane ( -- )
 
-	( frame )
-	.pattpane #01 ;line-rect JSR2
-
-	.pattpane/x1 LDZ2 INC2 INC2 .Screen/x DEO2
-	.pattpane/y1 LDZ2 INC2 INC2 .Screen/y DEO2
-	;patt-icns .Screen/addr DEO2
-
-	AUTO-XADDR
+	AUTO-ADDR
 	( stash selection ) .brush/patt LDZ STH
-	#08 #00
-	&loop
-		DUP STHkr = INC .Screen/sprite DEO
-		INC GTHk ,&loop JCN
+	;patt-icns .Screen/addr DEO2
+	#0800
+	&patt-loop
+		#00 OVR 2MOD #09 * .panel/x LDZ2 ++ #0004 ++ .Screen/x DEO2
+		#00 OVR 2/ #0a * .panel/y LDZ2 ++ #002d ++ .Screen/y DEO2
+		DUP STHkr = #0a * #05 + .Screen/sprite DEO
+		INC GTHk ,&patt-loop JCN
 	POP2
-	( pop selection ) POPr
-	AUTO-NONE
+	POPr
+
+RTN
+
+@draw-sizepane ( -- )
+
+	AUTO-ADDR
+	( stash selection ) .brush/size LDZ STH
+	;size-icns .Screen/addr DEO2
+	#0800
+	&size-loop
+		#00 OVR 2MOD #09 * .panel/x LDZ2 ++ #0004 ++ .Screen/x DEO2
+		#00 OVR 2/ #0a * .panel/y LDZ2 ++ #005a ++ .Screen/y DEO2
+		DUP STHkr = #0a * #05 + .Screen/sprite DEO
+		INC GTHk ,&size-loop JCN
+	POP2
+	POPr
 
 RTN
 
@@ -1210,9 +1178,6 @@ RTN
 	.state/presentation LDZ #00 =
 		;line-ver JSR2
 
-	;draw-toolpane JSR2
-	;draw-pattpane JSR2
-	;draw-sizepane JSR2
 	;draw-namepane JSR2
 
 RTN
