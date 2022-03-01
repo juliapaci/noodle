@@ -14,6 +14,14 @@
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2 &last $1 &drag $1
 @zoom
 	&active $1 &x $2 &y $2
+( views )
+@panel
+	&x $2 &y $2 &x2 $2 &y2 $2
+@viewport
+	&x $2 &y $2 &x2 $2 &y2 $2 &w $1 &h $1
+@surface
+	&x $2 &y $2 &x2 $2 &y2 $2 &w $1 &h $1
+
 
 @filepath $40
 
@@ -25,8 +33,9 @@
 @canvas
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2
 	&w $1 &w-short $1 &h $1 &h-short $1
-@panel
-	&x $2 &y $2 &x2 $2 &y2 $2
+
+
+
 
 @guide
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2
@@ -70,6 +79,11 @@
 	#0008 DUP2 .panel/x STZ2 #0018 ++ .panel/x2 STZ2
 	#0008 DUP2 .panel/y STZ2 #0088 ++ .panel/y2 STZ2
 
+	#0030 #0030 ;set-viewport-position JSR2
+
+	#20 #14 ;set-viewport-size JSR2
+	#15 #11 ;set-surface-size JSR2
+
 	( default size )
 	.Screen/width DEI2 8// #0004 --
 	.Screen/height DEI2 8// #0006 --
@@ -95,7 +109,7 @@ BRK
 	;on-mouse .Mouse/vector DEO2
 
 	( filepath )
-	#01 ;draw-filepath JSR2
+	#06 ;draw-filepath JSR2
 	RELEASE-MOUSE
 
 RTN
@@ -108,7 +122,7 @@ RTN
 	;on-mouse-trap .Mouse/vector DEO2
 
 	( filepath )
-	#01 ;draw-filepath JSR2
+	#06 ;draw-filepath JSR2
 	RELEASE-MOUSE
 
 	( clear brush )
@@ -133,7 +147,7 @@ RTN
 		&no-end
 	( capture )
 	,capture-trap JSR
-	#01 ;draw-filepath JSR2
+	#06 ;draw-filepath JSR2
 
 BRK
 
@@ -141,7 +155,7 @@ BRK
 
 	#00 ;draw-filepath JSR2
 	.Controller/key DEI STANDARD-LB ,capture-trap JSR
-	#01 ;draw-filepath JSR2
+	#06 ;draw-filepath JSR2
 
 BRK
 
@@ -198,10 +212,7 @@ BRK
 	.cursor/drag LDZ #00 > .Mouse/state DEI #01 > #0101 == ;on-drag JCN2
 
 	OVR2 OVR2 .panel ;within-rect JSR2 ;on-touch-panel JCN2
-
-	( begin with canvas )
-	OVR2 OVR2 .canvas ;within-rect JSR2
-		;on-touch-canvas JCN2
+	OVR2 OVR2 .surface ;within-rect JSR2 ;on-touch-surface JCN2
 
 	( record mouse release outside of canvas )
 	.Mouse/state DEI #00 ! ,&skip JCN
@@ -244,8 +255,7 @@ RTN
 @on-drag ( x* y* -> )
 
 	;clear-panel JSR2
-	;draw-background JSR2
-	;draw-canvas-outside JSR2
+	;draw-viewport JSR2
 
 	DUP2
 	.cursor/y1 LDZ2 -- STH2
@@ -293,13 +303,15 @@ BRK
 
 BRK
 
-@on-touch-canvas ( x* y* -> )
+@on-touch-surface ( x* y* -> )
+
+
 
 	( set erase from right-click/mode )
 	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
 	( get mouse state )
 	.Mouse/state DEI #00 > #10 SFT .cursor/last LDZ #00 > + #00 SWP 2**
-	( non hover states )
+	( non-hover states )
 	DUP2 #0000 >> ,&continue JCN
 		POP2 POP2 POP2 BRK
 		&continue
@@ -310,8 +322,8 @@ BRK
 	( find fns )
 	;tools ++ ++ LDA2 STH2
 	( canvas offset )
-	.canvas/y1 LDZ2 -- SWP2
-	.canvas/x1 LDZ2 -- SWP2
+	.surface/y LDZ2 -- SWP2
+	.surface/x LDZ2 -- SWP2
 	( zoom offset )
 	.zoom/active LDZ #01 ! ,&no-zoom JCN
 		8// .zoom/y LDZ2 ++ SWP2
@@ -472,6 +484,34 @@ RTN
 
 RTN
 
+@set-viewport-size ( w h -- )
+
+	( TODO: clear viewport )
+	DUP .viewport/h STZ #00 SWP 8** .viewport/y LDZ2 ++ .viewport/y2 STZ2
+	DUP .viewport/w STZ #00 SWP 8** .viewport/x LDZ2 ++ .viewport/x2 STZ2
+	( TODO: draw viewport )
+
+RTN
+
+@set-viewport-position ( x* y* -- )
+
+	DUP2 .viewport/x STZ2 #00 .viewport/w LDZ 8** ++ .viewport/x2 STZ2
+	DUP2 .viewport/y STZ2 #00 .viewport/h LDZ 8** ++ .viewport/y2 STZ2
+
+	.viewport/x LDZ2 #0008 ++ DUP2 .surface/x STZ2 #00 .surface/w LDZ 8** ++ .surface/x2 STZ2
+	.viewport/y LDZ2 #0008 ++ DUP2 .surface/y STZ2 #00 .surface/h LDZ 8** ++ .surface/y2 STZ2
+
+RTN
+
+@set-surface-size ( w h -- )
+
+	( TODO: clear surface )
+	DUP .surface/h STZ #00 SWP 8** .surface/y LDZ2 ++ .surface/y2 STZ2
+	DUP .surface/w STZ #00 SWP 8** .surface/x LDZ2 ++ .surface/x2 STZ2
+	( TODO: draw surface )
+
+RTN
+
 @set-size ( w* h* -- )
 
 		DUP2 .canvas/h LDZ2 !! ,&changed JCN
@@ -496,17 +536,6 @@ RTN
 	( draw ui )
 	;draw-background JSR2
 
-	( draw size
-	.Screen/width DEI2 #0078 -- .Screen/x DEO2
-	#000d .Screen/y DEO2
-	AUTO-X
-	.canvas/w LDZ2 #80 SFT2 .canvas/h LDZ2 ++ #01 ;draw-short JSR2
-	AUTO-NONE
-	 )
-
-	( frame )
-	.canvas #01 ;line-rect JSR2
-
 	;draw-canvas JSR2
 
 	;draw-panel JSR2
@@ -526,7 +555,6 @@ RTN
 		.theme/g LDZ .System/g DEO
 		.theme/b LDZ .System/b DEO
 		;draw-background JSR2
-		;draw-canvas-outside JSR2
 		RELEASE-MOUSE
 		RTN
 
@@ -536,7 +564,6 @@ RTN
 		.System/g DEI DUP .theme/g STZ #0f AND .System/g DEO
 		.System/b DEI DUP .theme/b STZ #0f AND .System/b DEO
 		;draw-background JSR2
-		;draw-canvas-outside JSR2
 		RELEASE-MOUSE
 		RTN
 
@@ -736,8 +763,8 @@ RTN
 
 @within-canvas ( x* y* -- x* y* flag )
 
-	( clamp ) DUP2 8// .canvas/h LDZ2 << #00 = ,&skip JCN
-	( clamp ) OVR2 8// .canvas/w LDZ2 << #00 = ,&skip JCN
+	( clamp ) DUP2 8// .surface/h LDZ2 << #00 = ,&skip JCN
+	( clamp ) OVR2 8// .surface/w LDZ2 << #00 = ,&skip JCN
 	#01 RTN
 	&skip
 		#00 RTN
@@ -749,7 +776,7 @@ RTN
 	STH2k
 		8// SWP2
 		8// SWP2
-		.canvas/w LDZ2 ** ++ 8**
+		#00 .surface/w LDZ ** ++ 8**
 	STH2r
 		8MOD2 ++
 	;data ++
@@ -798,53 +825,47 @@ RTN
 
 ( Drawing )
 
-@redraw ( -- )
+@draw-viewport ( -- )
 
-	;draw-background JSR2
-	,draw-canvas JSR
+	.viewport/x LDZ2 .viewport/y LDZ2 .viewport/w LDZ .viewport/h LDZ ;draw-frame-outline JSR2
 
-RTN
+	( titlebar )
+	#06 ;draw-filepath JSR2
 
-@draw-canvas-outside ( -- )
-
-	( frame )
-	.canvas #01 ;line-rect JSR2
-
-	,draw-canvas JSR
-
-RTN
-
-@draw-canvas ( -- )
-
-	.zoom/active LDZ ,&zoom JCN
-		#09 ,draw-canvas-full JSR RTN
-		&zoom
-	#09 ,draw-canvas-zoom JSR
-
-RTN
-
-@draw-canvas-full ( color -- )
+@draw-surface ( -- )
 
 	AUTO-XADDR
 
-	STH
+	#09 STH
 	;data .Screen/addr DEO2
-
-	.canvas/y1 LDZ2 .Screen/y DEO2
-	.canvas/h-short LDZ #00
+	.surface/y LDZ2 .Screen/y DEO2
+	.surface/h LDZ #00
 	&ver
-		.canvas/x1 LDZ2 .Screen/x DEO2
-		.canvas/w-short LDZ #00
+		.surface/x LDZ2 .Screen/x DEO2
+		.surface/w LDZ #00
 		&hor
 			STHkr .Screen/sprite DEO
 			INC GTHk ,&hor JCN
 		POP2
-		.Screen/y DEI2 #0008 ++ .Screen/y DEO2
+		.Screen/y DEI2k #0008 ++ ROT DEO2
 		INC GTHk ,&ver JCN
 	POP2
 	POPr
 
 	AUTO-NONE
+
+RTN
+
+
+@redraw ( -- )
+
+	;draw-background JSR2
+	;draw-viewport JSR2
+
+RTN
+
+
+@draw-canvas ( -- )
 
 RTN
 
@@ -885,16 +906,16 @@ RTN
 		&continue
 	.zoom/active LDZ #00 = ,&no-zoom JCN
 		OVR2 OVR2 ;get-pixel JSR2 #00 SWP 8** ;bigpixel-icns ++ .Screen/addr DEO2
-		.zoom/y LDZ2 -- 8** .canvas/y1 LDZ2 ++ #22 SFT2 .Screen/y DEO2
-		.zoom/x LDZ2 -- 8** .canvas/x1 LDZ2 ++ #22 SFT2 .Screen/x DEO2
+		.zoom/y LDZ2 -- 8** .surface/y LDZ2 ++ #22 SFT2 .Screen/y DEO2
+		.zoom/x LDZ2 -- 8** .surface/x LDZ2 ++ #22 SFT2 .Screen/x DEO2
 		#09 .Screen/sprite DEO
 		RTN
 		&no-zoom
 	( TODO: Draw onionskin )
 	#33 SFT2 SWP2 #33 SFT2 SWP2
 	OVR2 OVR2 ;get-row JSR2 .Screen/addr DEO2
-	.canvas/y1 LDZ2 ++ .Screen/y DEO2
-	.canvas/x1 LDZ2 ++ .Screen/x DEO2
+	.surface/y LDZ2 ++ .Screen/y DEO2
+	.surface/x LDZ2 ++ .Screen/x DEO2
 	#09 .Screen/sprite DEO
 
 RTN
@@ -932,7 +953,7 @@ RTN
 	( draw size cursor )
 	.brush/tool LDZ DUP #01 = SWP #03 = #0000 == ;&outside-canvas JCN2
 	( outside canvas )
-	.Mouse/x DEI2 .Mouse/y DEI2 .canvas ;within-rect JSR2 #00 = ;&outside-canvas JCN2
+	.Mouse/x DEI2 .Mouse/y DEI2 .surface ;within-rect JSR2 #00 = ;&outside-canvas JCN2
 		.cursor/x2 LDZ2 #0003 -- .Screen/x DEO2
 		.cursor/y2 LDZ2 #0003 -- .Screen/y DEO2
 		;brush-icns #00 .brush/size LDZ 8** ++ .Screen/addr DEO2
@@ -1049,7 +1070,7 @@ RTN
 	( bottom )
 	.namepane/x1 LDZ2 .Screen/x DEO2
 	.namepane/y1 LDZ2 .Screen/y DEO2
-	#01 ;draw-filepath JSR2
+	#06 ;draw-filepath JSR2
 	&clear
 		#00 .Screen/sprite DEO
 		.Screen/x DEI2 #0008 ++ DUP2 .Screen/x DEO2
@@ -1068,9 +1089,9 @@ RTN
 @draw-filepath ( color -- )
 
 	STH
-	#0038 .Screen/x DEO2
-	.Screen/height DEI2 #0010 -- .Screen/y DEO2
-	;filepath STHr ,draw-str JSR
+	.viewport/x LDZ2 #0006 ++ .Screen/x DEO2
+	.viewport/y LDZ2 #0001 -- .Screen/y DEO2
+	;filepath STHr ;draw-str JSR2
 
 RTN
 
@@ -1354,13 +1375,13 @@ BRK
 @to-canvas ( x* y* -- x* y* )
 
 	.zoom/active LDZ ,&on-zoom JCN
-		.canvas/y1 LDZ2 ++ SWP2
-		.canvas/x1 LDZ2 ++ SWP2
+		.surface/y LDZ2 ++ SWP2
+		.surface/x LDZ2 ++ SWP2
 	RTN
 
 	&on-zoom
-		.zoom/y LDZ2 -- 8** .canvas/y1 LDZ2 ++ SWP2
-		.zoom/x LDZ2 -- 8** .canvas/x1 LDZ2 ++ SWP2
+		.zoom/y LDZ2 -- 8** .surface/y LDZ2 ++ SWP2
+		.zoom/x LDZ2 -- 8** .surface/x LDZ2 ++ SWP2
 
 RTN
 
@@ -1368,8 +1389,8 @@ RTN
 
 	&down
 		.zoom/active TOGGLE
-		.canvas/h LDZ2 2// -- .zoom/y STZ2
-		.canvas/w LDZ2 2// -- .zoom/x STZ2
+		#00 .surface/h LDZ 2// -- .zoom/y STZ2
+		#00 .surface/w LDZ 2// -- .zoom/x STZ2
 		;redraw JSR2
 		BRK
 	&up
