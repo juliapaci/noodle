@@ -22,20 +22,10 @@
 @surface
 	&x $2 &y $2 &x2 $2 &y2 $2 &w $1 &h $1
 
-
 @filepath $40
 
 @theme
 	&r $1 &g $1 &b $1
-
-@center
-	&x $2 &y $2
-@canvas
-	&x1 $2 &y1 $2 &x2 $2 &y2 $2
-	&w $1 &w-short $1 &h $1 &h-short $1
-
-
-
 
 @guide
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2
@@ -66,9 +56,6 @@
 	#04 .brush/size STZ
 	#00 .brush/patt STZ
 	#00 .brush/tool STZ
-
-	.Screen/width DEI2 2// .center/x STZ2
-	.Screen/height DEI2 2// .center/y STZ2
 
 	.Screen/width DEI2 #0031 -- .Screen/height DEI2 #0010 -- #0020 #0008 SIZE-TO-RECT
 		.filepane/y2 STZ2 .filepane/x2 STZ2 .filepane/y1 STZ2 .filepane/x1 STZ2
@@ -436,7 +423,7 @@ BRK
 	DUP #06 SFT #01 AND #01 ! ,&no-l JCN .zoom/x LDZ2k DEC2 ROT STZ2 &no-l
 	DUP #07 SFT #01 AND #01 ! ,&no-r JCN .zoom/x LDZ2k INC2 ROT STZ2 &no-r
 	POP
-	;draw-canvas JSR2
+	;draw-surface JSR2
 
 BRK
 
@@ -594,7 +581,7 @@ RTN
 		INC2
 		OVR2 OVR2 GTS2 ,&ver JCN
 	POP2 POP2
-	;draw-canvas JSR2
+	;draw-surface JSR2
 
 RTN
 
@@ -816,8 +803,9 @@ RTN
 
 @draw-surface ( -- )
 
-	AUTO-XADDR
+	.zoom/active LDZ ,draw-surface-zoom JCN
 
+	AUTO-XADDR
 	#09 STH
 	;data .Screen/addr DEO2
 	.surface/y LDZ2 .Screen/y DEO2
@@ -833,35 +821,19 @@ RTN
 		INC GTHk ,&ver JCN
 	POP2
 	POPr
-
 	AUTO-NONE
 
 RTN
 
-
-@redraw ( -- )
-
-	;draw-background JSR2
-	;draw-viewport JSR2
-
-RTN
-
-
-@draw-canvas ( -- )
-
-RTN
-
-@draw-canvas-zoom ( color -- )
+@draw-surface-zoom ( -- )
 
 	AUTO-X
-
-	STH
-
-	.canvas/y1 LDZ2 .Screen/y DEO2
-	.canvas/h-short LDZ #00
+	#09 STH
+	.viewport/y LDZ2 #0008 ++ .Screen/y DEO2
+	.viewport/h LDZ #00
 	&ver
-		.canvas/x1 LDZ2 .Screen/x DEO2
-		.canvas/w-short LDZ #00
+		.viewport/x LDZ2 #0008 ++ .Screen/x DEO2
+		.viewport/w LDZ #00
 		&hor
 			( get pixel )
 			GET-ITER
@@ -878,6 +850,13 @@ RTN
 	POPr
 
 	AUTO-NONE
+
+RTN
+
+@redraw ( -- )
+
+	;draw-background JSR2
+	;draw-viewport JSR2
 
 RTN
 

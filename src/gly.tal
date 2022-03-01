@@ -6,9 +6,9 @@
 	;snarf-txt .File/name DEO2
 	#0001 .File/length DEO2
 
-	.canvas/h LDZ2 8** #0000
+	.surface/h LDZ2 8** #0000
 	&ver
-		.canvas/w LDZ2 8** #0000
+		.surface/w LDZ2 8** #0000
 		&hor
 			( get x,y ) STH2 OVR2 STH2r SWP2 OVR2 SWP2
 			( write ) ,write-col JSR
