@@ -567,6 +567,7 @@ RTN
 	&resume-y
 
 	;draw-viewport JSR2
+	;draw-state JSR2
 	;draw-filesize JSR2
 
 RTN
@@ -905,11 +906,6 @@ RTN
 
 RTN
 
-@draw-state ( -- )
-
-
-RTN
-
 @draw-tile ( x* y* -- )
 
 	;within-viewport JSR2 ,&continue JCN
@@ -998,7 +994,7 @@ RTN
 
 @clear-viewport ( -- )
 
-	.viewport/x LDZ2 .viewport/y LDZ2 #0001 -- .viewport/w LDZ .viewport/h LDZ ;clear-frame JSR2
+	.viewport/x LDZ2 .viewport/y LDZ2 DEC2 .viewport/w LDZ .viewport/h LDZ ;clear-frame JSR2
 
 RTN
 
@@ -1072,10 +1068,19 @@ RTN
 
 RTN
 
+@draw-state ( -- )
+
+	.viewport/x LDZ2 #0006 ++ .Screen/x DEO2
+	.viewport/y LDZ2 DEC2 .Screen/y DEO2
+	;save-icn .Screen/addr DEO2
+	.state/changed LDZ #03 + .Screen/sprite DEO
+
+RTN
+
 @draw-filepath ( color -- )
 
 	STH
-	.viewport/x LDZ2 #0006 ++ .Screen/x DEO2
+	.viewport/x LDZ2 #0036 ++ .Screen/x DEO2
 	.viewport/y LDZ2 DEC2 .Screen/y DEO2
 	;filepath STHr ;draw-str JSR2
 
@@ -1084,7 +1089,7 @@ RTN
 @draw-filesize ( -- )
 
 	AUTO-X
-	.viewport/x LDZ2 #0006 ++ ;filepath ;slen JSR2 8** ++ .Screen/x DEO2
+	.viewport/x LDZ2 #000e ++ .Screen/x DEO2
 	.viewport/y LDZ2 DEC2 .Screen/y DEO2
 	.surface/w LDZ #09 ;draw-byte JSR2
 	LIT 'x #09 ;draw-char JSR2

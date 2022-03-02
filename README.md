@@ -41,5 +41,9 @@ sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/roms/noodle.rom sd_card/uxn
 
 ## TODOs(redesign tasks)
 
-- Status icon
 - Undo/redo
+- Open tga file
+- Auto-read filesize from filepath for icn
+- New presentation mode
+- Optimize draw-tile
+- Merge frame drawing routines
