@@ -241,7 +241,6 @@ RTN
 
 @stop-drag ( -- )
 
-	#cc DEBUG
 	#00 .cursor/drag STZ
 
 RTN
@@ -257,7 +256,7 @@ RTN
 
 BRK
 
-@on-drag-panel ( -> )
+@on-drag-panel ( x* y* -> )
 
 	;clear-panel JSR2
 	;draw-viewport JSR2
@@ -273,11 +272,14 @@ BRK
 
 BRK
 
-@on-drag-resizer ( -> )
+@on-drag-resizer ( x* y* -> )
 
-	POP2 POP2
+	;clear-viewport JSR2
 
-	#bb DEBUG
+	.viewport/y LDZ2 -- 8// NIP STH
+	.viewport/x LDZ2 -- 8// NIP STHr
+	;set-viewport-size JSR2
+	;draw-viewport JSR2
 
 BRK
 
@@ -511,6 +513,8 @@ RTN
 	( TODO: clear viewport )
 	DUP .viewport/h STZ #00 SWP 8** .viewport/y LDZ2 ++ .viewport/y2 STZ2
 	DUP .viewport/w STZ #00 SWP 8** .viewport/x LDZ2 ++ .viewport/x2 STZ2
+	;center-surface JSR2
+
 	( TODO: draw viewport )
 	;update-resizer JSR2
 
@@ -541,6 +545,8 @@ RTN
 	.surface/h STZ
 	.surface/w STZ
 	( TODO: draw surface )
+
+@center-surface ( -- )
 
 	( center )
 	.viewport/x LDZ2 STH2k #0008 ++ 
@@ -992,6 +998,12 @@ RTN
 @clear-panel ( -- )
 
 	.panel/x LDZ2 .panel/y LDZ2 #01 #0e ;clear-frame JSR2
+
+RTN
+
+@clear-viewport ( -- )
+
+	.viewport/x LDZ2 .viewport/y LDZ2 .viewport/w LDZ .viewport/h LDZ ;clear-frame JSR2
 
 RTN
 
