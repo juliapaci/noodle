@@ -101,7 +101,7 @@ RTN
 	&repeat
 		#00 
 		&repeat-loop 
-			#81 .Screen/sprite DEO 
+			#85 .Screen/sprite DEO 
 			INC GTHk ,&repeat-loop JCN 
 		POP2
 	RTN

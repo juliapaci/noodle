@@ -285,11 +285,6 @@ BRK
 
 @on-touch-panel ( x* y* -> )
 
-	.Mouse/state DEI #02 < ,&no-drag JCN
-		.panel ;start-drag JSR2 
-		POP2 POP2 BRK
-		&no-drag
-
 	.Mouse/state DEI #00 ! ,&on-click JCN
 		POP2 POP2 BRK
 		&on-click
@@ -302,12 +297,15 @@ BRK
 	OVR #02 < ,&valid JCN POP2 BRK &valid
 	( within y )
 	DUP #03 < ,&tool JCN
+	DUP #03 = ,&drag JCN
+	DUP #08 = ,&drag JCN
 	DUP #03 > OVR #08 < AND ,&patt JCN
 	DUP #07 > OVR #0c < AND ,&size JCN
 	BRK
 	&tool 2* + ;select-tool JSR2 RELEASE-MOUSE BRK
 	&patt #04 - 2* + ;select-patt JSR2 RELEASE-MOUSE BRK
 	&size #08 - 2* + ;select-size JSR2 RELEASE-MOUSE BRK
+	&drag .panel ;start-drag JSR2 BRK
 
 BRK
 
