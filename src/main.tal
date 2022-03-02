@@ -320,6 +320,8 @@ BRK
 
 @on-touch-surface ( x* y* -> )
 
+	( pass to viewport on zoom )
+	.zoom/active LDZ ;on-touch-viewport JCN2
 	( set erase from right-click/mode )
 	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
 	( get mouse state )
@@ -337,29 +339,30 @@ BRK
 	( canvas offset )
 	.surface/y LDZ2 -- SWP2
 	.surface/x LDZ2 -- SWP2
-	( zoom offset )
-	.zoom/active LDZ #01 ! ,&no-zoom JCN
-		8// .zoom/y LDZ2 ++ SWP2
-		8// .zoom/x LDZ2 ++ SWP2
-		&no-zoom
 	STH2r JMP2
 
 BRK
 
 @on-touch-viewport ( x* y* -- )
 
-	.viewport/y LDZ2 -- 8// NIP #00 = ,&move-y JCN
-		POP2 BRK
-		&move-y
-	.viewport/x2 LDZ2 SWP2 -- 8// NIP #00 = ,&move-x JCN
-		BRK
-		&move-x
-
-	.Mouse/state DEI #00 ! JMP BRK
-
-	.viewport ;start-drag JSR2
-
-	&skip
+	( set erase from right-click/mode )
+	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
+	( get mouse state )
+	.Mouse/state DEI #00 > #10 SFT .cursor/last LDZ #00 > + #00 SWP 2**
+	( non-hover states )
+	DUP2 #0000 >> ,&continue JCN
+		POP2 POP2 POP2 BRK
+		&continue
+	( get tool offset )
+	.brush/tool LDZ #00 SWP 8**
+	( record state )
+	.Mouse/state DEI .cursor/last STZ
+	( find fns )
+	;tools ++ ++ LDA2 STH2
+	( canvas offset )
+	.viewport/y LDZ2 #0008 ++ -- 8// .zoom/y LDZ2 ++ SWP2
+	.viewport/x LDZ2 #0008 ++ -- 8// .zoom/x LDZ2 ++ SWP2
+	STH2r JMP2
 
 BRK
 
@@ -959,8 +962,8 @@ RTN
 		&continue
 	.zoom/active LDZ #00 = ,&no-zoom JCN
 		OVR2 OVR2 ;get-pixel JSR2 #00 SWP 8** ;bigpixel-icns ++ .Screen/addr DEO2
-		.zoom/y LDZ2 -- 8** .surface/y LDZ2 ++ #22 SFT2 .Screen/y DEO2
-		.zoom/x LDZ2 -- 8** .surface/x LDZ2 ++ #22 SFT2 .Screen/x DEO2
+		.zoom/y LDZ2 -- 8** .viewport/y LDZ2 ++ #0008 ++ #22 SFT2 .Screen/y DEO2
+		.zoom/x LDZ2 -- 8** .viewport/x LDZ2 ++ #0008 ++ #22 SFT2 .Screen/x DEO2
 		#09 .Screen/sprite DEO
 		RTN
 		&no-zoom
@@ -976,8 +979,8 @@ RTN
 @within-viewport ( x* y* -- x* y* flag )
 
 	.zoom/active LDZ #00 = ,&no-zoom JCN
-		OVR2 .zoom/x LDZ2 -- #00 .surface/w LDZ << ,&within-y-zoom JCN [ #00 RTN ] &within-y-zoom
-		DUP2 .zoom/y LDZ2 -- #00 .surface/h LDZ << ,&within-x-zoom JCN [ #00 RTN ] &within-x-zoom
+		OVR2 .zoom/x LDZ2 -- #00 .viewport/w LDZ << ,&within-y-zoom JCN [ #00 RTN ] &within-y-zoom
+		DUP2 .zoom/y LDZ2 -- #00 .viewport/h LDZ << ,&within-x-zoom JCN [ #00 RTN ] &within-x-zoom
 		#01 RTN
 		&no-zoom
 	DUP2 #00 .surface/h LDZ 8** << ,&within-y JCN [ #00 RTN ] &within-y
