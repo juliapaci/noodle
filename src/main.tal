@@ -45,45 +45,33 @@
 	( vectors )
 	;on-console .Console/vector DEO2
 	
+	( connect drag events )
+	;on-drag-panel .panel/drag-event STZ2
+	;on-drag-resizer .resizer/drag-event STZ2
+	;on-drag-viewport .viewport/drag-event STZ2
 
 	( colors )
 	#70fe .System/r DEO2
 	#c0f3 .System/g DEO2
 	#90f3 .System/b DEO2
 
+	( theme support )
+	;load-theme JSR2
+
 	( default brush )
 	#04 .brush/size STZ
 	#00 .brush/patt STZ
 	#00 .brush/tool STZ
 
-	.Screen/width DEI2 #0031 -- .Screen/height DEI2 #0010 -- #0020 #0008 SIZE-TO-RECT
-		.filepane/y2 STZ2 .filepane/x2 STZ2 .filepane/y1 STZ2 .filepane/x1 STZ2
-
-	( panel )
-	#0008 DUP2 .panel/x STZ2 #0018 ++ .panel/x2 STZ2
-	#0008 DUP2 .panel/y STZ2 #0088 ++ .panel/y2 STZ2
-
-	;on-drag-panel .panel/drag-event STZ2
-	;on-drag-resizer .resizer/drag-event STZ2
-	;on-drag-viewport .viewport/drag-event STZ2
-
+	( initial position )
+	#0008 #0008 ;set-panel-position JSR2
 	#0030 #0030 ;set-viewport-position JSR2
 	#22 #15 ;set-viewport-size JSR2
 	#15 #11 ;set-surface-size JSR2
 
+	( let's begin. )
 	;untrap JSR2
-
-	;draw-panel JSR2
-
-	( ready. )
-	;draw-filepane/state JSR2
-
-	( load default file )
 	;new-file JSR2
-
-	( theme support )
-	;load-theme JSR2
-	;redraw JSR2
 
 BRK
 
@@ -542,6 +530,15 @@ RTN
 	;center-surface JSR2
 	;update-resizer JSR2
 	;draw-viewport JSR2
+
+RTN
+
+@set-panel-position ( x* y* -- )
+
+	;clear-panel JSR2
+	DUP2 .panel/y STZ2 #0088 ++ .panel/y2 STZ2
+	DUP2 .panel/x STZ2 #0018 ++ .panel/x2 STZ2
+	;draw-panel JSR2
 
 RTN
 

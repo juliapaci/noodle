@@ -38,3 +38,10 @@ sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/roms/noodle.rom sd_card/uxn
 - `r`, magic tool
 - `t`, rectangle tool
 - `y`, zoom tool
+
+## TODOs(redesign tasks)
+
+- Resize surface
+- Better start state
+- Status icon
+- Remove filepane
