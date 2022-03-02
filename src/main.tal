@@ -345,6 +345,11 @@ BRK
 
 @on-touch-viewport ( x* y* -- )
 
+	DUP2 .viewport/y LDZ2 -- #0008 << .Mouse/state DEI #00 > #0101 !! ,&no-drag JCN
+		.viewport ;start-drag JSR2
+		POP2 POP2 BRK
+		&no-drag
+
 	( set erase from right-click/mode )
 	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
 	( get mouse state )
@@ -962,8 +967,8 @@ RTN
 		&continue
 	.zoom/active LDZ #00 = ,&no-zoom JCN
 		OVR2 OVR2 ;get-pixel JSR2 #00 SWP 8** ;bigpixel-icns ++ .Screen/addr DEO2
-		.zoom/y LDZ2 -- 8** .viewport/y LDZ2 ++ #0008 ++ #22 SFT2 .Screen/y DEO2
-		.zoom/x LDZ2 -- 8** .viewport/x LDZ2 ++ #0008 ++ #22 SFT2 .Screen/x DEO2
+		.zoom/y LDZ2 -- 8** .viewport/y LDZ2 ++ #0008 ++ .Screen/y DEO2
+		.zoom/x LDZ2 -- 8** .viewport/x LDZ2 ++ #0008 ++ .Screen/x DEO2
 		#09 .Screen/sprite DEO
 		RTN
 		&no-zoom
