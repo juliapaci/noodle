@@ -18,7 +18,7 @@
 @panel
 	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
 @viewport
-	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2 &w $1 &h $1
+	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2 &size &w $1 &h $1
 @surface
 	&x $2 &y $2 &x2 $2 &y2 $2 &w $1 &h $1
 @resizer
@@ -269,11 +269,10 @@ BRK
 
 @on-drag-resizer ( x* y* -> )
 
-	;clear-viewport JSR2
+	
 	.viewport/y LDZ2 -- 8// NIP STH
 	.viewport/x LDZ2 -- 8// NIP STHr
 	;set-viewport-size JSR2
-	;draw-viewport JSR2
 	;draw-panel JSR2
 
 BRK
@@ -520,13 +519,17 @@ RTN
 
 @set-viewport-size ( w h -- )
 
-	( TODO: clear viewport )
+	( only redraw on change )
+	DUP2 .viewport/size LDZ2 !! ,&changed JCN
+		POP2 RTN
+		&changed
+
+	;clear-viewport JSR2
 	DUP .viewport/h STZ #00 SWP 8** .viewport/y LDZ2 ++ .viewport/y2 STZ2
 	DUP .viewport/w STZ #00 SWP 8** .viewport/x LDZ2 ++ .viewport/x2 STZ2
 	;center-surface JSR2
-
-	( TODO: draw viewport )
 	;update-resizer JSR2
+	;draw-viewport JSR2
 
 RTN
 
