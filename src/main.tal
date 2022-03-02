@@ -20,7 +20,7 @@
 @viewport
 	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2 &size &w $1 &h $1
 @surface
-	&x $2 &y $2 &x2 $2 &y2 $2 &w $1 &h $1
+	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2 &w $1 &h $1
 @resizer
 	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
 
@@ -44,6 +44,7 @@
 	;on-drag-panel .panel/drag-event STZ2
 	;on-drag-resizer .resizer/drag-event STZ2
 	;on-drag-viewport .viewport/drag-event STZ2
+	;on-drag-surface .surface/drag-event STZ2
 
 	( colors )
 	#70fe .System/r DEO2
@@ -171,12 +172,11 @@ BRK
 
 	;draw-cursor JSR2
 
-	.Mouse/x DEI2 .Mouse/y DEI2
-
 	.cursor/drag LDZ #00 > .Mouse/state DEI #00 = #0101 !! ,&no-panel-release JCN
-		;stop-drag JSR2
-		POP2 POP2 BRK
+		;stop-drag JSR2 BRK
 		&no-panel-release
+
+	.Mouse/x DEI2 .Mouse/y DEI2
 
 	.cursor/drag LDZ #00 > .Mouse/state DEI #00 > #0101 == ;on-drag JCN2
 
@@ -186,10 +186,6 @@ BRK
 	OVR2 OVR2 .resizer ;within-rect JSR2 ;on-touch-resizer JCN2
 	POP2 POP2
 
-	( record mouse release outside of canvas )
-	.Mouse/state DEI #00 ! ,&skip JCN
-		#00 .cursor/last STZ
-		&skip
 
 BRK
 
@@ -238,7 +234,6 @@ BRK
 
 @on-drag-resizer ( x* y* -> )
 
-	
 	.viewport/y LDZ2 -- 8// NIP STH
 	.viewport/x LDZ2 -- 8// NIP STHr
 	;set-viewport-size JSR2
@@ -258,6 +253,14 @@ BRK
 	;set-viewport-position JSR2
 	;draw-viewport JSR2
 	;draw-panel JSR2
+
+BRK
+
+@on-drag-surface ( x* y* -> )
+
+	#00 .viewport/h LDZ 2/ 8** .viewport/y LDZ2 ++ #0008 ++ -- 4// NIP STH
+	#00 .viewport/w LDZ 2/ 8** .viewport/x LDZ2 ++ #0008 ++ -- 4// NIP STHr
+	;set-surface-size JSR2
 
 BRK
 
@@ -314,10 +317,19 @@ BRK
 
 @on-touch-viewport ( x* y* -- )
 
-	DUP2 .viewport/y LDZ2 -- #0008 << .Mouse/state DEI #00 > #0101 !! ,&no-drag JCN
+	.Mouse/state DEI #00 = ,&no-drag-start JCN
+	( viewport handle )
+	DUP2 .viewport/y LDZ2 -- #0007 >> ,&no-drag JCN
 		.viewport ;start-drag JSR2
 		POP2 POP2 BRK
 		&no-drag
+	( surface handle )
+	DUP2 .surface/y2 LDZ2 -- 8// NIP STH OVR2 .surface/x2 LDZ2 -- 8// NIP STHr #0000 !! ,&no-drag-surface JCN
+		.surface ;start-drag JSR2
+		POP2 POP2 BRK
+		&no-drag-surface
+	&no-drag-start
+
 	.zoom/active LDZ ,&on-zoom JCN
 		POP2 POP2 BRK
 		&on-zoom
@@ -522,10 +534,8 @@ RTN
 
 @set-surface-size ( w h -- )
 
-	( TODO: clear surface )
 	.surface/h STZ
 	.surface/w STZ
-	( TODO: draw surface )
 
 @center-surface ( -- )
 
@@ -537,7 +547,7 @@ RTN
 
 	( center )
 	.viewport/x LDZ2 STH2k #0008 ++
-		.viewport/x2 LDZ2 STH2r -- #00 .surface/w LDZ 8* STH2k -- 2// ++
+		.viewport/x2 LDZ2 STH2r -- #00 .surface/w LDZ 8** STH2k -- 2// ++
 		DUP2 .surface/x STZ2
 			STH2r DEC2 ++ .surface/x2 STZ2
 
@@ -550,11 +560,14 @@ RTN
 		&center-y
 
 	.viewport/y LDZ2 STH2k #0008 ++
-		.viewport/y2 LDZ2 STH2r -- #00 .surface/h LDZ 8* STH2k -- 2// ++
+		.viewport/y2 LDZ2 STH2r -- #00 .surface/h LDZ 8** STH2k -- 2// ++
 		DUP2 .surface/y STZ2
 			STH2r DEC2 ++ .surface/y2 STZ2
 
 	&resume-y
+
+	;draw-viewport JSR2
+	;draw-filesize JSR2
 
 RTN
 
@@ -776,7 +789,7 @@ RTN
 
 @new-file ( path* -- )
 
-	#2c ;draw-filepath JSR2
+	#00 ;draw-filepath JSR2
 	( rename to untitled.txt )
 	;filepath #0020 ;mclr JSR2
 	;untitled-txt ;filepath #000c ;mcpy JSR2
@@ -784,7 +797,7 @@ RTN
 	;data GET-FRAME-SIZE ;mclr JSR2
 	RESET-STATE
 	( draw )
-	;redraw JSR2
+	;draw-viewport JSR2
 
 RTN
 
@@ -818,6 +831,12 @@ RTN
 
 	.viewport/x LDZ2 .viewport/y LDZ2 .viewport/w LDZ .viewport/h LDZ ;draw-frame-outline JSR2
 
+	( draw drag )
+	;drag-icn .Screen/addr DEO2
+	.viewport/x2 LDZ2 .Screen/x DEO2
+	.viewport/y2 LDZ2 .Screen/y DEO2
+	#05 .Screen/sprite DEO
+
 	( titlebar )
 	#06 ;draw-filepath JSR2
 
@@ -845,9 +864,9 @@ RTN
 	AUTO-NONE
 
 	( draw drag )
-	;drag-icn .Screen/addr DEO2
-	.viewport/x2 LDZ2 INC2 .Screen/x DEO2
-	.viewport/y2 LDZ2 INC2 .Screen/y DEO2
+	;pull-icn .Screen/addr DEO2
+	.surface/x2 LDZ2 .Screen/x DEO2
+	.surface/y2 LDZ2 .Screen/y DEO2
 	#05 .Screen/sprite DEO
 
 RTN
@@ -1062,6 +1081,17 @@ RTN
 
 RTN
 
+@draw-filesize ( -- )
+
+	AUTO-X
+	.viewport/x LDZ2 #0006 ++ ;filepath ;slen JSR2 8** ++ .Screen/x DEO2
+	.viewport/y LDZ2 DEC2 .Screen/y DEO2
+	.surface/w LDZ #09 ;draw-byte JSR2
+	LIT 'x #09 ;draw-char JSR2
+	.surface/h LDZ #09 ;draw-byte JSR2
+
+RTN
+
 ( strings )
 
 @draw-str ( text* color -- )
@@ -1075,10 +1105,6 @@ RTN
 	POPr
 
 RTN
-
-@draw-short ( short* color -- )
-
-	STH SWP STHkr ,draw-byte JSR STHr
 
 @draw-byte ( byte color -- )
 
