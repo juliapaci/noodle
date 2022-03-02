@@ -349,6 +349,9 @@ BRK
 		.viewport ;start-drag JSR2
 		POP2 POP2 BRK
 		&no-drag
+	.zoom/active LDZ ,&on-zoom JCN
+		POP2 POP2 BRK
+		&on-zoom
 
 	( set erase from right-click/mode )
 	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
