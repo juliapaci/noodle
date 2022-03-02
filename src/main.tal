@@ -44,7 +44,7 @@
 
 	( vectors )
 	;on-console .Console/vector DEO2
-	;untrap JSR2
+	
 
 	( colors )
 	#70fe .System/r DEO2
@@ -68,9 +68,10 @@
 	;on-drag-viewport .viewport/drag-event STZ2
 
 	#0030 #0030 ;set-viewport-position JSR2
-
 	#22 #15 ;set-viewport-size JSR2
 	#15 #11 ;set-surface-size JSR2
+
+	;untrap JSR2
 
 	;draw-panel JSR2
 
@@ -888,11 +889,6 @@ RTN
 @draw-viewport ( -- )
 
 	.viewport/x LDZ2 .viewport/y LDZ2 .viewport/w LDZ .viewport/h LDZ ;draw-frame-outline JSR2
-
-	;move-chr .Screen/addr DEO2
-	.viewport/x2 LDZ2 #0008 -- .Screen/x DEO2
-	.viewport/y LDZ2 #0001 -- .Screen/y DEO2
-	#85 .Screen/sprite DEO
 
 	( titlebar )
 	#06 ;draw-filepath JSR2
