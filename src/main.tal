@@ -20,7 +20,7 @@
 @viewport
 	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2 &size &w $1 &h $1
 @surface
-	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2 &w $1 &h $1
+	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2 &size &w $1 &h $1
 @resizer
 	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
 
@@ -173,12 +173,12 @@ BRK
 	;draw-cursor JSR2
 
 	.cursor/drag LDZ #00 > .Mouse/state DEI #00 = #0101 !! ,&no-panel-release JCN
-		;stop-drag JSR2 BRK
+		,stop-drag JSR BRK
 		&no-panel-release
 
 	.Mouse/x DEI2 .Mouse/y DEI2
 
-	.cursor/drag LDZ #00 > .Mouse/state DEI #00 > #0101 == ;on-drag JCN2
+	.cursor/drag LDZ #00 > .Mouse/state DEI #00 > #0101 == ,on-drag JCN
 
 	OVR2 OVR2 .panel ;within-rect JSR2 ;on-touch-panel JCN2
 	OVR2 OVR2 .surface ;within-rect JSR2 ;on-touch-surface JCN2
@@ -186,10 +186,20 @@ BRK
 	OVR2 OVR2 .resizer ;within-rect JSR2 ;on-touch-resizer JCN2
 	POP2 POP2
 
-
 BRK
 
 ( drag handlers )
+
+@on-drag ( x* y* -> )
+
+	( get event )
+	.cursor/drag LDZ #08 + LDZ2
+	DUP2 #0000 !! ,&has-event JCN
+		POP2 POP2 BRK
+		&has-event
+	JMP2
+
+BRK
 
 @start-drag ( rect -- )
 
@@ -204,17 +214,6 @@ RTN
 	#00 .cursor/drag STZ
 
 RTN
-
-@on-drag ( x* y* -> )
-
-	( get event )
-	.cursor/drag LDZ #08 + LDZ2
-	DUP2 #0000 !! ,&has-event JCN
-		POP2 POP2 BRK
-		&has-event
-	JMP2
-
-BRK
 
 @on-drag-panel ( x* y* -> )
 
@@ -236,7 +235,7 @@ BRK
 
 	.viewport/y LDZ2 -- 8// NIP STH
 	.viewport/x LDZ2 -- 8// NIP STHr
-	;set-viewport-size JSR2
+		;set-viewport-size JSR2
 	;draw-panel JSR2
 
 BRK
@@ -250,7 +249,7 @@ BRK
 	DUP2
 	.cursor/x1 LDZ2 -- STH2 .cursor/x1 STZ2
 		.viewport/x LDZ2 STH2r ++ STH2r
-	;set-viewport-position JSR2
+		;set-viewport-position JSR2
 	;draw-viewport JSR2
 	;draw-panel JSR2
 
@@ -260,7 +259,7 @@ BRK
 
 	#00 .viewport/h LDZ 2/ 8** .viewport/y LDZ2 ++ #0008 ++ -- 4// NIP STH
 	#00 .viewport/w LDZ 2/ 8** .viewport/x LDZ2 ++ #0008 ++ -- 4// NIP STHr
-	;set-surface-size JSR2
+		;set-surface-size JSR2
 
 BRK
 
@@ -269,11 +268,8 @@ BRK
 	.Mouse/state DEI #00 ! ,&on-click JCN
 		POP2 POP2 BRK
 		&on-click
-
-	.panel/y LDZ2 -- #0002 -- #000a // NIP
-	ROT ROT
-	.panel/x LDZ2 -- #000a // NIP
-	SWP
+	.panel/y LDZ2 -- #000c // NIP STH
+	.panel/x LDZ2 -- #000a // NIP STHr
 	( within x )
 	OVR #02 < ,&valid JCN POP2 BRK &valid
 	( within y )
@@ -369,7 +365,6 @@ BRK
 
 	.Controller/button DEI
 		DUP #01 AND ;on-button-ctrl JCN2
-		DUP #02 AND ;on-button-alt JCN2
 		DUP #f0 AND ;on-button-arrow JCN2
 		DUP #04 ! ,&no-shift JCN
 			.zoom/active TOGGLE
@@ -411,17 +406,6 @@ BRK
 	[ LIT 's ] !~ ,&no-save JCN ;save-file JSR2 POP BRK  &no-save
 	( copy glyph )
 	[ LIT 'p ] !~ ,&no-copy JCN ;glyph-snarf JSR2 POP BRK  &no-copy
-	POP
-
-BRK
-
-@on-button-alt ( button -> )
-
-	#04 SFT
-	[ #01 ] !~ ,&no-u JCN ( .canvas/w LDZ2 .canvas/h LDZ2 DEC2 ;set-size ) JSR2 &no-u
-	[ #02 ] !~ ,&no-d JCN ( .canvas/w LDZ2 .canvas/h LDZ2 INC2 ;set-size ) JSR2 &no-d
-	[ #04 ] !~ ,&no-l JCN ( .canvas/w LDZ2 DEC2 .canvas/h LDZ2 ;set-size ) JSR2 &no-l
-	[ #08 ] !~ ,&no-r JCN ( .canvas/w LDZ2 INC2 .canvas/h LDZ2 ;set-size ) JSR2 &no-r
 	POP
 
 BRK
@@ -533,6 +517,11 @@ RTN
 RTN
 
 @set-surface-size ( w h -- )
+
+	( only redraw on change )
+	DUP2 .surface/size LDZ2 !! ,&changed JCN
+		POP2 RTN
+		&changed
 
 	.surface/h STZ
 	.surface/w STZ
@@ -1073,7 +1062,7 @@ RTN
 	.viewport/x LDZ2 #0006 ++ .Screen/x DEO2
 	.viewport/y LDZ2 DEC2 .Screen/y DEO2
 	;save-icn .Screen/addr DEO2
-	.state/changed LDZ #03 + .Screen/sprite DEO
+	#0a .state/changed LDZ #05 * + .Screen/sprite DEO
 
 RTN
 
