@@ -18,7 +18,7 @@
 @panel
 	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
 @viewport
-	&x $2 &y $2 &x2 $2 &y2 $2 &w $1 &h $1
+	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2 &w $1 &h $1
 @surface
 	&x $2 &y $2 &x2 $2 &y2 $2 &w $1 &h $1
 @resizer
@@ -31,10 +31,7 @@
 
 @guide
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2
-
 @filepane
-	&x1 $2 &y1 $2 &x2 $2 &y2 $2
-@namepane
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2
 @line
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
@@ -61,8 +58,6 @@
 
 	.Screen/width DEI2 #0031 -- .Screen/height DEI2 #0010 -- #0020 #0008 SIZE-TO-RECT
 		.filepane/y2 STZ2 .filepane/x2 STZ2 .filepane/y1 STZ2 .filepane/x1 STZ2
-	#0038 .Screen/height DEI2 #0010 -- .Screen/width DEI2 #0070 -- #0008 SIZE-TO-RECT
-		.namepane/y2 STZ2 .namepane/x2 STZ2 .namepane/y1 STZ2 .namepane/x1 STZ2
 
 	( panel )
 	#0008 DUP2 .panel/x STZ2 #0018 ++ .panel/x2 STZ2
@@ -70,6 +65,7 @@
 
 	;on-drag-panel .panel/drag-event STZ2
 	;on-drag-resizer .resizer/drag-event STZ2
+	;on-drag-viewport .viewport/drag-event STZ2
 
 	#0030 #0030 ;set-viewport-position JSR2
 
@@ -194,7 +190,7 @@ BRK
 	.Mouse/x DEI2 .Mouse/y DEI2
 
 	.cursor/drag LDZ #00 > .Mouse/state DEI #00 = #0101 !! ,&no-panel-release JCN
-		;stop-drag JSR2 
+		;stop-drag JSR2
 		POP2 POP2 BRK
 		&no-panel-release
 
@@ -217,7 +213,6 @@ BRK
 	.state/presentation LDZ ,&end-present JCN
 
 	OVR2 OVR2 .filepane ;within-rect JSR2 ;on-touch-filepane JCN2
-	OVR2 OVR2 .namepane ;within-rect JSR2 ;on-touch-namepane JCN2
 
 	&end-present
 
@@ -275,11 +270,26 @@ BRK
 @on-drag-resizer ( x* y* -> )
 
 	;clear-viewport JSR2
-
 	.viewport/y LDZ2 -- 8// NIP STH
 	.viewport/x LDZ2 -- 8// NIP STHr
 	;set-viewport-size JSR2
 	;draw-viewport JSR2
+	;draw-panel JSR2
+
+BRK
+
+@on-drag-viewport ( x* y* -> )
+
+	;clear-viewport JSR2
+	DUP2
+	.cursor/y1 LDZ2 -- STH2 .cursor/y1 STZ2
+		.viewport/y LDZ2 STH2r ++ STH2
+	DUP2
+	.cursor/x1 LDZ2 -- STH2 .cursor/x1 STZ2
+		.viewport/x LDZ2 STH2r ++ STH2r
+	;set-viewport-position JSR2
+	;draw-viewport JSR2
+	;draw-panel JSR2
 
 BRK
 
@@ -289,7 +299,7 @@ BRK
 		POP2 POP2 BRK
 		&on-click
 
-	.panel/y LDZ2 -- #0004 -- #000a // NIP
+	.panel/y LDZ2 -- #0002 -- #000a // NIP
 	ROT ROT
 	.panel/x LDZ2 -- #000a // NIP
 	SWP
@@ -339,7 +349,18 @@ BRK
 
 @on-touch-viewport ( x* y* -- )
 
-	POP2 POP2
+	.viewport/y LDZ2 -- 8// NIP #00 = ,&move-y JCN
+		POP2 BRK
+		&move-y
+	.viewport/x2 LDZ2 SWP2 -- 8// NIP #00 = ,&move-x JCN
+		BRK
+		&move-x
+
+	.Mouse/state DEI #00 ! JMP BRK
+
+	.viewport ;start-drag JSR2
+
+	&skip
 
 BRK
 
@@ -349,7 +370,7 @@ BRK
 
 	.Mouse/state DEI #00 ! JMP BRK
 
-	.resizer ;start-drag JSR2 
+	.resizer ;start-drag JSR2
 
 BRK
 
@@ -372,15 +393,6 @@ BRK
 		RELEASE-MOUSE POP BRK
 		&no-save
 	POP
-
-BRK
-
-@on-touch-namepane ( x* y* -- )
-
-	( unused x y ) POP2 POP2
-
-	#00 ;draw-filepath JSR2
-	;trap JSR2
 
 BRK
 
@@ -520,13 +532,14 @@ RTN
 
 @set-viewport-position ( x* y* -- )
 
-	DUP2 .viewport/x STZ2 #00 .viewport/w LDZ 8** ++ .viewport/x2 STZ2
 	DUP2 .viewport/y STZ2 #00 .viewport/h LDZ 8** ++ .viewport/y2 STZ2
+	DUP2 .viewport/x STZ2 #00 .viewport/w LDZ 8** ++ .viewport/x2 STZ2
 
 	.viewport/x LDZ2 #0008 ++ DUP2 .surface/x STZ2 #00 .surface/w LDZ 8** ++ .surface/x2 STZ2
 	.viewport/y LDZ2 #0008 ++ DUP2 .surface/y STZ2 #00 .surface/h LDZ 8** ++ .surface/y2 STZ2
 
 	;update-resizer JSR2
+	;center-surface JSR2
 
 RTN
 
@@ -553,9 +566,9 @@ RTN
 		&center-x
 
 	( center )
-	.viewport/x LDZ2 STH2k #0008 ++ 
+	.viewport/x LDZ2 STH2k #0008 ++
 		.viewport/x2 LDZ2 STH2r -- #00 .surface/w LDZ 8* STH2k -- 2// ++
-		DUP2 .surface/x STZ2 
+		DUP2 .surface/x STZ2
 			STH2r DEC2 ++ .surface/x2 STZ2
 
 	&resume-x
@@ -566,9 +579,9 @@ RTN
 		,&resume-y JMP
 		&center-y
 
-	.viewport/y LDZ2 STH2k #0008 ++ 
+	.viewport/y LDZ2 STH2k #0008 ++
 		.viewport/y2 LDZ2 STH2r -- #00 .surface/h LDZ 8* STH2k -- 2// ++
-		DUP2 .surface/y STZ2 
+		DUP2 .surface/y STZ2
 			STH2r DEC2 ++ .surface/y2 STZ2
 
 	&resume-y
@@ -862,6 +875,11 @@ RTN
 
 	.viewport/x LDZ2 .viewport/y LDZ2 .viewport/w LDZ .viewport/h LDZ ;draw-frame-outline JSR2
 
+	;move-chr .Screen/addr DEO2
+	.viewport/x2 LDZ2 #0008 -- .Screen/x DEO2
+	.viewport/y LDZ2 #0001 -- .Screen/y DEO2
+	#85 .Screen/sprite DEO
+
 	( titlebar )
 	#06 ;draw-filepath JSR2
 
@@ -1019,7 +1037,7 @@ RTN
 
 @clear-viewport ( -- )
 
-	.viewport/x LDZ2 .viewport/y LDZ2 .viewport/w LDZ .viewport/h LDZ ;clear-frame JSR2
+	.viewport/x LDZ2 .viewport/y LDZ2 #0001 -- .viewport/w LDZ .viewport/h LDZ ;clear-frame JSR2
 
 RTN
 
@@ -1040,8 +1058,8 @@ RTN
 
 	;tool-icns .Screen/addr DEO2
 	#06 .brush/tool LDZ
-	.panel/x LDZ2 #0004 ++ 
-	.panel/y LDZ2 #0004 ++ 
+	.panel/x LDZ2 #0004 ++
+	.panel/y LDZ2 #0004 ++
 		,draw-icons JSR
 
 RTN
@@ -1050,8 +1068,8 @@ RTN
 
 	;patt-icns .Screen/addr DEO2
 	#08 .brush/patt LDZ
-	.panel/x LDZ2 #0004 ++ 
-	.panel/y LDZ2 #0029 ++ 
+	.panel/x LDZ2 #0004 ++
+	.panel/y LDZ2 #0029 ++
 		,draw-icons JSR
 
 RTN
@@ -1059,9 +1077,9 @@ RTN
 @draw-sizepane ( -- )
 
 	#00 .brush/mode LDZ 40* ;size-icns ++ .Screen/addr DEO2
-	#08 .brush/size LDZ 
-	.panel/x LDZ2 #0004 ++ 
-	.panel/y LDZ2 #0056 ++ 
+	#08 .brush/size LDZ
+	.panel/x LDZ2 #0004 ++
+	.panel/y LDZ2 #0056 ++
 		,draw-icons JSR
 
 RTN
@@ -1103,24 +1121,10 @@ RTN
 
 RTN
 
-@draw-namepane ( -- )
-
-	( bottom )
-	.namepane/x1 LDZ2 .Screen/x DEO2
-	.namepane/y1 LDZ2 .Screen/y DEO2
-	#06 ;draw-filepath JSR2
-	&clear
-		#00 .Screen/sprite DEO
-		.Screen/x DEI2 #0008 ++ DUP2 .Screen/x DEO2
-		.namepane/x2 LDZ2 << ,&clear JCN
-
-RTN
-
 @draw-background ( -- )
 
 	;draw-filepane/state JSR2
 	;draw-filepane JSR2
-	;draw-namepane JSR2
 
 RTN
 
