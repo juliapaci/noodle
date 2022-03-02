@@ -548,15 +548,32 @@ RTN
 
 @center-surface ( -- )
 
+	.viewport/w LDZ .surface/w LDZ > ,&center-x JCN
+		.viewport/x LDZ2 #0008 ++ .surface/x STZ2
+		.viewport/x2 LDZ2 .surface/x2 STZ2
+		,&resume-x JMP
+		&center-x
+
 	( center )
 	.viewport/x LDZ2 STH2k #0008 ++ 
 		.viewport/x2 LDZ2 STH2r -- #00 .surface/w LDZ 8* STH2k -- 2// ++
 		DUP2 .surface/x STZ2 
 			STH2r DEC2 ++ .surface/x2 STZ2
+
+	&resume-x
+
+	.viewport/h LDZ .surface/h LDZ > ,&center-y JCN
+		.viewport/y LDZ2 #0008 ++ .surface/y STZ2
+		.viewport/y2 LDZ2 .surface/y2 STZ2
+		,&resume-y JMP
+		&center-y
+
 	.viewport/y LDZ2 STH2k #0008 ++ 
 		.viewport/y2 LDZ2 STH2r -- #00 .surface/h LDZ 8* STH2k -- 2// ++
 		DUP2 .surface/y STZ2 
 			STH2r DEC2 ++ .surface/y2 STZ2
+
+	&resume-y
 
 RTN
 
@@ -858,10 +875,11 @@ RTN
 	#09 STH
 	;data .Screen/addr DEO2
 	.surface/y LDZ2 .Screen/y DEO2
-	.surface/h LDZ #00
+	.surface/h LDZ .viewport/h LDZ MAX #00
 	&ver
+		#00 OVR #00 .surface/w LDZ ** 8** ;data ++ .Screen/addr DEO2
 		.surface/x LDZ2 .Screen/x DEO2
-		.surface/w LDZ #00
+		.surface/w LDZ .viewport/w LDZ MAX #00
 		&hor
 			STHkr .Screen/sprite DEO
 			INC GTHk ,&hor JCN
