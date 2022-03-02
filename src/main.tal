@@ -7,7 +7,7 @@
 |0000
 
 @state
-	&timer $1 &presentation $1 &changed $1
+	&timer $1 &changed $1
 @brush
 	&tool $1 &size $1 &patt $1 &oper $2 &mode $1
 @cursor
@@ -26,12 +26,7 @@
 
 @filepath $40
 
-@theme
-	&r $1 &g $1 &b $1
-
 @guide
-	&x1 $2 &y1 $2 &x2 $2 &y2 $2
-@filepane
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2
 @line
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
@@ -189,27 +184,12 @@ BRK
 	OVR2 OVR2 .surface ;within-rect JSR2 ;on-touch-surface JCN2
 	OVR2 OVR2 .viewport ;within-rect JSR2 ;on-touch-viewport JCN2
 	OVR2 OVR2 .resizer ;within-rect JSR2 ;on-touch-resizer JCN2
+	POP2 POP2
 
 	( record mouse release outside of canvas )
 	.Mouse/state DEI #00 ! ,&skip JCN
 		#00 .cursor/last STZ
 		&skip
-
-	( only when click originates in pane )
-	.Mouse/state DEI #00 > .cursor/last LDZ #0100 !! ,&end JCN
-
-	( disable with presentation )
-	.state/presentation LDZ ,&end-present JCN
-
-	OVR2 OVR2 .filepane ;within-rect JSR2 ;on-touch-filepane JCN2
-
-	&end-present
-
-	( toggle present mode )
-	( ;present JSR2 )
-
-	&end
-	POP2 POP2
 
 BRK
 
@@ -303,7 +283,7 @@ BRK
 	&tool 2* + ;select-tool JSR2 RELEASE-MOUSE BRK
 	&patt #04 - 2* + ;select-patt JSR2 RELEASE-MOUSE BRK
 	&size #08 - 2* + ;select-size JSR2 RELEASE-MOUSE BRK
-	&drag .panel ;start-drag JSR2 BRK
+	&drag POP2 .panel ;start-drag JSR2 BRK
 
 BRK
 
@@ -370,28 +350,6 @@ BRK
 	.Mouse/state DEI #00 ! JMP BRK
 
 	.resizer ;start-drag JSR2
-
-BRK
-
-@on-touch-filepane ( x* y* -- )
-
-	( unused y ) POP2
-
-	.filepane/x1 LDZ2 -- 8// NIP
-
-	[ #00 ] !~ ,&no-blank JCN
-		;new-file JSR2
-		RELEASE-MOUSE POP BRK
-		&no-blank
-	[ #01 ] !~ ,&no-load JCN
-		;load-file JSR2
-		RELEASE-MOUSE POP BRK
-		&no-load
-	[ #03 ] !~ ,&no-save JCN
-		;save-file JSR2
-		RELEASE-MOUSE POP BRK
-		&no-save
-	POP
 
 BRK
 
@@ -597,33 +555,6 @@ RTN
 			STH2r DEC2 ++ .surface/y2 STZ2
 
 	&resume-y
-
-RTN
-
-@present ( -- )
-
-	.state/presentation TOGGLE
-
-	.state/presentation LDZ ,&hide JCN
-	,&show JMP
-
-	&show
-		( load theme )
-		.theme/r LDZ .System/r DEO
-		.theme/g LDZ .System/g DEO
-		.theme/b LDZ .System/b DEO
-		;draw-background JSR2
-		RELEASE-MOUSE
-		RTN
-
-	&hide
-		( save theme )
-		.System/r DEI DUP .theme/r STZ #0f AND .System/r DEO
-		.System/g DEI DUP .theme/g STZ #0f AND .System/g DEO
-		.System/b DEI DUP .theme/b STZ #0f AND .System/b DEO
-		;draw-background JSR2
-		RELEASE-MOUSE
-		RTN
 
 RTN
 
@@ -951,8 +882,12 @@ RTN
 
 @redraw ( -- )
 
-	;draw-background JSR2
 	;draw-viewport JSR2
+
+RTN
+
+@draw-state ( -- )
+
 
 RTN
 
@@ -1054,10 +989,21 @@ RTN
 	.panel/x LDZ2 .panel/y LDZ2 #01 #0e ;draw-frame JSR2
 	( tools )
 	,draw-toolpane JSR
-	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0024 ++ #01 ;line-hor JSR2
+	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0024 ++ #01 ,line-hor JSR
 	,draw-pattpane JSR
-	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0052 ++ #01 ;line-hor JSR2
+	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0052 ++ #01 ,line-hor JSR
 	,draw-sizepane JSR
+
+RTN
+
+@line-hor ( x0* x1* y* color -- )
+
+	STH .Screen/y DEO2 SWP2
+	&loop
+		( save ) DUP2 .Screen/x DEO2
+		( draw ) STHkr .Screen/pixel DEO
+		INC2 INC2 GTH2k ,&loop JCN
+	POP2 POP2 POPr
 
 RTN
 
@@ -1104,34 +1050,6 @@ RTN
 		INC GTHk ,&loop JCN
 	POP2
 	POPr
-
-RTN
-
-@draw-filepane ( -- )
-
-	AUTO-NONE
-	( file i/o )
-	.filepane/x1 LDZ2 .Screen/x DEO2
-	.filepane/y1 LDZ2 .Screen/y DEO2
-	;make-icn .Screen/addr DEO2
-	#01 .Screen/sprite DEO
-	.Screen/x DEI2 #0008 ++ .Screen/x DEO2
-	;load-icn .Screen/addr DEO2
-	#01 .Screen/sprite DEO
-	.Screen/x DEI2 #0010 ++ .Screen/x DEO2
-
-	&state ( -- )
-		.filepane/x1 LDZ2 #0018 ++ .Screen/x DEO2
-		.filepane/y1 LDZ2 .Screen/y DEO2
-		;save-icn .Screen/addr DEO2
-		#0a05 .state/changed LDZ SWP? POP .Screen/sprite DEO
-
-RTN
-
-@draw-background ( -- )
-
-	;draw-filepane/state JSR2
-	;draw-filepane JSR2
 
 RTN
 
@@ -1193,28 +1111,6 @@ RTN
 	&skip
 	POP2 POP2 POPr
 	#00
-
-RTN
-
-@line-hor ( x0* x1* y* color -- )
-
-	STH .Screen/y DEO2 SWP2
-	&loop
-		( save ) DUP2 .Screen/x DEO2
-		( draw ) STHkr .Screen/pixel DEO
-		INC2 INC2 GTH2k ,&loop JCN
-	POP2 POP2 POPr
-
-RTN
-
-@line-ver ( x* y0* y1* color -- )
-
-	STH ROT2 .Screen/x DEO2 SWP2
-	&loop
-		( save ) DUP2 .Screen/y DEO2
-		( draw ) STHkr .Screen/pixel DEO
-		INC2 INC2 GTH2k ,&loop JCN
-	POP2 POP2 POPr
 
 RTN
 
@@ -1286,26 +1182,6 @@ RTN
 	.Screen/x DEO2
 	.Screen/y DEO2
 	STHr .Screen/pixel DEO
-
-RTN
-
-@fill-rect ( rect color -- )
-
-	STH STH
-	( y2 ) STHkr #06 + LDZ2 INC2 INC2
-	( y1 ) STHkr #02 + LDZ2 DEC2
-	&ver
-		( save ) DUP2 .Screen/y DEO2
-		( x2 ) STHkr #04 + LDZ2 INC2 INC2
-		( x1 ) STHkr LDZ2 DEC2
-		&hor
-			( save ) DUP2 .Screen/x DEO2
-			( draw ) OVRr STHr .Screen/pixel DEO
-			INC2 GTH2k ,&hor JCN
-		POP2 POP2
-		INC2 GTH2k ,&ver JCN
-	POP2 POP2
-	POPr POPr
 
 RTN
 
