@@ -47,3 +47,4 @@ sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/roms/noodle.rom sd_card/uxn
 - New presentation mode
 - Optimize draw-tile
 - Merge frame drawing routines
+- Make patterns editable?
