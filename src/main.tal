@@ -31,7 +31,7 @@
 @line
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
 @line-guide
-	&x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2 &color $1
+	&x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
 
 ( program )
 
@@ -178,7 +178,7 @@ BRK
 
 	.Mouse/x DEI2 .Mouse/y DEI2
 
-	.cursor/drag LDZ #00 > .Mouse/state DEI #00 > #0101 == ,on-drag JCN
+	.cursor/drag LDZ #00 > .Mouse/state DEI #00 > AND ,on-drag JCN
 
 	OVR2 OVR2 .panel ;within-rect JSR2 ;on-touch-panel JCN2
 	OVR2 OVR2 .surface ;within-rect JSR2 ;on-touch-surface JCN2
@@ -312,10 +312,10 @@ BRK
 
 	.Mouse/state DEI #00 = ,&no-drag-start JCN
 	( viewport handle )
-	DUP2 .viewport/y LDZ2 -- #0007 >> ,&no-drag JCN
+	DUP2 .viewport/y LDZ2 -- #0007 >> ,&no-drag-viewport JCN
 		.viewport ;start-drag JSR2
 		POP2 POP2 BRK
-		&no-drag
+		&no-drag-viewport
 	( surface handle )
 	DUP2 .surface/y2 LDZ2 -- 8// NIP STH OVR2 .surface/x2 LDZ2 -- 8// NIP STHr #0000 !! ,&no-drag-surface JCN
 		.surface ;start-drag JSR2
@@ -324,7 +324,6 @@ BRK
 	&no-drag-start
 
 	&zoom
-
 	( set erase from right-click/mode )
 	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
 	( get function )
@@ -422,6 +421,7 @@ RTN
 
 @select-patt ( patt -- )
 
+	8MOD
 	.brush/patt STZ
 	( select brush )
 	.brush/tool LDZ ,&no-switch JCN
@@ -451,8 +451,8 @@ RTN
 
 	;data STH2k GET-FRAME-SIZE ++ STH2r
 	&loop
-		( load ) DUP2 DUP2 LDA #ff EOR
-		( save ) ROT ROT STA
+		( load ) STH2k LDAk #ff EOR
+		( save ) STH2r STA
 		INC2 GTH2k ,&loop JCN
 	POP2 POP2
 	;redraw JSR2
@@ -561,7 +561,7 @@ RTN
 	&loop
 		( paint ) .line/x2 LDZ2 .line/y2 LDZ2 .brush/oper LDZ2 JSR2
 		.line/x2 LDZ2 .line/y2 LDZ2 ;draw-tile JSR2
-		.line/x2 LDZ2 .line/x1 LDZ2 == .line/y2 LDZ2 .line/y1 LDZ2 == #0101 == ,&end JCN
+		.line/x2 LDZ2 .line/x1 LDZ2 == .line/y2 LDZ2 .line/y1 LDZ2 == AND ,&end JCN
 		.line/e1 LDZ2 2** .line/e2 STZ2
 		.line/e2 LDZ2 .line/dy LDZ2 LTS2 ,&skipy JCN
 			.line/e1 LDZ2 .line/dy LDZ2 ++ .line/e1 STZ2
@@ -586,11 +586,9 @@ RTN
 			DUP2 STH2kr ;patternize JSR2 #00 = ,&no-pixel JCN
 				DUP2 STH2kr .brush/oper LDZ2 JSR2
 				&no-pixel
-			INC2
-			OVR2 OVR2 GTS2 ,&hor JCN
+			INC2 OVR2 OVR2 GTS2 ,&hor JCN
 		POP2 POP2 POP2r
-		INC2
-		OVR2 OVR2 GTS2 ,&ver JCN
+		INC2 OVR2 OVR2 GTS2 ,&ver JCN
 	POP2 POP2
 	;draw-surface JSR2
 
@@ -632,17 +630,17 @@ RTN
 		POP OVR2r OVR2r
 		STH2r STH2r ++ #0001 AND2 #0000 ==
 		STH2r STH2r -- #0001 AND2 #0000 ==
-		#0101 == RTN &notone1
+		AND RTN &notone1
 	DUP #02 ! ,&notone2 JCN
 		POP OVR2r OVR2r
 		STH2r STH2r ++ #0003 AND2 #0000 ==
 		STH2r STH2r -- #0003 AND2 #0000 ==
-		#0101 == RTN &notone2
+		AND RTN &notone2
 	DUP #03 ! ,&notone3 JCN
 		POP OVR2r OVR2r
 		STH2r STH2r ++ #0005 AND2 #0000 ==
 		STH2r STH2r -- #0005 AND2 #0000 ==
-		#0101 == RTN &notone3
+		AND RTN &notone3
 	DUP #04 ! ,&notone4 JCN
 		POP STH2r STH2r
 		++ #0003 AND2 #0000 == RTN &notone4
@@ -895,7 +893,6 @@ RTN
 		#09 .Screen/sprite DEO
 		RTN
 		&no-zoom
-	( TODO: Draw onionskin )
 	#33 SFT2 SWP2 #33 SFT2 SWP2
 	OVR2 OVR2 ;get-row JSR2 .Screen/addr DEO2
 	.surface/y LDZ2 ++ .Screen/y DEO2
@@ -1124,20 +1121,19 @@ RTN
 
 @line-diag ( rect color -- )
 
-	( load ) .line-guide/color STZ
+	( color ) STH
 	( x0 ) LDZ2k  #0001 SUB2 .line-guide/x2 STZ2
 	( y0 ) INC INC LDZ2k #0001 SUB2  .line-guide/y2 STZ2
 	( x1 ) INC INC LDZ2k .line-guide/x1 STZ2
 	( y1 ) INC INC LDZ2 .line-guide/y1 STZ2
-
 	.line-guide/x1 LDZ2 .line-guide/x2 LDZ2 -- ABS2 .line-guide/dx STZ2
 	.line-guide/y1 LDZ2 .line-guide/y2 LDZ2 -- ABS2 #0000 SWP2 -- .line-guide/dy STZ2
 	#ffff #00 .line-guide/x2 LDZ2 .line-guide/x1 LDZ2 LTS2 2** ++ .line-guide/sx STZ2
 	#ffff #00 .line-guide/y2 LDZ2 .line-guide/y1 LDZ2 LTS2 2** ++ .line-guide/sy STZ2
 	.line-guide/dx LDZ2 .line-guide/dy LDZ2 ++ .line-guide/e1 STZ2
 	&loop
-		( paint ) .line-guide/x2 LDZ2 .Screen/x DEO2 .line-guide/y2 LDZ2 .Screen/y DEO2 .line-guide/color LDZ .Screen/pixel DEO
-		.line-guide/x2 LDZ2 .line-guide/x1 LDZ2 == .line-guide/y2 LDZ2 .line-guide/y1 LDZ2 == #0101 == ,&end JCN
+		( paint ) .line-guide/x2 LDZ2 .Screen/x DEO2 .line-guide/y2 LDZ2 .Screen/y DEO2 STHkr .Screen/pixel DEO
+		.line-guide/x2 LDZ2 .line-guide/x1 LDZ2 == .line-guide/y2 LDZ2 .line-guide/y1 LDZ2 == AND ,&end JCN
 		.line-guide/e1 LDZ2 2** .line-guide/e2 STZ2
 		.line-guide/e2 LDZ2 .line-guide/dy LDZ2 LTS2 ,&skipy JCN
 			.line-guide/e1 LDZ2 .line-guide/dy LDZ2 ++ .line-guide/e1 STZ2
@@ -1149,6 +1145,7 @@ RTN
 			&skipx
 		;&loop JMP2
 	&end
+	POPr
 
 RTN
 
