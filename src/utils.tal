@@ -74,8 +74,8 @@
 %GET-ITER { OVR2 NIP OVR SWP }
 %ADD-POSITIONS { ROT2 ++ ROT2 ROT2 ++ SWP2 }
 
-%SET-STATE { #01 .state/changed STZ ;draw-state JSR2 }
-%RESET-STATE { #00 .state/changed STZ ;draw-state JSR2 }
+%SET-STATE { #01 .state/changed STZ ;draw-filestate JSR2 }
+%RESET-STATE { #00 .state/changed STZ ;draw-filestate JSR2 }
 
 %GET-FRAME-SIZE { #00 .surface/h LDZ #00 .surface/w LDZ MUL2 8** } ( -- length* )
 
