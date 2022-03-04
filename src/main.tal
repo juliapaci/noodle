@@ -313,6 +313,8 @@ BRK
 
 @on-touch-viewport ( x* y* -- )
 
+	.zoom/active LDZ ,&on-zoom JCN
+	( no drag on zoom )
 	.Mouse/state DEI #00 = ,&no-drag-start JCN
 	( viewport handle )
 	DUP2 .viewport/y LDZ2 -- #0007 >> ,&no-drag JCN
@@ -325,11 +327,7 @@ BRK
 		POP2 POP2 BRK
 		&no-drag-surface
 	&no-drag-start
-
-	.zoom/active LDZ ,&on-zoom JCN
-		POP2 POP2 BRK
-		&on-zoom
-
+	&on-zoom
 	( set erase from right-click/mode )
 	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
 	( get mouse state )
