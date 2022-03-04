@@ -149,7 +149,7 @@ RTN
 
 	.state/timer LDZ
 	DUP 8MOD ,&no-blink JCN
-		DUP 8/ 2MOD 8* INC ;draw-filepath JSR2
+		DUP 8/ 2MOD 2* #06 + ;draw-filepath JSR2
 		&no-blink
 	INC .state/timer STZ
 
