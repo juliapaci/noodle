@@ -181,12 +181,14 @@ BRK
 	.Mouse/x DEI2 .Mouse/y DEI2
 	( on drag )
 	.cursor/drag LDZ #00 > .Mouse/state DEI #00 > AND ,on-drag JCN
-	( on default )
-	OVR2 OVR2 .viewport-handle ;within-rect JSR2 ;on-touch-viewport-handle JCN2
-	OVR2 OVR2 .surface-handle ;within-rect JSR2 ;on-touch-surface-handle JCN2
-	( on default )
+	( on panel )
 	OVR2 OVR2 .panel ;within-rect JSR2 ;on-touch-panel JCN2
-	OVR2 OVR2 .surface ;within-rect JSR2 ;on-touch-surface JCN2
+	.zoom/active LDZ ,&skip-handles JCN
+		OVR2 OVR2 .viewport-handle ;within-rect JSR2 ;on-touch-viewport-handle JCN2
+		OVR2 OVR2 .surface-handle ;within-rect JSR2 ;on-touch-surface-handle JCN2
+		OVR2 OVR2 .surface ;within-rect JSR2 ;on-touch-surface JCN2
+		&skip-handles
+	( on default )
 	OVR2 OVR2 .viewport ;within-rect JSR2 ;on-touch-viewport JCN2
 	POP2 POP2
 
@@ -487,6 +489,7 @@ RTN
 	;clear-panel JSR2
 	DUP2 .panel/y STZ2 #0088 ++ .panel/y2 STZ2
 	DUP2 .panel/x STZ2 #0018 ++ .panel/x2 STZ2
+	;update-handles JSR2
 	;draw-panel JSR2
 
 RTN
@@ -552,6 +555,7 @@ RTN
 
 	&resume-y
 
+	;update-handles JSR2
 	;draw-viewport JSR2
 	;draw-filestate JSR2
 	;draw-filesize JSR2
@@ -817,7 +821,7 @@ RTN
 	.viewport/x LDZ2 .viewport/y LDZ2 .viewport/w LDZ .viewport/h LDZ ;draw-frame-outline JSR2
 
 	( draw drag )
-	;drag-icn .Screen/addr DEO2
+	;viewport-handle-icn .Screen/addr DEO2
 	.viewport/x2 LDZ2 .Screen/x DEO2
 	.viewport/y2 LDZ2 .Screen/y DEO2
 	#05 .Screen/sprite DEO
@@ -853,10 +857,10 @@ RTN
 	.surface/size LDZ2 #0000 == ,&no-handle JCN
 
 	( draw handle )
-	;pull-icn .Screen/addr DEO2
-	.surface/x2 LDZ2 .Screen/x DEO2
-	.surface/y2 LDZ2 .Screen/y DEO2
-	#05 .Screen/sprite DEO
+	;surface-handle-icn .Screen/addr DEO2
+	.surface-handle/x LDZ2 .Screen/x DEO2
+	.surface-handle/y LDZ2 .Screen/y DEO2
+	#0f .Screen/sprite DEO
 	&no-handle
 
 RTN
