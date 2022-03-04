@@ -43,10 +43,11 @@ sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/roms/noodle.rom sd_card/uxn
 
 - Undo/redo
 - Open tga file
-- Auto-read filesize from filepath for icn
 - New presentation mode
 - Optimize draw-tile
 - Merge frame drawing routines
 - Make patterns editable?
 - Shift layer content
 - Layer blending?
+- Crop tool
+- Animate between two layers

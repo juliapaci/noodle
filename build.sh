@@ -21,4 +21,4 @@ then
 fi
 
 echo "Running.."
-uxnemu bin/noodle.rom # lemon15x12.icn
+uxnemu bin/noodle.rom lemon15x12.icn

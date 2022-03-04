@@ -25,6 +25,7 @@
 %EMIT   { #18 DEO }
 %DEBUG  { ;print/byte JSR2 #0a EMIT }
 %DEBUG2 { ;print/short JSR2 #0a EMIT }
+%PRINT  { ;print-str JSR2 #0a EMIT }
 
 %IS-VALID { DUP #1f > SWP #7f < AND }
 %IS-UC { DUP #40 > SWP #5b < AND }

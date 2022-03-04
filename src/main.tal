@@ -795,8 +795,10 @@ RTN
 	RESET-STATE
 	( load )
 	;filepath .File/name DEO2
-	GET-FRAME-SIZE .File/length DEO2
+	#fff0 ;data -- .File/length DEO2
 	;data .File/read DEO2
+	( capture size )
+	;filepath ;scap JSR2 #0009 -- ;read-size JSR2
 	( draw )
 	;redraw JSR2
 
@@ -811,6 +813,18 @@ RTN
 	;redraw JSR2
 
 RTN
+
+@read-size ( size* -- )
+
+	DUP2 ;sbyte JSR2 #00 = ,&cancel JCN
+	DUP2 #0002 ++ LDA LIT 'x ! ,&cancel JCN
+	DUP2 #0003 ++ ;sbyte JSR2 #00 = ,&cancel JCN
+	( y ) DUP2 #0003 ++ ;sbyte JSR2 STH
+	( x ) ;sbyte JSR2 STHr
+		;set-surface-size JSR2
+
+RTN
+	&cancel POP2 RTN
 
 ( Drawing )
 

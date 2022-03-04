@@ -124,6 +124,28 @@ RTN
 
 RTN
 
+( hex parsing )
+
+@sbyte ( str* -- byte )
+
+	LDAk ,chex JSR STH
+	INC2 LDA ,chex JSR 
+	STHr #40 SFT ADD
+
+RTN
+
+@chex ( char -- hex )
+
+	DUP #2f > OVR #3a < AND ,&number JCN
+	DUP #60 > OVR #67 < AND ,&lc JCN
+	DUP #40 > OVR #47 < AND ,&uc JCN
+		POP #00 RTN
+	&number #30 - RTN
+	&uc #37 - RTN
+	&lc #57 - RTN
+
+RTN
+
 ( memory generics )
 
 @mclr ( addr* len* -- )
@@ -184,3 +206,12 @@ RTN
 	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD EMIT
 
 RTN
+
+@print-str ( str* -- )
+
+	#0001 SUB2
+	&while
+		INC2 LDAk DUP EMIT ,&while JCN
+	POP2
+
+JMP2r
