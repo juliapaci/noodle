@@ -268,20 +268,20 @@ BRK
 	.Mouse/state DEI #00 ! ,&on-click JCN
 		POP2 POP2 BRK
 		&on-click
-	.panel/y LDZ2 -- #000c // NIP STH
+	.panel/y LDZ2 #0003 ++ -- #000a // NIP DUP DEBUG STH
 	.panel/x LDZ2 -- #000a // NIP STHr
 	( within x )
 	OVR #02 < ,&valid JCN POP2 BRK &valid
 	( within y )
-	DUP #02 < ,&tool JCN
-	DUP #02 = ,&drag JCN
-	DUP #07 = ,&drag JCN
-	DUP #02 > OVR #07 < AND ,&patt JCN
-	DUP #06 > OVR #0b < AND ,&size JCN
+	DUP #03 < ,&tool JCN
+	DUP #03 = ,&drag JCN
+	DUP #08 = ,&drag JCN
+	DUP #03 > OVR #08 < AND ,&patt JCN
+	DUP #07 > OVR #0d < AND ,&size JCN
 	BRK
 	&tool 2* + ;select-tool JSR2 RELEASE-MOUSE BRK
-	&patt #03 - 2* + ;select-patt JSR2 RELEASE-MOUSE BRK
-	&size #07 - 2* + ;select-size JSR2 RELEASE-MOUSE BRK
+	&patt #04 - 2* + ;select-patt JSR2 RELEASE-MOUSE BRK
+	&size #09 - 2* + ;select-size JSR2 RELEASE-MOUSE BRK
 	&drag POP2 .panel ;start-drag JSR2 BRK
 
 BRK
@@ -962,7 +962,7 @@ RTN
 
 @clear-panel ( -- )
 
-	.panel/x LDZ2 .panel/y LDZ2 #01 #0e ;clear-frame JSR2
+	.panel/x LDZ2 .panel/y LDZ2 #01 #0f ;clear-frame JSR2
 
 RTN
 
@@ -975,12 +975,12 @@ RTN
 @draw-panel ( -- )
 
 	( frame )
-	.panel/x LDZ2 .panel/y LDZ2 #01 #0e ;draw-frame JSR2
+	.panel/x LDZ2 .panel/y LDZ2 #01 #0f ;draw-frame JSR2
 	( tools )
 	,draw-toolpane JSR
-	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0024 ++ #01 ,line-hor JSR
+	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0026 ++ #01 ,line-hor JSR
 	,draw-pattpane JSR
-	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0052 ++ #01 ,line-hor JSR
+	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0058 ++ #01 ,line-hor JSR
 	,draw-sizepane JSR
 
 RTN
@@ -1001,7 +1001,7 @@ RTN
 	;tool-icns .Screen/addr DEO2
 	#06 .brush/tool LDZ
 	.panel/x LDZ2 #0004 ++
-	.panel/y LDZ2 #0004 ++
+	.panel/y LDZ2 #0005 ++
 		,draw-icons JSR
 
 RTN
@@ -1011,7 +1011,7 @@ RTN
 	;patt-icns .Screen/addr DEO2
 	#08 .brush/patt LDZ
 	.panel/x LDZ2 #0004 ++
-	.panel/y LDZ2 #0029 ++
+	.panel/y LDZ2 #002d ++
 		,draw-icons JSR
 
 RTN
@@ -1021,7 +1021,7 @@ RTN
 	#00 .brush/mode LDZ 40* ;size-icns ++ .Screen/addr DEO2
 	#08 .brush/size LDZ
 	.panel/x LDZ2 #0004 ++
-	.panel/y LDZ2 #0056 ++
+	.panel/y LDZ2 #005f ++
 		,draw-icons JSR
 
 RTN
