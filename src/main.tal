@@ -19,9 +19,11 @@
 	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
 @viewport
 	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2 &size &w $1 &h $1
+@viewport-handle
+	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
 @surface
 	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2 &size &w $1 &h $1
-@resizer
+@surface-handle
 	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
 
 @filepath $40
@@ -42,9 +44,9 @@
 	
 	( connect drag events )
 	;on-drag-panel .panel/drag-event STZ2
-	;on-drag-resizer .resizer/drag-event STZ2
+	;on-drag-viewport-handle .viewport-handle/drag-event STZ2
 	;on-drag-viewport .viewport/drag-event STZ2
-	;on-drag-surface .surface/drag-event STZ2
+	;on-drag-surface-handle .surface-handle/drag-event STZ2
 
 	( colors )
 	#70fe .System/r DEO2
@@ -177,13 +179,15 @@ BRK
 		&no-panel-release
 
 	.Mouse/x DEI2 .Mouse/y DEI2
-
+	( on drag )
 	.cursor/drag LDZ #00 > .Mouse/state DEI #00 > AND ,on-drag JCN
-
+	( on default )
+	OVR2 OVR2 .viewport-handle ;within-rect JSR2 ;on-touch-viewport-handle JCN2
+	OVR2 OVR2 .surface-handle ;within-rect JSR2 ;on-touch-surface-handle JCN2
+	( on default )
 	OVR2 OVR2 .panel ;within-rect JSR2 ;on-touch-panel JCN2
 	OVR2 OVR2 .surface ;within-rect JSR2 ;on-touch-surface JCN2
 	OVR2 OVR2 .viewport ;within-rect JSR2 ;on-touch-viewport JCN2
-	OVR2 OVR2 .resizer ;within-rect JSR2 ;on-touch-resizer JCN2
 	POP2 POP2
 
 BRK
@@ -193,16 +197,13 @@ BRK
 @on-drag ( x* y* -> )
 
 	( get event )
-	.cursor/drag LDZ #08 + LDZ2
-	DUP2 #0000 !! ,&has-event JCN
-		POP2 POP2 BRK
-		&has-event
-	JMP2
+	.cursor/drag LDZ #08 + LDZ2	JMP2
 
 BRK
 
 @start-drag ( rect -- )
 
+	( set frame )
 	.cursor/drag STZ
 	.Mouse/x DEI2 .cursor/x1 STZ2
 	.Mouse/y DEI2 .cursor/y1 STZ2
@@ -211,6 +212,7 @@ RTN
 
 @stop-drag ( -- )
 
+	( release )
 	#00 .cursor/drag STZ
 
 RTN
@@ -231,12 +233,20 @@ RTN
 
 BRK
 
-@on-drag-resizer ( x* y* -> )
+@on-drag-viewport-handle ( x* y* -> )
 
 	.viewport/y LDZ2 -- 8// NIP STH
 	.viewport/x LDZ2 -- 8// NIP STHr
 		;set-viewport-size JSR2
 	;draw-panel JSR2
+
+BRK
+
+@on-drag-surface-handle ( x* y* -> )
+
+	#00 .viewport/h LDZ 2/ 8** .viewport/y LDZ2 ++ #0008 ++ -- 4// NIP STH
+	#00 .viewport/w LDZ 2/ 8** .viewport/x LDZ2 ++ #0008 ++ -- 4// NIP STHr
+		;set-surface-size JSR2
 
 BRK
 
@@ -255,20 +265,12 @@ BRK
 
 BRK
 
-@on-drag-surface ( x* y* -> )
-
-	#00 .viewport/h LDZ 2/ 8** .viewport/y LDZ2 ++ #0008 ++ -- 4// NIP STH
-	#00 .viewport/w LDZ 2/ 8** .viewport/x LDZ2 ++ #0008 ++ -- 4// NIP STHr
-		;set-surface-size JSR2
-
-BRK
-
 @on-touch-panel ( x* y* -> )
 
 	.Mouse/state DEI #00 ! ,&on-click JCN
 		POP2 POP2 BRK
 		&on-click
-	.panel/y LDZ2 #0003 ++ -- #000a // NIP DUP DEBUG STH
+	.panel/y LDZ2 #0003 ++ -- #000a // NIP STH
 	.panel/x LDZ2 -- #000a // NIP STHr
 	( within x )
 	OVR #02 < ,&valid JCN POP2 BRK &valid
@@ -289,7 +291,7 @@ BRK
 @on-touch-surface ( x* y* -> )
 
 	( pass to viewport on zoom )
-	.zoom/active LDZ ;on-touch-viewport/zoom JCN2
+	.zoom/active LDZ ;on-touch-viewport JCN2
 
 	( set erase from right-click/mode )
 	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
@@ -312,16 +314,7 @@ BRK
 		.viewport ;start-drag JSR2
 		POP2 POP2 BRK
 		&no-drag-viewport
-	( no drag on zoom )
-	.zoom/active LDZ ,&zoom JCN
-	.Mouse/state DEI #00 = ,&no-drag-start JCN
-	( surface handle )
-	DUP2 .surface/y2 LDZ2 -- 8// NIP STH OVR2 .surface/x2 LDZ2 -- 8// NIP STHr #0000 !! ,&no-drag-surface JCN
-		.surface ;start-drag JSR2
-		POP2 POP2 BRK
-		&no-drag-surface
-	&no-drag-start
-	&zoom
+
 	( set erase from right-click/mode )
 	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
 	( get function )
@@ -336,14 +329,25 @@ BRK
 
 BRK
 
-@on-touch-resizer ( x* y* -- )
+@on-touch-viewport-handle ( x* y* -- )
 
 	POP2 POP2
 
 	.zoom/active LDZ #00 = JMP BRK
 	.Mouse/state DEI #00 ! JMP BRK
 
-	.resizer ;start-drag JSR2
+	.viewport-handle ;start-drag JSR2
+
+BRK
+
+@on-touch-surface-handle ( x* y* -- )
+
+	POP2 POP2
+
+	.zoom/active LDZ #00 = JMP BRK
+	.Mouse/state DEI #00 ! JMP BRK
+
+	.surface-handle ;start-drag JSR2
 
 BRK
 
@@ -471,7 +475,7 @@ RTN
 	;clear-viewport JSR2
 	DUP .viewport/h STZ TOS 8** .viewport/y LDZ2 ++ .viewport/y2 STZ2
 	DUP .viewport/w STZ TOS 8** .viewport/x LDZ2 ++ .viewport/x2 STZ2
-	;update-resizer JSR2
+	;update-handles JSR2
 	;draw-viewport JSR2
 	;center-surface JSR2
 
@@ -495,15 +499,17 @@ RTN
 	.viewport/x LDZ2 #0008 ++ DUP2 .surface/x STZ2 #00 .surface/w LDZ 8** ++ .surface/x2 STZ2
 	.viewport/y LDZ2 #0008 ++ DUP2 .surface/y STZ2 #00 .surface/h LDZ 8** ++ .surface/y2 STZ2
 
-	;update-resizer JSR2
+	;update-handles JSR2
 	;center-surface JSR2
 
 RTN
 
-@update-resizer ( -- )
+@update-handles ( -- )
 
-	.viewport/x2 LDZ2 DUP2 .resizer/x STZ2 #0008 ++ .resizer/x2 STZ2
-	.viewport/y2 LDZ2 DUP2 .resizer/y STZ2 #0008 ++ .resizer/y2 STZ2
+	.viewport/x2 LDZ2 DUP2 .viewport-handle/x STZ2 #0008 ++ .viewport-handle/x2 STZ2
+	.viewport/y2 LDZ2 DUP2 .viewport-handle/y STZ2 #0008 ++ .viewport-handle/y2 STZ2
+	.surface/x2 LDZ2 DUP2 .surface-handle/x STZ2 #0008 ++ .surface-handle/x2 STZ2
+	.surface/y2 LDZ2 DUP2 .surface-handle/y STZ2 #0008 ++ .surface-handle/y2 STZ2
 
 RTN
 
@@ -1056,8 +1062,8 @@ RTN
 	.viewport/x LDZ2 #0006 ++ .Screen/x DEO2
 	.viewport/y LDZ2 DEC2 .Screen/y DEO2
 	;save-icns .Screen/addr DEO2
-	#01 .Screen/sprite DEO 
-	#0a .state/changed LDZ #05 * + .Screen/sprite DEO 
+	#01 .Screen/sprite DEO
+	#0a .state/changed LDZ #05 * + .Screen/sprite DEO
 
 RTN
 
@@ -1069,7 +1075,7 @@ RTN
 	;filepath STHr ;draw-str JSR2
 	( cap )
 	;save-icns/cap .Screen/addr DEO2
-	#01 .Screen/sprite DEO 
+	#01 .Screen/sprite DEO
 
 RTN
 
