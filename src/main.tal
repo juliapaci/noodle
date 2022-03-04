@@ -307,22 +307,20 @@ BRK
 
 @on-touch-viewport ( x* y* -- )
 
-	( no drag on zoom )
-	.zoom/active LDZ ,&zoom JCN
-
-	.Mouse/state DEI #00 = ,&no-drag-start JCN
 	( viewport handle )
-	DUP2 .viewport/y LDZ2 -- #0007 >> ,&no-drag-viewport JCN
+	DUP2 .viewport/y LDZ2 -- #0008 << .Mouse/state DEI #00 > AND #00 = ,&no-drag-viewport JCN
 		.viewport ;start-drag JSR2
 		POP2 POP2 BRK
 		&no-drag-viewport
+	( no drag on zoom )
+	.zoom/active LDZ ,&zoom JCN
+	.Mouse/state DEI #00 = ,&no-drag-start JCN
 	( surface handle )
 	DUP2 .surface/y2 LDZ2 -- 8// NIP STH OVR2 .surface/x2 LDZ2 -- 8// NIP STHr #0000 !! ,&no-drag-surface JCN
 		.surface ;start-drag JSR2
 		POP2 POP2 BRK
 		&no-drag-surface
 	&no-drag-start
-
 	&zoom
 	( set erase from right-click/mode )
 	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
@@ -342,6 +340,7 @@ BRK
 
 	POP2 POP2
 
+	.zoom/active LDZ #00 = JMP BRK
 	.Mouse/state DEI #00 ! JMP BRK
 
 	.resizer ;start-drag JSR2
@@ -822,7 +821,7 @@ RTN
 
 @draw-surface ( -- )
 
-	.zoom/active LDZ ,draw-surface-zoom JCN
+	.zoom/active LDZ ;draw-surface-zoom JCN2
 
 	AUTO-XADDR
 	#09 STH
@@ -843,11 +842,16 @@ RTN
 	POPr
 	AUTO-NONE
 
-	( draw drag )
+	.surface/w LDZ .viewport/w LDZ #02 - > ,&no-handle JCN
+	.surface/h LDZ .viewport/h LDZ #02 - > ,&no-handle JCN
+	.surface/size LDZ2 #0000 == ,&no-handle JCN
+
+	( draw handle )
 	;pull-icn .Screen/addr DEO2
 	.surface/x2 LDZ2 .Screen/x DEO2
 	.surface/y2 LDZ2 .Screen/y DEO2
 	#05 .Screen/sprite DEO
+	&no-handle
 
 RTN
 
@@ -1048,26 +1052,33 @@ RTN
 
 @draw-filestate ( -- )
 
+	AUTO-ADDR
 	.viewport/x LDZ2 #0006 ++ .Screen/x DEO2
 	.viewport/y LDZ2 DEC2 .Screen/y DEO2
-	;save-icn .Screen/addr DEO2
-	#0a .state/changed LDZ #05 * + .Screen/sprite DEO
+	;save-icns .Screen/addr DEO2
+	#01 .Screen/sprite DEO 
+	#0a .state/changed LDZ #05 * + .Screen/sprite DEO 
 
 RTN
 
 @draw-filepath ( color -- )
 
 	STH
-	.viewport/x LDZ2 #0010 ++ .Screen/x DEO2
+	.viewport/x LDZ2 #000e ++ .Screen/x DEO2
 	.viewport/y LDZ2 DEC2 .Screen/y DEO2
 	;filepath STHr ;draw-str JSR2
+	( cap )
+	;save-icns/cap .Screen/addr DEO2
+	#01 .Screen/sprite DEO 
 
 RTN
 
 @draw-filesize ( -- )
 
+	.zoom/active LDZ #00 = RTN?
+	.viewport/w LDZ #05 > RTN?
 	.surface/y LDZ2 .viewport/y LDZ2 #0010 ++ >> RTN?
-
+	
 	AUTO-X
 	.surface/x LDZ2 .Screen/x DEO2
 	.surface/y LDZ2 #0008 -- .Screen/y DEO2

@@ -22,9 +22,15 @@
 
 @pull-icn f8f0 e0c0 8000 0000
 @drag-icn 0000 0103 070f 1f3f
-@save-icn 1054 28c6 2854 1000
-@make-icn fe82 8282 848a f400
-@load-icn feaa d6aa d4aa f400
+
+@save-icns
+	3f7f ffff ffff ffff
+	0000 040e 1f0e 0400
+	&cap
+	fcfe ffff ffff ffff
+@eyes-icns
+	0000 0082 4438 0000
+	0038 4492 2810 0000
 
 @bigpixel-icns
 	5580 0080 0080 0080
@@ -46,12 +52,6 @@
 	1028 4482 4428 1000
 	3844 8282 8244 3800
 	7c82 8282 8282 7c00
-@anim-icns
-	0000 1838 7838 1800
-	0000 181c 1e1c 1800
-@eyes-icns
-	0000 0082 4438 0000
-	0038 4492 2810 0000
 @patt-icns
 	fefe fefe fefe fe00
 	fed6 aad6 aad6 fe00
