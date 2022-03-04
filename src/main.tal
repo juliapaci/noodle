@@ -22,7 +22,7 @@
 @viewport-handle
 	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
 @surface
-	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2 &size &w $1 &h $1
+	&x $2 &y $2 &x2 $2 &y2 $2 &size &w $1 &h $1
 @surface-handle
 	&x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
 
@@ -64,8 +64,8 @@
 	( initial position )
 	#0008 #0008 ;set-panel-position JSR2
 	#0020 #000a ;set-viewport-position JSR2
-	#22 #15 ;set-viewport-size JSR2
-	#15 #11 ;set-surface-size JSR2
+	.Screen/width DEI2 8// NIP #08 - .Screen/height DEI2 8// NIP #04 - ;set-viewport-size JSR2
+	#20 #14 ;set-surface-size JSR2
 
 	( let's begin. )
 	;untrap JSR2
@@ -557,7 +557,6 @@ RTN
 	;update-handles JSR2
 	;draw-viewport JSR2
 	;draw-filestate JSR2
-	;draw-filesize JSR2
 
 RTN
 
@@ -852,6 +851,8 @@ RTN
 	POPr
 	AUTO-NONE
 
+	;draw-filesize JSR2
+
 	.surface/w LDZ .viewport/w LDZ #02 - > ,&no-handle JCN
 	.surface/h LDZ .viewport/h LDZ #02 - > ,&no-handle JCN
 	.surface/size LDZ2 #0000 == ,&no-handle JCN
@@ -1087,7 +1088,7 @@ RTN
 
 	.zoom/active LDZ #00 = RTN?
 	.viewport/w LDZ #05 > RTN?
-	.surface/y LDZ2 .viewport/y LDZ2 #0010 ++ >> RTN?
+	.surface/y LDZ2 .viewport/y LDZ2 #0008 ++ >> RTN?
 	
 	AUTO-X
 	.surface/x LDZ2 .Screen/x DEO2
