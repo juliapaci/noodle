@@ -724,6 +724,13 @@ RTN
 
 RTN
 
+@set-pixel ( x* y* color -- )
+
+	,add-pixel JCN
+	,remove-pixel JMP
+
+RTN
+
 @add-pixel ( x* y* -- )
 
 	,within-canvas JSR ,&continue JCN
@@ -793,6 +800,7 @@ RTN
 	( erase data )
 	;data GET-FRAME-SIZE ;mclr JSR2
 	RESET-STATE
+	;filepath ;scap JSR2 #0003 -- ;&tga-ext ;scmp JSR2 ;load-file-tga JCN2
 	( load )
 	;filepath .File/name DEO2
 	#fff0 ;data -- .File/length DEO2
@@ -803,6 +811,7 @@ RTN
 	;redraw JSR2
 
 RTN
+	&tga-ext "tga $1
 
 @save-file ( path* -- )
 
@@ -1380,6 +1389,7 @@ BRK
 @untitled-txt  "untitled.icn $1
 
 ~src/stdlib.tal
+~src/tga.tal
 ~src/gly.tal
 ~src/assets.tal
 

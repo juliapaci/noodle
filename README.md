@@ -42,12 +42,11 @@ sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/roms/noodle.rom sd_card/uxn
 ## TODOs(redesign tasks)
 
 - Undo/redo
-- Open tga file
 - New presentation mode
-- Optimize draw-tile
 - Merge frame drawing routines
 - Make patterns editable?
 - Shift layer content
 - Layer blending?
 - Crop tool
 - Animate between two layers
+- Offset surface content
