@@ -273,15 +273,15 @@ BRK
 	( within x )
 	OVR #02 < ,&valid JCN POP2 BRK &valid
 	( within y )
-	DUP #03 < ,&tool JCN
-	DUP #03 = ,&drag JCN
-	DUP #08 = ,&drag JCN
-	DUP #03 > OVR #08 < AND ,&patt JCN
-	DUP #07 > OVR #0c < AND ,&size JCN
+	DUP #02 < ,&tool JCN
+	DUP #02 = ,&drag JCN
+	DUP #07 = ,&drag JCN
+	DUP #02 > OVR #07 < AND ,&patt JCN
+	DUP #06 > OVR #0b < AND ,&size JCN
 	BRK
 	&tool 2* + ;select-tool JSR2 RELEASE-MOUSE BRK
-	&patt #04 - 2* + ;select-patt JSR2 RELEASE-MOUSE BRK
-	&size #08 - 2* + ;select-size JSR2 RELEASE-MOUSE BRK
+	&patt #03 - 2* + ;select-patt JSR2 RELEASE-MOUSE BRK
+	&size #07 - 2* + ;select-size JSR2 RELEASE-MOUSE BRK
 	&drag POP2 .panel ;start-drag JSR2 BRK
 
 BRK
@@ -289,21 +289,15 @@ BRK
 @on-touch-surface ( x* y* -> )
 
 	( pass to viewport on zoom )
-	.zoom/active LDZ ;on-touch-viewport JCN2
+	.zoom/active LDZ ;on-touch-viewport/zoom JCN2
+
 	( set erase from right-click/mode )
 	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
-	( get mouse state )
-	.Mouse/state DEI #00 > #10 SFT .cursor/last LDZ #00 > + #00 SWP 2**
-	( non-hover states )
-	DUP2 #0000 >> ,&continue JCN
-		POP2 POP2 POP2 BRK
-		&continue
-	( get tool offset )
-	.brush/tool LDZ #00 SWP 8**
+	( get function )
+	#00 .Mouse/state DEI #00 > 2* .cursor/last LDZ #00 > + 2*
+	#00 .brush/tool LDZ 8** ;tools ++ ++ LDA2 STH2
 	( record state )
 	.Mouse/state DEI .cursor/last STZ
-	( find fns )
-	;tools ++ ++ LDA2 STH2
 	( canvas offset )
 	.surface/y LDZ2 -- SWP2
 	.surface/x LDZ2 -- SWP2
@@ -313,8 +307,9 @@ BRK
 
 @on-touch-viewport ( x* y* -- )
 
-	.zoom/active LDZ ,&on-zoom JCN
 	( no drag on zoom )
+	.zoom/active LDZ ,&zoom JCN
+
 	.Mouse/state DEI #00 = ,&no-drag-start JCN
 	( viewport handle )
 	DUP2 .viewport/y LDZ2 -- #0007 >> ,&no-drag JCN
@@ -327,21 +322,16 @@ BRK
 		POP2 POP2 BRK
 		&no-drag-surface
 	&no-drag-start
-	&on-zoom
+
+	&zoom
+
 	( set erase from right-click/mode )
 	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
-	( get mouse state )
-	.Mouse/state DEI #00 > #10 SFT .cursor/last LDZ #00 > + #00 SWP 2**
-	( non-hover states )
-	DUP2 #0000 >> ,&continue JCN
-		POP2 POP2 POP2 BRK
-		&continue
-	( get tool offset )
-	.brush/tool LDZ #00 SWP 8**
+	( get function )
+	#00 .Mouse/state DEI #00 > 2* .cursor/last LDZ #00 > + 2*
+	#00 .brush/tool LDZ 8** ;tools ++ ++ LDA2 STH2
 	( record state )
 	.Mouse/state DEI .cursor/last STZ
-	( find fns )
-	;tools ++ ++ LDA2 STH2
 	( canvas offset )
 	.viewport/y LDZ2 #0008 ++ -- 8// .zoom/y LDZ2 ++ SWP2
 	.viewport/x LDZ2 #0008 ++ -- 8// .zoom/x LDZ2 ++ SWP2
@@ -477,8 +467,8 @@ RTN
 		&changed
 
 	;clear-viewport JSR2
-	DUP .viewport/h STZ #00 SWP 8** .viewport/y LDZ2 ++ .viewport/y2 STZ2
-	DUP .viewport/w STZ #00 SWP 8** .viewport/x LDZ2 ++ .viewport/x2 STZ2
+	DUP .viewport/h STZ TOS 8** .viewport/y LDZ2 ++ .viewport/y2 STZ2
+	DUP .viewport/w STZ TOS 8** .viewport/x LDZ2 ++ .viewport/x2 STZ2
 	;center-surface JSR2
 	;update-resizer JSR2
 	;draw-viewport JSR2
@@ -899,7 +889,7 @@ RTN
 		POP2 POP2 RTN
 		&continue
 	.zoom/active LDZ #00 = ,&no-zoom JCN
-		OVR2 OVR2 ;get-pixel JSR2 #00 SWP 8** ;bigpixel-icns ++ .Screen/addr DEO2
+		OVR2 OVR2 ;get-pixel JSR2 TOS 8** ;bigpixel-icns ++ .Screen/addr DEO2
 		.zoom/y LDZ2 -- 8** .viewport/y LDZ2 ++ #0008 ++ .Screen/y DEO2
 		.zoom/x LDZ2 -- 8** .viewport/x LDZ2 ++ #0008 ++ .Screen/x DEO2
 		#09 .Screen/sprite DEO
@@ -1231,6 +1221,7 @@ RTN
 		.cursor/y1 STZ2 .cursor/x1 STZ2
 		BRK
 	&hover
+		POP2 POP2
 
 BRK
 
@@ -1245,6 +1236,7 @@ BRK
 		;paint-brush JSR2
 		BRK
 	&hover
+		POP2 POP2
 
 BRK
 
@@ -1272,6 +1264,7 @@ BRK
 		( erase guide ) .guide #43 ;line-diag JSR2
 		BRK
 	&hover
+		POP2 POP2
 
 BRK
 
@@ -1285,6 +1278,7 @@ BRK
 		;paint-magic JSR2
 		BRK
 	&hover
+		POP2 POP2
 
 BRK
 
@@ -1312,6 +1306,7 @@ BRK
 		( draw guide ) .guide #43 ;line-rect JSR2
 		BRK
 	&hover
+		POP2 POP2
 
 BRK
 
@@ -1338,9 +1333,8 @@ RTN
 		BRK
 	&up
 	&drag
-		POP2 POP2
-		BRK
 	&hover
+		POP2 POP2
 
 BRK
 
