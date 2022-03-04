@@ -528,7 +528,7 @@ RTN
 
 @center-surface ( -- )
 
-	.viewport/w LDZ .surface/w LDZ > ,&center-x JCN
+	.viewport/w LDZ .surface/w LDZ INC > ,&center-x JCN
 		.viewport/x LDZ2 #0008 ++ .surface/x STZ2
 		.viewport/x2 LDZ2 .surface/x2 STZ2
 		,&resume-x JMP
@@ -542,7 +542,7 @@ RTN
 
 	&resume-x
 
-	.viewport/h LDZ .surface/h LDZ > ,&center-y JCN
+	.viewport/h LDZ .surface/h LDZ INC > ,&center-y JCN
 		.viewport/y LDZ2 #0008 ++ .surface/y STZ2
 		.viewport/y2 LDZ2 .surface/y2 STZ2
 		,&resume-y JMP
