@@ -43,32 +43,26 @@
 
 	( vectors )
 	;on-console .Console/vector DEO2
-	
 	( connect drag events )
 	;on-drag-panel .panel/drag-event STZ2
 	;on-drag-viewport-handle .viewport-handle/drag-event STZ2
 	;on-drag-viewport-label .viewport-label/drag-event STZ2
 	;on-drag-surface-handle .surface-handle/drag-event STZ2
-
 	( colors )
 	#70fe .System/r DEO2
 	#c0f3 .System/g DEO2
 	#90f3 .System/b DEO2
-
 	( theme support )
 	;load-theme JSR2
-
 	( default brush )
 	#04 .brush/size STZ
 	#00 .brush/patt STZ
 	#00 .brush/tool STZ
-
 	( initial position )
 	#0008 #0008 ;set-panel-position JSR2
 	#0028 #0012 ;set-viewport-position JSR2
 	.Screen/width DEI2 8// NIP #08 - .Screen/height DEI2 8// NIP #04 - ;set-viewport-size JSR2
 	#20 #14 ;set-surface-size JSR2
-
 	( let's begin. )
 	;untrap JSR2
 	;new-file JSR2
@@ -81,7 +75,6 @@ BRK
 	;on-frame .Screen/vector DEO2
 	;on-button .Controller/vector DEO2
 	;on-mouse .Mouse/vector DEO2
-
 	( filepath )
 	#06 ;draw-filepath JSR2
 	RELEASE-MOUSE
@@ -94,11 +87,9 @@ RTN
 	;on-frame-trap .Screen/vector DEO2
 	;on-button-trap .Controller/vector DEO2
 	;on-mouse-trap .Mouse/vector DEO2
-
 	( filepath )
 	#06 ;draw-filepath JSR2
 	RELEASE-MOUSE
-
 	( clear brush )
 	.cursor/x2 LDZ2 .Screen/x DEO2
 	.cursor/y2 LDZ2 .Screen/y DEO2
@@ -176,7 +167,7 @@ BRK
 
 	;draw-cursor JSR2
 	( when drag&release )
-	.cursor/drag LDZ #00 = ,&no-release JCN 
+	.cursor/drag LDZ #00 = ,&no-release JCN
 	.Mouse/state DEI #00 ! ,&no-release JCN
 		;stop-drag JSR2 BRK
 		&no-release
@@ -281,13 +272,12 @@ BRK
 	DUP #03 < ,&tool JCN
 	DUP #03 > OVR #08 < AND ,&patt JCN
 	DUP #07 > OVR #0d < AND ,&size JCN
-	BRK
+
+BRK
 	&tool 2* + ;select-tool JSR2 BRK
 	&patt #04 - 2* + ;select-patt JSR2 BRK
 	&size #09 - 2* + ;select-size JSR2 BRK
 	&drag POP2 .panel ;start-drag JSR2 BRK
-
-BRK
 
 @get-tool ( -- ptr* )
 
@@ -313,15 +303,14 @@ BRK
 @on-touch-viewport ( x* y* -- )
 
 	.zoom/active LDZ #00 = ,&cancel JCN
-	;get-tool JSR2 STH2
+	,get-tool JSR STH2
 	( canvas offset )
-	.viewport/y LDZ2 -- 8// .zoom/y LDZ2 ++ SWP2 
+	.viewport/y LDZ2 -- 8// .zoom/y LDZ2 ++ SWP2
 	.viewport/x LDZ2 -- 8// .zoom/x LDZ2 ++ SWP2
 		STH2r JMP2
 
 BRK
 	&cancel POP2 POP2 BRK
-
 
 @on-touch-viewport-handle ( x* y* -- )
 
@@ -353,8 +342,7 @@ BRK
 		DUP #01 AND ;on-button-ctrl JCN2
 		DUP #f0 AND ;on-button-arrow JCN2
 		DUP #04 ! ,&no-shift JCN
-			.zoom/active TOGGLE
-			;draw-viewport JSR2
+			;toggle-zoom JSR2
 			&no-shift
 		DUP #08 ! ,&no-esc JCN
 			.brush/mode TOGGLE
@@ -365,7 +353,7 @@ BRK
 	.Controller/key DEI
 	#00 !~ ,&continue JCN POP BRK &continue
 	#09 !~ ,&no-invert JCN POP ;invert JSR2 BRK &no-invert
-	#20 !~ ,&no-space JCN .zoom/active TOGGLE ;draw-viewport JSR2 &no-space
+	#20 !~ ,&no-space JCN ;toggle-zoom JSR2 &no-space
 	LIT 'q !~ ,&no-qkey JCN #00 ;select-tool JSR2 &no-qkey
 	LIT 'w !~ ,&no-wkey JCN #01 ;select-tool JSR2 &no-wkey
 	LIT 'e !~ ,&no-ekey JCN #02 ;select-tool JSR2 &no-ekey
@@ -443,6 +431,14 @@ RTN
 		#01 ,select-tool JSR
 		&no-switch
 	;draw-sizepane JSR2
+
+RTN
+
+@toggle-zoom ( -- )
+
+	.zoom/active TOGGLE
+	;draw-viewport JSR2
+	;draw-panel JSR2
 
 RTN
 
@@ -525,19 +521,17 @@ RTN
 		DUP2 .surface/y STZ2
 			STH2r DEC2 ++ .surface/y2 STZ2
 	&resume-y
-	( update handles )
+	( viewport handle )
 	.viewport/x2 LDZ2 #0008 -- DUP2 .viewport-handle/x STZ2 #0008 ++ .viewport-handle/x2 STZ2
 	.viewport/y2 LDZ2 #0008 -- DUP2 .viewport-handle/y STZ2 #0008 ++ .viewport-handle/y2 STZ2
-
-	.viewport/x LDZ2 .viewport-label/x STZ2 
-	.viewport/x2 LDZ2 .viewport-label/x2 STZ2
-	.viewport/y LDZ2 DUP2 #0008 -- .viewport-label/y STZ2 .viewport-label/y2 STZ2
-
+	( surface handle )
 	.surface/x2 LDZ2 DUP2 .surface-handle/x STZ2 #0008 ++ .surface-handle/x2 STZ2
 	.surface/y2 LDZ2 DUP2 .surface-handle/y STZ2 #0008 ++ .surface-handle/y2 STZ2
-
+	( label handle )
+	.viewport/x LDZ2 .viewport-label/x STZ2
+	.viewport/x2 LDZ2 .viewport-label/x2 STZ2
+	.viewport/y LDZ2 DUP2 #0008 -- .viewport-label/y STZ2 .viewport-label/y2 STZ2
 	;draw-viewport JSR2
-	;draw-filestate JSR2
 
 RTN
 
@@ -1320,10 +1314,9 @@ RTN
 @magnify ( x* y* -> )
 
 	&down
-		.zoom/active TOGGLE
 		#00 .surface/h LDZ 2// -- .zoom/y STZ2
 		#00 .surface/w LDZ 2// -- .zoom/x STZ2
-		;draw-viewport JSR2
+		;toggle-zoom JSR2
 		BRK
 	&up
 	&drag
