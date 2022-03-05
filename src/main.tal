@@ -237,8 +237,8 @@ BRK
 
 @on-drag-viewport-handle ( x* y* -> )
 
-	.viewport/y LDZ2 -- 8// NIP STH
-	.viewport/x LDZ2 -- 8// NIP STHr
+	.viewport/y LDZ2 -- #0008 ++ 8// NIP STH
+	.viewport/x LDZ2 -- #0008 ++ 8// NIP STHr
 		;set-viewport-size JSR2
 	;draw-panel JSR2
 
@@ -818,6 +818,8 @@ RTN
 
 @draw-viewport ( -- )
 
+	.viewport/size LDZ2 #0000 >> RTN?
+
 	.viewport/x LDZ2 #0008 -- .viewport/y LDZ2 #0008 -- .viewport/w LDZ .viewport/h LDZ ;draw-frame-outline JSR2
 
 	( draw drag )
@@ -831,6 +833,8 @@ RTN
 	#06 ;draw-filepath JSR2
 
 @draw-surface ( -- )
+
+	.surface/size LDZ2 #0000 >> RTN?
 
 	.zoom/active LDZ ;draw-surface-zoom JCN2
 

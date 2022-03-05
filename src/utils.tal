@@ -61,6 +61,7 @@
 %AUTO-YADDR  { #06 .Screen/auto DEO }
 %AUTO-XYADDR { #07 .Screen/auto DEO }
 
+%RTN? { JMP RTN }
 %BRK? { JMP BRK }
 %SFL  { #40 SFT SFT }
 %ABS2 { DUP2 #ffff EOR2 INC2 LTH2k JMP SWP2 POP2 }
