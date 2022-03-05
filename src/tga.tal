@@ -15,16 +15,10 @@
 	( get parser )
 	;image/image-type LDA
 	#02 !~ ,&no-raw-true JCN
-		#0004 ;parse-tga/length STA2
-		;pixel-raw-true ;parse-tga/filter STA2
-		,parse-tga JSR
-		POP RTN
+		;pixel-raw-true  #0004 ,parse-tga JSR POP RTN
 		&no-raw-true
 	#03 !~ ,&no-raw-bw JCN
-		#0001 ;parse-tga/length STA2
-		;pixel-raw-bw ;parse-tga/filter STA2
-		,parse-tga JSR
-		POP RTN
+		;pixel-raw-bw #0001 ,parse-tga JSR POP RTN
 		&no-raw-bw
 	( error )
 	;&error-unknown-txt ;print-str JSR2
@@ -33,11 +27,10 @@
 RTN
 	&error-unknown-txt "Unsupported 20 "tga-type: 20 $1
 
-@parse-tga ( -- )
+@parse-tga ( filter* length* -- )
 
+	.File/length DEO2 ,&filter STR2
 	AUTO-X
-	( stream )
-	[ LIT2 &length $2 ] .File/length DEO2
 	#0000 ,&x STR2
 	#0000 ,&y STR2
 	&stream
@@ -77,7 +70,7 @@ RTN
 RTN
 
 @image-types-txts
-    &no-image "no-image-data $1
+    &no-image "no-data $1
     &raw-color "RAW-color $1
     &raw-true "RAW-true $1
     &raw-bw "RAW-bw $1
