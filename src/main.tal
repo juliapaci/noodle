@@ -885,7 +885,10 @@ RTN
 @draw-tile ( x* y* -- )
 
 	.zoom/active LDZ ,draw-tile-zoom JCN
-
+	( bounds )
+	DUP2 #00 .surface/h LDZ 8** DEC2 >> ,&cancel JCN
+	OVR2 #00 .surface/w LDZ 8** DEC2 >> ,&cancel JCN
+	( paint )
 	#33 SFT2 SWP2 #33 SFT2 SWP2
 	OVR2 OVR2 ;get-row JSR2 .Screen/addr DEO2
 	.surface/y LDZ2 ++ .Screen/y DEO2
@@ -893,15 +896,21 @@ RTN
 	#09 .Screen/sprite DEO
 
 RTN
+	&cancel POP2 POP2 RTN
 
 @draw-tile-zoom ( x* y* -- )
 
+	( bounds )
+	DUP2 .zoom/y LDZ2 -- #00 .viewport/h LDZ DEC >> ,&cancel JCN
+	OVR2 .zoom/x LDZ2 -- #00 .viewport/w LDZ DEC >> ,&cancel JCN
+	( paint )
 	OVR2 OVR2 ;get-pixel JSR2 TOS 8** ;bigpixel-icns ++ .Screen/addr DEO2
 	.zoom/y LDZ2 -- 8** .viewport/y LDZ2 ++ #0008 ++ .Screen/y DEO2
 	.zoom/x LDZ2 -- 8** .viewport/x LDZ2 ++ #0008 ++ .Screen/x DEO2
 	#09 .Screen/sprite DEO
 
 RTN
+	&cancel POP2 POP2 RTN
 
 @draw-cursor ( -- )
 
@@ -1254,8 +1263,8 @@ BRK
 		( erase guide ) .guide #40 ;line-diag JSR2
 		.cursor/y2 STZ2 .cursor/x2 STZ2
 		( update guide )
-		.cursor/x1 LDZ2 .cursor/y1 LDZ2 ;to-canvas JSR2 INC2 .guide/y1 STZ2 INC2 .guide/x1 STZ2
-		.cursor/x2 LDZ2 .cursor/y2 LDZ2 ;to-canvas JSR2 .guide/y2 STZ2 .guide/x2 STZ2
+		.cursor/x1 LDZ2 .cursor/y1 LDZ2 ;to-screen JSR2 INC2 .guide/y1 STZ2 INC2 .guide/x1 STZ2
+		.cursor/x2 LDZ2 .cursor/y2 LDZ2 ;to-screen JSR2 .guide/y2 STZ2 .guide/x2 STZ2
 		( erase guide ) .guide #43 ;line-diag JSR2
 		BRK
 	&hover
@@ -1296,8 +1305,8 @@ BRK
 		( erase guide ) .guide #40 ;line-rect JSR2
 		.cursor/y2 STZ2 .cursor/x2 STZ2
 		( update guide )
-		.cursor/x1 LDZ2 .cursor/y1 LDZ2 ,to-canvas JSR INC2 .guide/y1 STZ2 INC2 .guide/x1 STZ2
-		.cursor/x2 LDZ2 .cursor/y2 LDZ2 ,to-canvas JSR .guide/y2 STZ2 .guide/x2 STZ2
+		.cursor/x1 LDZ2 .cursor/y1 LDZ2 ,to-screen JSR INC2 .guide/y1 STZ2 INC2 .guide/x1 STZ2
+		.cursor/x2 LDZ2 .cursor/y2 LDZ2 ,to-screen JSR .guide/y2 STZ2 .guide/x2 STZ2
 		( draw guide ) .guide #43 ;line-rect JSR2
 		BRK
 	&hover
@@ -1305,7 +1314,7 @@ BRK
 
 BRK
 
-@to-canvas ( x* y* -- x* y* )
+@to-screen ( x* y* -- x* y* )
 
 	.zoom/active LDZ ,&on-zoom JCN
 		.surface/y LDZ2 ++ SWP2
@@ -1313,8 +1322,8 @@ BRK
 	RTN
 
 	&on-zoom
-		.zoom/y LDZ2 -- 8** .surface/y LDZ2 ++ SWP2
-		.zoom/x LDZ2 -- 8** .surface/x LDZ2 ++ SWP2
+		.zoom/y LDZ2 -- 8** .viewport/y LDZ2 ++ #0008 ++ SWP2
+		.zoom/x LDZ2 -- 8** .viewport/x LDZ2 ++ #0008 ++ SWP2
 
 RTN
 
