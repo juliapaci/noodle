@@ -43,7 +43,6 @@ sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/roms/noodle.rom sd_card/uxn
 
 - Undo/redo
 - New presentation mode
-- Merge frame drawing routines
 - Make patterns editable?
 - Shift layer content
 - Layer blending?

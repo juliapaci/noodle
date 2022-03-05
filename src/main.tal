@@ -814,7 +814,7 @@ RTN
 
 	.viewport/size LDZ2 #0000 >> RTN?
 
-	.viewport/x LDZ2 #0008 -- .viewport/y LDZ2 #0008 -- .viewport/w LDZ .viewport/h LDZ ;draw-frame-outline JSR2
+	.viewport/x LDZ2 #0008 -- .viewport/y LDZ2 #0008 -- .viewport/w LDZ .viewport/h LDZ ;frame2-chrs ;draw-frame JSR2
 
 	( titlebar )
 	;draw-filestate JSR2
@@ -964,20 +964,24 @@ RTN
 
 @clear-panel ( -- )
 
-	.panel/x LDZ2 .panel/y LDZ2 #01 #0f ;clear-frame JSR2
+	.panel/x LDZ2 .Screen/x DEO2
+	.panel/y LDZ2 .Screen/y DEO2
+	#03 #11 #00 ;fill-rect JSR2
 
 RTN
 
 @clear-viewport ( -- )
 
-	.viewport-label/x LDZ2 #0002 -- .viewport-label/y LDZ2 #0002 -- .viewport/w LDZ .viewport/h LDZ ;clear-frame JSR2
+	.viewport-label/x LDZ2 #0002 -- .Screen/x DEO2
+	.viewport-label/y LDZ2 #0002 -- .Screen/y DEO2
+	.viewport/w LDZ INC .viewport/h LDZ #02 + #00 ;fill-rect JSR2
 
 RTN
 
 @draw-panel ( -- )
 
 	( frame )
-	.panel/x LDZ2 .panel/y LDZ2 #01 #0f ;draw-frame JSR2
+	.panel/x LDZ2 .panel/y LDZ2 #01 #0f ;frame-chrs ;draw-frame JSR2
 	( tools )
 	,draw-toolpane JSR
 	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0026 ++ #01 ,line-hor JSR

@@ -1,110 +1,62 @@
 ( frame )
 
-@clear-frame ( x* y* w h -- )
+@draw-frame ( x* y* w h sprite* -- )
 
-	#02 + ,&h STR #02 + ,&w STR
-	AUTO-X
-	.Screen/y DEO2
-	.Screen/x DEO2
-	[ LIT &h $1 ] #00
-	&ver
-		[ LIT &w $1 ] #00
-		&hor
-			#00 .Screen/sprite DEO
-			INC GTHk ,&hor JCN
-		POP #00 SWP 8** STH2
-		.Screen/x DEI2k STH2r -- ROT DEO2
-		.Screen/y DEI2k #0008 ++ ROT DEO2
-		INC GTHk ,&ver JCN
-	POP2
-
-RTN
-
-@draw-frame ( x* y* w h -- )
-
+	.Screen/addr DEO2
 	,&h STR ,&w STR
 	DUP2 .Screen/y DEO2 ,&y STR2
 	DUP2 .Screen/x DEO2 ,&x STR2
 	AUTO-X
-	;frame-chrs/tl .Screen/addr DEO2 #85 .Screen/sprite DEO
-	;frame-chrs/tc .Screen/addr DEO2 [ LIT &w $1 ] ,&repeat JSR
+	#85 .Screen/sprite DEO
+	,&next JSR [ LIT &w $1 ] ,&repeat JSR
 	AUTO-Y
-	;frame-chrs/tr .Screen/addr DEO2 #85 .Screen/sprite DEO
-	;frame-chrs/mr .Screen/addr DEO2 [ LIT &h $1 ] ,&repeat JSR
+	,&next JSR #85 .Screen/sprite DEO
+	,&next JSR [ LIT &h $1 ] ,&repeat JSR
 	( left )
 	[ LIT2 &y $2 ] #0008 ++ .Screen/y DEO2
 	[ LIT2 &x $2 ] .Screen/x DEO2
-	;frame-chrs/ml .Screen/addr DEO2 ,&h LDR ,&repeat JSR
+	,&next JSR ,&h LDR ,&repeat JSR
 	AUTO-X
-	;frame-chrs/bl .Screen/addr DEO2 #85 .Screen/sprite DEO
-	;frame-chrs/bc .Screen/addr DEO2 ,&w LDR ,&repeat JSR
-	;frame-chrs/br .Screen/addr DEO2 #85 .Screen/sprite DEO
+	,&next JSR #85 .Screen/sprite DEO
+	,&next JSR ,&w LDR ,&repeat JSR
+	,&next JSR #85 .Screen/sprite DEO
 	( fill )
-	;frame-chrs/mc .Screen/addr DEO2
+	,&next JSR
 	,&x LDR2 #0008 ++ .Screen/x DEO2
 	,&y LDR2 #0008 ++ .Screen/y DEO2
-	,&w LDR ,&h LDR ,fill-frame JSR
+	,&w LDR ,&h LDR #81 ,fill-rect JSR
 
-RTN
+JMP2r
+	&next
+		.Screen/addr DEI2k #0010 ++ ROT DEO2
+	JMP2r
 	&repeat
 		#00 
 		&repeat-loop 
 			#81 .Screen/sprite DEO 
 			INC GTHk ,&repeat-loop JCN 
 		POP2
-	RTN
+	JMP2r
 
-@fill-frame ( w h -- )
+@fill-rect ( w h color -- )
 
+	STH
 	AUTO-X
 	.Screen/x DEI2 ,&anchor-x STR2
 	SWP ,&w STR #00
 	&ver
 		[ LIT &w $1 ] #00
 		&hor
-			#81 .Screen/sprite DEO
+			STHkr .Screen/sprite DEO
 			INC GTHk ,&hor JCN
 		POP2
 		.Screen/y DEI2k #0008 ++ ROT DEO2
 		[ LIT2 &anchor-x $2 ] .Screen/x DEO2
 		INC GTHk ,&ver JCN
 	POP2
+	POPr
 
-RTN
-
-@draw-frame-outline ( x* y* w h -- )
-
-	,&h STR ,&w STR
-	DUP2 .Screen/y DEO2 ,&y STR2
-	DUP2 .Screen/x DEO2 ,&x STR2
-	AUTO-X
-	;frame2-chrs/tl .Screen/addr DEO2 #85 .Screen/sprite DEO
-	;frame2-chrs/tc .Screen/addr DEO2 [ LIT &w $1 ] ,&repeat JSR
-	AUTO-Y
-	;frame2-chrs/tr .Screen/addr DEO2 #85 .Screen/sprite DEO
-	;frame2-chrs/mr .Screen/addr DEO2 [ LIT &h $1 ] ,&repeat JSR
-	( left )
-	[ LIT2 &y $2 ] #0008 ++ .Screen/y DEO2
-	[ LIT2 &x $2 ] .Screen/x DEO2
-	;frame2-chrs/ml .Screen/addr DEO2 ,&h LDR ,&repeat JSR
-	AUTO-X
-	;frame2-chrs/bl .Screen/addr DEO2 #85 .Screen/sprite DEO
-	;frame2-chrs/bc .Screen/addr DEO2 ,&w LDR ,&repeat JSR
-	;frame2-chrs/br .Screen/addr DEO2 #85 .Screen/sprite DEO
-	( fill )
-	;frame2-chrs/mc .Screen/addr DEO2
-	,&x LDR2 #0008 ++ .Screen/x DEO2
-	,&y LDR2 #0008 ++ .Screen/y DEO2
-	,&w LDR ,&h LDR ;fill-frame JSR2
-
-RTN
-	&repeat
-		#00 
-		&repeat-loop 
-			#85 .Screen/sprite DEO 
-			INC GTHk ,&repeat-loop JCN 
-		POP2
-	RTN
+JMP2r
 
 ( theme )
 
@@ -122,7 +74,7 @@ RTN
 		#fffe LDA2 .System/b DEO2
 		&ignore
 
-RTN
+JMP2r
 
 ( hex parsing )
 
@@ -132,19 +84,19 @@ RTN
 	INC2 LDA ,chex JSR 
 	STHr #40 SFT ADD
 
-RTN
+JMP2r
 
 @chex ( char -- hex )
 
 	DUP #2f > OVR #3a < AND ,&number JCN
 	DUP #60 > OVR #67 < AND ,&lc JCN
 	DUP #40 > OVR #47 < AND ,&uc JCN
-		POP #00 RTN
-	&number #30 - RTN
-	&uc #37 - RTN
-	&lc #57 - RTN
+		POP #00 JMP2r
+	&number #30 - JMP2r
+	&uc #37 - JMP2r
+	&lc #57 - JMP2r
 
-RTN
+JMP2r
 
 ( memory generics )
 
@@ -156,7 +108,7 @@ RTN
 		INC2 GTH2k ,&loop JCN
 	POP2 POP2
 
-RTN
+JMP2r
 
 @mcpy ( src* dst* len* -- )
 
@@ -168,7 +120,7 @@ RTN
 	POP2 POP2
 	POP2r
 
-RTN
+JMP2r
 
 ( string generics )
 
@@ -176,14 +128,14 @@ RTN
 
 	DUP2 ,scap JSR SWP2 --
 
-RTN
+JMP2r
 
 @scap ( str* -- str-end* )
 
-	LDAk #00 ! JMP RTN
+	LDAk #00 ! JMP JMP2r
 	&while INC2 LDAk ,&while JCN
 
-RTN
+JMP2r
 
 @scpy ( src* dst* -- )
 	
@@ -200,31 +152,31 @@ JMP2r
 
 	ROT ROT ,scap JSR STA
 
-RTN
+JMP2r
 
 @spop ( str* -- )
 
 	LDAk ,&no-null JCN
-		POP2 RTN &no-null
+		POP2 JMP2r &no-null
 	#00 ROT ROT ,scap JSR #0001 -- STA
 
-RTN
+JMP2r
 
 @scmp ( a* b* -- flag )
 
 	STH2
 	&loop
 		LDAk LDAkr STHr = ,&not-diff JCN
-			POP2 POP2r #00 RTN
+			POP2 POP2r #00 JMP2r
 			&not-diff
 		LDAk LDAkr STHr #0000 !! ,&not-end JCN
-			POP2 POP2r #01 RTN
+			POP2 POP2r #01 JMP2r
 			&not-end
 		INC2 INC2r
 		,&loop JMP
 	POP2 POP2r #00
 
-RTN
+JMP2r
 
 ( print )
 
@@ -234,7 +186,7 @@ RTN
 	&byte ( byte -- ) DUP #04 SFT ,&char JSR
 	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD EMIT
 
-RTN
+JMP2r
 
 @print-str ( str* -- )
 
