@@ -29,7 +29,7 @@
 @filepath $40
 
 @guide
-	&x1 $2 &y1 $2 &x2 $2 &y2 $2
+	&x $2 &y $2 &x2 $2 &y2 $2
 @line
 	&x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
 @line-guide
@@ -1156,44 +1156,24 @@ RTN
 
 RTN
 
-@line-rect ( rect color -- )
+@guide-rect ( color -- )
 
-	STH STH
-
-	( not empty )
-	STHkr LDZ2 STHkr #04 + LDZ2 !! ,&has-width JCN
-		POP2r RTN
-		&has-width
-	STHkr #02 + LDZ2 STHkr #06 + LDZ2 !! ,&has-height JCN
-		POP2r RTN
-		&has-height
-
-	( y2 ) STHkr #06 + LDZ2
-	( y1 ) STHkr #02 + LDZ2 DEC2 ( flip sign ) GTH2k JMP SWP2
-	&ver
-		( save ) DUP2 .Screen/y DEO2
-		( x1 ) STHkr LDZ2 DEC2 .Screen/x DEO2
-		OVRr STHr .Screen/pixel DEO
-		( x2 ) STHkr #04 + LDZ2 .Screen/x DEO2
-		OVRr STHr .Screen/pixel DEO
-		( incr )
-		INC2 GTH2k ,&ver JCN
-	POP2
-	( x2 ) STHkr #04 + LDZ2
-	( x1 ) STHkr LDZ2 DEC2 ( flip sign ) GTH2k JMP SWP2
+	STH
+	.guide/x2 LDZ2 .guide/x LDZ2
 	&hor
-		( save ) DUP2 .Screen/x DEO2
-		( y1 ) STHkr #02 + LDZ2 DEC2 .Screen/y DEO2
-		OVRr STHr .Screen/pixel DEO
-		( y2 ) STHkr #06 + LDZ2 .Screen/y DEO2
-		OVRr STHr .Screen/pixel DEO
-		( incr )
+		DUP2 .Screen/x DEO2
+		.guide/y LDZ2 .Screen/y DEO2 STHkr .Screen/pixel DEO
+		.guide/y2 LDZ2 .Screen/y DEO2 STHkr .Screen/pixel DEO
 		INC2 GTH2k ,&hor JCN
-	POP2
+	POP2 POP2
+	.guide/y2 LDZ2 .guide/y LDZ2
+	&ver
+		DUP2 .Screen/y DEO2
+		.guide/x LDZ2 .Screen/x DEO2 STHkr .Screen/pixel DEO
+		.guide/x2 LDZ2 .Screen/x DEO2 STHkr .Screen/pixel DEO
+		INC2 GTH2k ,&ver JCN
+	POP2 POP2
 	POPr
-	.Screen/x DEO2
-	.Screen/y DEO2
-	STHr .Screen/pixel DEO
 
 RTN
 
@@ -1263,7 +1243,7 @@ BRK
 		( erase guide ) .guide #40 ;line-diag JSR2
 		.cursor/y2 STZ2 .cursor/x2 STZ2
 		( update guide )
-		.cursor/x1 LDZ2 .cursor/y1 LDZ2 ;to-screen JSR2 INC2 .guide/y1 STZ2 INC2 .guide/x1 STZ2
+		.cursor/x1 LDZ2 .cursor/y1 LDZ2 ;to-screen JSR2 INC2 .guide/y STZ2 INC2 .guide/x STZ2
 		.cursor/x2 LDZ2 .cursor/y2 LDZ2 ;to-screen JSR2 .guide/y2 STZ2 .guide/x2 STZ2
 		( erase guide ) .guide #43 ;line-diag JSR2
 		BRK
@@ -1290,24 +1270,24 @@ BRK
 
 	&down
 		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
-		( erase guide ) .guide #40 ;line-rect JSR2
+		( erase guide ) #40 ;guide-rect JSR2
 		.cursor/y1 STZ2 .cursor/x1 STZ2
 		BRK
 	&up
 		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
-		( erase guide ) .guide #40 ;line-rect JSR2
+		( erase guide ) #40 ;guide-rect JSR2
 		.cursor/y2 STZ2 .cursor/x2 STZ2
 		;paint-rect JSR2
 		SET-STATE
 		BRK
 	&drag
 		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
-		( erase guide ) .guide #40 ;line-rect JSR2
+		( erase guide ) #40 ;guide-rect JSR2
 		.cursor/y2 STZ2 .cursor/x2 STZ2
 		( update guide )
-		.cursor/x1 LDZ2 .cursor/y1 LDZ2 ,to-screen JSR INC2 .guide/y1 STZ2 INC2 .guide/x1 STZ2
+		.cursor/x1 LDZ2 .cursor/y1 LDZ2 ,to-screen JSR .guide/y STZ2 .guide/x STZ2
 		.cursor/x2 LDZ2 .cursor/y2 LDZ2 ,to-screen JSR .guide/y2 STZ2 .guide/x2 STZ2
-		( draw guide ) .guide #43 ;line-rect JSR2
+		( draw guide ) #43 ;guide-rect JSR2
 		BRK
 	&hover
 		POP2 POP2
