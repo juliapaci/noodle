@@ -20,8 +20,8 @@
 	&bc 00ff 0000 0000 0000 ff00 0000 0000 0000
 	&br 4080 0000 0000 0000 8000 0000 0000 0000
 
-@surface-handle-icn 3800 8080 8000 0000
-@viewport-handle-icn 0000 0103 070f 1f3f
+@surface-handle-icn f8fc fcfc fc78 0000
+@viewport-handle-icn 0000 0001 0307 0f1f
 
 @save-icns
 	3f7f ffff ffff ffff
