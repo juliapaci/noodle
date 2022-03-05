@@ -43,10 +43,8 @@ RTN
 	&stream
 		;&pixel STH2k .File/read DEO2
 		[ LIT2 &x $2 ] [ LIT2 &y $2 ] STH2r [ LIT2 &filter $2 ] JSR2 80/ ;set-pixel JSR2
-		( inc x )
-		,&x LDR2 INC2 ,&x STR2
-		( inc y )
-		,&x LDR2 ;image/w LDA2 !! ,&continue JCN
+		( move )
+		,&x LDR2 INC2 DUP2 ,&x STR2 ;image/w LDA2 !! ,&continue JCN
 			#0000 ,&x STR2
 			,&y LDR2 INC2 ,&y STR2
 			&continue
@@ -79,7 +77,7 @@ RTN
 RTN
 
 @image-types-txts
-    &no-image "no-image-data-is-present $1
+    &no-image "no-image-data $1
     &raw-color "RAW-color $1
     &raw-true "RAW-true $1
     &raw-bw "RAW-bw $1

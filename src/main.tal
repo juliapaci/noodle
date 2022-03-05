@@ -164,7 +164,7 @@ BRK
 @on-mouse-trap ( -> )
 
 	( release trap on touch )
-	.Mouse/state DEI BRK?
+	.Mouse/state DEI #00 ! BRK?
 
 	;untrap JSR2
 
@@ -173,11 +173,12 @@ BRK
 @on-mouse ( -> )
 
 	;draw-cursor JSR2
-
-	.cursor/drag LDZ #00 > .Mouse/state DEI #00 = #0101 !! ,&no-panel-release JCN
+	( when drag&release )
+	.cursor/drag LDZ #00 = ,&no-panel-release JCN 
+	.Mouse/state DEI ,&no-panel-release JCN
 		,stop-drag JSR BRK
 		&no-panel-release
-
+	( route touch )
 	.Mouse/x DEI2 .Mouse/y DEI2
 	( on drag )
 	.cursor/drag LDZ #00 > .Mouse/state DEI #00 > AND ,on-drag JCN
@@ -277,9 +278,9 @@ BRK
 	( within x )
 	OVR #02 < ,&valid JCN POP2 BRK &valid
 	( within y )
-	DUP #03 < ,&tool JCN
 	DUP #03 = ,&drag JCN
 	DUP #08 = ,&drag JCN
+	DUP #03 < ,&tool JCN
 	DUP #03 > OVR #08 < AND ,&patt JCN
 	DUP #07 > OVR #0d < AND ,&size JCN
 	BRK
@@ -290,19 +291,25 @@ BRK
 
 BRK
 
-@on-touch-surface ( x* y* -> )
+@get-tool ( -- ptr* )
 
 	( set erase from right-click/mode )
-	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
+	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + #01 JCN SWP2 POP2 .brush/oper STZ2
 	( get function )
 	#00 .Mouse/state DEI #00 > 2* .cursor/last LDZ #00 > + 2*
-	#00 .brush/tool LDZ 8** ;tools ++ ++ LDA2 STH2
+	#00 .brush/tool LDZ 8** ;tools ++ ++ LDA2
 	( record state )
 	.Mouse/state DEI .cursor/last STZ
+
+RTN
+
+@on-touch-surface ( x* y* -> )
+
+	,get-tool JSR STH2
 	( canvas offset )
 	.surface/y LDZ2 -- SWP2
 	.surface/x LDZ2 -- SWP2
-	STH2r JMP2
+		STH2r JMP2
 
 BRK
 
@@ -315,17 +322,11 @@ BRK
 		&no-drag-viewport
 	.zoom/active LDZ #00 = ,&cancel JCN
 
-	( set erase from right-click/mode )
-	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 > .brush/mode LDZ + SWP2? POP2 .brush/oper STZ2
-	( get function )
-	#00 .Mouse/state DEI #00 > 2* .cursor/last LDZ #00 > + 2*
-	#00 .brush/tool LDZ 8** ;tools ++ ++ LDA2 STH2
-	( record state )
-	.Mouse/state DEI .cursor/last STZ
+	,get-tool JSR STH2
 	( canvas offset )
 	.viewport/y LDZ2 #0008 ++ -- 8// .zoom/y LDZ2 ++ SWP2
 	.viewport/x LDZ2 #0008 ++ -- 8// .zoom/x LDZ2 ++ SWP2
-	STH2r JMP2
+		STH2r JMP2
 
 BRK
 	&cancel POP2 POP2 BRK
@@ -333,10 +334,7 @@ BRK
 @on-touch-viewport-handle ( x* y* -- )
 
 	POP2 POP2
-
-	.zoom/active LDZ #00 = JMP BRK
-	.Mouse/state DEI #00 ! JMP BRK
-
+	.Mouse/state DEI #00 ! BRK?
 	.viewport-handle ;start-drag JSR2
 
 BRK
@@ -344,10 +342,7 @@ BRK
 @on-touch-surface-handle ( x* y* -- )
 
 	POP2 POP2
-
-	.zoom/active LDZ #00 = JMP BRK
-	.Mouse/state DEI #00 ! JMP BRK
-
+	.Mouse/state DEI #00 ! BRK?
 	.surface-handle ;start-drag JSR2
 
 BRK
@@ -359,7 +354,7 @@ BRK
 		DUP #f0 AND ;on-button-arrow JCN2
 		DUP #04 ! ,&no-shift JCN
 			.zoom/active TOGGLE
-			;redraw JSR2
+			;draw-viewport JSR2
 			&no-shift
 		DUP #08 ! ,&no-esc JCN
 			.brush/mode TOGGLE
@@ -370,7 +365,7 @@ BRK
 	.Controller/key DEI
 	#00 !~ ,&continue JCN POP BRK &continue
 	#09 !~ ,&no-invert JCN POP ;invert JSR2 BRK &no-invert
-	#20 !~ ,&no-space JCN .zoom/active TOGGLE ;redraw JSR2 &no-space
+	#20 !~ ,&no-space JCN .zoom/active TOGGLE ;draw-viewport JSR2 &no-space
 	LIT 'q !~ ,&no-qkey JCN #00 ;select-tool JSR2 &no-qkey
 	LIT 'w !~ ,&no-wkey JCN #01 ;select-tool JSR2 &no-wkey
 	LIT 'e !~ ,&no-ekey JCN #02 ;select-tool JSR2 &no-ekey
@@ -405,10 +400,10 @@ BRK
 
 	.zoom/active LDZ ,&is-zoom JCN POP BRK &is-zoom
 
-	DUP #04 SFT #01 AND #01 ! ,&no-u JCN .zoom/y LDZ2k DEC2 ROT STZ2 &no-u
-	DUP #05 SFT #01 AND #01 ! ,&no-d JCN .zoom/y LDZ2k INC2 ROT STZ2 &no-d
-	DUP #06 SFT #01 AND #01 ! ,&no-l JCN .zoom/x LDZ2k DEC2 ROT STZ2 &no-l
-	DUP #07 SFT #01 AND #01 ! ,&no-r JCN .zoom/x LDZ2k INC2 ROT STZ2 &no-r
+	DUP #10 AND #00 = ,&no-u JCN .zoom/y LDZ2k DEC2 ROT STZ2 &no-u
+	DUP #20 AND #00 = ,&no-d JCN .zoom/y LDZ2k INC2 ROT STZ2 &no-d
+	DUP #40 AND #00 = ,&no-l JCN .zoom/x LDZ2k DEC2 ROT STZ2 &no-l
+	DUP #80 AND #00 = ,&no-r JCN .zoom/x LDZ2k INC2 ROT STZ2 &no-r
 	POP
 	;draw-surface JSR2
 
@@ -429,7 +424,7 @@ RTN
 	.brush/patt STZ
 	( select brush )
 	.brush/tool LDZ ,&no-switch JCN
-		#01 ;select-tool JSR2
+		#01 ,select-tool JSR
 		&no-switch
 	;draw-pattpane JSR2
 
@@ -445,7 +440,7 @@ RTN
 	.brush/size STZ
 	( select brush )
 	.brush/tool LDZ ,&no-switch JCN
-		#01 ;select-tool JSR2
+		#01 ,select-tool JSR
 		&no-switch
 	;draw-sizepane JSR2
 
@@ -459,25 +454,23 @@ RTN
 		( save ) STH2r STA
 		INC2 GTH2k ,&loop JCN
 	POP2 POP2
-	;redraw JSR2
+	;draw-surface JSR2
 
 RTN
 
 @set-viewport-size ( w h -- )
-
-	( limit size )
-	DUP #01 < ,&cancel JCN
-	DUP .Screen/height DEI2 8// NIP #04 - > ,&cancel JCN
-	OVR #01 < ,&cancel JCN
-	OVR .Screen/width DEI2 8// NIP #08 - > ,&cancel JCN
+	
 	( only redraw on change )
 	DUP2 .viewport/size LDZ2 == ,&cancel JCN
+	( limit size )
+	DUP #01 < ,&cancel JCN
+	OVR #01 < ,&cancel JCN
+	DUP .Screen/height DEI2 8// NIP #04 - > ,&cancel JCN
+	OVR .Screen/width DEI2 8// NIP #08 - > ,&cancel JCN
 
 	;clear-viewport JSR2
 	DUP .viewport/h STZ TOS 8** .viewport/y LDZ2 ++ .viewport/y2 STZ2
 	DUP .viewport/w STZ TOS 8** .viewport/x LDZ2 ++ .viewport/x2 STZ2
-	;update-handles JSR2
-	;draw-viewport JSR2
 	;center-surface JSR2
 
 RTN
@@ -488,7 +481,6 @@ RTN
 	;clear-panel JSR2
 	DUP2 .panel/y STZ2 #0088 ++ .panel/y2 STZ2
 	DUP2 .panel/x STZ2 #0018 ++ .panel/x2 STZ2
-	;update-handles JSR2
 	;draw-panel JSR2
 
 RTN
@@ -497,21 +489,7 @@ RTN
 
 	DUP2 .viewport/y STZ2 #00 .viewport/h LDZ 8** ++ .viewport/y2 STZ2
 	DUP2 .viewport/x STZ2 #00 .viewport/w LDZ 8** ++ .viewport/x2 STZ2
-
-	.viewport/x LDZ2 #0008 ++ DUP2 .surface/x STZ2 #00 .surface/w LDZ 8** ++ .surface/x2 STZ2
-	.viewport/y LDZ2 #0008 ++ DUP2 .surface/y STZ2 #00 .surface/h LDZ 8** ++ .surface/y2 STZ2
-
-	;update-handles JSR2
 	;center-surface JSR2
-
-RTN
-
-@update-handles ( -- )
-
-	.viewport/x2 LDZ2 DUP2 .viewport-handle/x STZ2 #0008 ++ .viewport-handle/x2 STZ2
-	.viewport/y2 LDZ2 DUP2 .viewport-handle/y STZ2 #0008 ++ .viewport-handle/y2 STZ2
-	.surface/x2 LDZ2 DUP2 .surface-handle/x STZ2 #0008 ++ .surface-handle/x2 STZ2
-	.surface/y2 LDZ2 DUP2 .surface-handle/y STZ2 #0008 ++ .surface-handle/y2 STZ2
 
 RTN
 
@@ -554,7 +532,12 @@ RTN
 
 	&resume-y
 
-	;update-handles JSR2
+	( update handles )
+	.viewport/x2 LDZ2 DUP2 .viewport-handle/x STZ2 #0008 ++ .viewport-handle/x2 STZ2
+	.viewport/y2 LDZ2 DUP2 .viewport-handle/y STZ2 #0008 ++ .viewport-handle/y2 STZ2
+	.surface/x2 LDZ2 DUP2 .surface-handle/x STZ2 #0008 ++ .surface-handle/x2 STZ2
+	.surface/y2 LDZ2 DUP2 .surface-handle/y STZ2 #0008 ++ .surface-handle/y2 STZ2
+
 	;draw-viewport JSR2
 	;draw-filestate JSR2
 
@@ -678,14 +661,12 @@ RTN
 		&hor
 			GET-ITER [ TOS ROT TOS ]
 			STH2kr SWP2r STH2kr SWP2r ADD-POSITIONS
-
 			( skip blanks )
 			OVR2 OVR2 ;get-pixel JSR2 #00 = ,&blank JCN
 				OVR2 OVR2 ,clean-pixel JSR
 				OVR2 OVR2 ;draw-tile JSR2
 				&blank
 			POP2 POP2
-
 			INC GTHk ,&hor JCN
 			POP2
 		INC GTHk ,&ver JCN
@@ -714,7 +695,7 @@ RTN
 
 @get-pixel ( x* y* -- b )
 
-	,within-canvas JSR ,&continue JCN
+	,within-surface JSR ,&continue JCN
 		POP2 POP2 #01 RTN
 		&continue
 
@@ -733,7 +714,7 @@ RTN
 
 @add-pixel ( x* y* -- )
 
-	,within-canvas JSR ,&continue JCN
+	,within-surface JSR ,&continue JCN
 		POP2 POP2 RTN
 		&continue
 
@@ -746,7 +727,7 @@ RTN
 
 @remove-pixel ( x* y* -- )
 
-	,within-canvas JSR ,&continue JCN
+	,within-surface JSR ,&continue JCN
 		POP2 POP2 RTN
 		&continue
 
@@ -757,7 +738,7 @@ RTN
 
 RTN
 
-@within-canvas ( x* y* -- x* y* flag )
+@within-surface ( x* y* -- x* y* flag )
 
 	( clamp ) DUP2 8// #00 .surface/h LDZ << #00 = ,&skip JCN
 	( clamp ) OVR2 8// #00 .surface/w LDZ << #00 = ,&skip JCN
@@ -808,7 +789,7 @@ RTN
 	( capture size )
 	;filepath ;scap JSR2 #0009 -- ;read-size JSR2
 	( draw )
-	;redraw JSR2
+	;draw-viewport JSR2
 
 RTN
 	&tga-ext "tga $1
@@ -819,7 +800,7 @@ RTN
 	GET-FRAME-SIZE .File/length DEO2
 	;data .File/write DEO2
 	( draw )
-	;redraw JSR2
+	;draw-viewport JSR2
 
 RTN
 
@@ -917,12 +898,6 @@ RTN
 
 RTN
 
-@redraw ( -- )
-
-	;draw-viewport JSR2
-
-RTN
-
 @draw-tile ( x* y* -- )
 
 	;within-viewport JSR2 ,&continue JCN
@@ -987,7 +962,7 @@ RTN
 	( draw new cursor )
 	.cursor/x2 LDZ2
 	.cursor/y2 LDZ2
-	#4143 .Mouse/state DEI SWP? POP
+	#4143 .Mouse/state DEI #01 JCN SWP POP
 		,draw-pointer JSR
 
 RTN
@@ -1377,7 +1352,7 @@ RTN
 		.zoom/active TOGGLE
 		#00 .surface/h LDZ 2// -- .zoom/y STZ2
 		#00 .surface/w LDZ 2// -- .zoom/x STZ2
-		;redraw JSR2
+		;draw-viewport JSR2
 		BRK
 	&up
 	&drag
