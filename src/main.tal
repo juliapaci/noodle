@@ -61,8 +61,8 @@
 	( initial position )
 	#0008 #0008 ;set-panel-position JSR2
 	#0028 #0012 ;set-viewport-position JSR2
-	.Screen/width DEI2 8// NIP #08 - .Screen/height DEI2 8// NIP #04 - ;set-viewport-size JSR2
-	#20 #14 ;set-surface-size JSR2
+	.Screen/width DEI2 8// NIP #07 - .Screen/height DEI2 8// NIP #04 - ;set-viewport-size JSR2
+	.viewport/w LDZ #02 - .viewport/h LDZ #02 - ;set-surface-size JSR2
 	( let's begin. )
 	;untrap JSR2
 	;new-file JSR2
@@ -462,7 +462,7 @@ RTN
 	DUP #01 < ,&cancel JCN
 	OVR #01 < ,&cancel JCN
 	DUP .Screen/height DEI2 8// NIP #04 - > ,&cancel JCN
-	OVR .Screen/width DEI2 8// NIP #08 - > ,&cancel JCN
+	OVR .Screen/width DEI2 8// NIP #07 - > ,&cancel JCN
 
 	;clear-viewport JSR2
 	DUP .viewport/h STZ TOS 8** .viewport/y LDZ2 ++ .viewport/y2 STZ2
@@ -816,12 +816,6 @@ RTN
 
 	.viewport/x LDZ2 #0008 -- .viewport/y LDZ2 #0008 -- .viewport/w LDZ .viewport/h LDZ ;draw-frame-outline JSR2
 
-	( draw drag )
-	;viewport-handle-icn .Screen/addr DEO2
-	.viewport/x2 LDZ2 #0008 -- .Screen/x DEO2
-	.viewport/y2 LDZ2 #0008 -- .Screen/y DEO2
-	#05 .Screen/sprite DEO
-
 	( titlebar )
 	;draw-filestate JSR2
 	#06 ;draw-filepath JSR2
@@ -853,12 +847,18 @@ RTN
 	.surface/w LDZ .viewport/w LDZ #02 - > ,&no-handle JCN
 	.surface/h LDZ .viewport/h LDZ #02 - > ,&no-handle JCN
 	.surface/size LDZ2 #0000 == ,&no-handle JCN
-		( draw handle )
+		( draw surface handle )
 		;surface-handle-icn .Screen/addr DEO2
 		.surface-handle/x LDZ2 .Screen/x DEO2
 		.surface-handle/y LDZ2 .Screen/y DEO2
 		#0f .Screen/sprite DEO
 		&no-handle
+
+	( draw viewport handle )
+	;viewport-handle-icn .Screen/addr DEO2
+	.viewport/x2 LDZ2 #0008 -- .Screen/x DEO2
+	.viewport/y2 LDZ2 #0008 -- .Screen/y DEO2
+	#05 .Screen/sprite DEO
 
 RTN
 
