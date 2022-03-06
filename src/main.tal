@@ -491,12 +491,20 @@ RTN
 @set-surface-size ( w h -- )
 
 	( only redraw on change )
-	DUP2 .surface/size LDZ2 !! ,&changed JCN
-		POP2 RTN
-		&changed
+	DUP2 .surface/size LDZ2 == ,&cancel JCN
+	( limit size )
+	DUP #01 < ,&cancel JCN
+	OVR #01 < ,&cancel JCN
+	DUP #7f > ,&cancel JCN
+	OVR #7f > ,&cancel JCN
 
 	.surface/h STZ
 	.surface/w STZ
+
+	,center-surface JSR
+
+RTN
+	&cancel POP2 RTN
 
 @center-surface ( -- )
 
@@ -814,7 +822,7 @@ RTN
 
 	.viewport/size LDZ2 #0000 >> RTN?
 
-	.viewport/x LDZ2 #0008 -- .viewport/y LDZ2 #0008 -- .viewport/w LDZ .viewport/h LDZ ;frame2-chrs ;draw-frame JSR2
+	.viewport/x LDZ2 #0008 -- .viewport/y LDZ2 #0008 -- .viewport/w LDZ .viewport/h LDZ ;frame-inline-chrs ;draw-frame JSR2
 
 	( titlebar )
 	;draw-filestate JSR2
@@ -981,7 +989,7 @@ RTN
 @draw-panel ( -- )
 
 	( frame )
-	.panel/x LDZ2 .panel/y LDZ2 #01 #0f ;frame-chrs ;draw-frame JSR2
+	.panel/x LDZ2 .panel/y LDZ2 #01 #0f ;frame-outline-chrs ;draw-frame JSR2
 	( tools )
 	,draw-toolpane JSR
 	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0026 ++ #01 ,line-hor JSR
