@@ -48,8 +48,12 @@
 	( initial position )
 	#0008 #0008 ;set-panel-position JSR2
 	#0028 #0012 ;set-viewport-position JSR2
-	.Screen/width DEI2 #03 SFT2 NIP #07 SUB .Screen/height DEI2 #03 SFT2 NIP #04 SUB ;set-viewport-size JSR2
-	.viewport/w LDZ #02 SUB .viewport/h LDZ #02 SUB ;set-surface-size JSR2
+	.Screen/width DEI2 #03 SFT2 NIP #07 SUB
+	.Screen/height DEI2 #03 SFT2 NIP #04 SUB
+		;set-viewport-size JSR2
+	.viewport/w LDZ #02 SUB
+	.viewport/h LDZ #02 SUB
+		;set-surface-size JSR2
 	( let's begin. )
 	;untrap JSR2
 	;new-file JSR2
@@ -143,9 +147,8 @@ BRK
 
 @on-mouse-trap ( -> )
 
-	( release trap on touch )
 	.Mouse/state DEI #00 NEQ JMP BRK
-
+	( release trap on touch )
 	;untrap JSR2
 
 BRK
@@ -268,7 +271,7 @@ BRK
 
 @get-length ( -- length* )
 
-	#00 .surface/h LDZ #00 .surface/w LDZ MUL2 #30 SFT2
+	#00 .surface/w LDZ #00 .surface/h LDZ MUL2 #30 SFT2
 
 JMP2r
 
@@ -285,22 +288,20 @@ JMP2r
 
 @on-touch-surface ( x* y* -> )
 
-	,get-tool JSR STH2
 	( canvas offset )
 	.surface/y LDZ2 SUB2 SWP2
 	.surface/x LDZ2 SUB2 SWP2
-		STH2r JMP2
+		,get-tool JSR JMP2
 
 BRK
 
 @on-touch-viewport ( x* y* -- )
 
 	.zoom/active LDZ #00 EQU ,&cancel JCN
-	,get-tool JSR STH2
 	( canvas offset )
 	.viewport/y LDZ2 SUB2 #03 SFT2 .zoom/y LDZ2 ADD2 SWP2
 	.viewport/x LDZ2 SUB2 #03 SFT2 .zoom/x LDZ2 ADD2 SWP2
-		STH2r JMP2
+		,get-tool JSR JMP2
 
 BRK
 	&cancel POP2 POP2 BRK
@@ -1507,8 +1508,8 @@ JMP2r
 JMP2r
 
 @abs2 DUP2 #0f SFT2 EQU #05 JCN #0000 SWP2 SUB2 JMP2r
-@lts2 #8000 ADD2 SWP2 #8000 ADD2 GTH2 JMP2r
-@gts2 #8000 ADD2 SWP2 #8000 ADD2 LTH2 JMP2r
+@lts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
+@gts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
 
 ( print )
 
