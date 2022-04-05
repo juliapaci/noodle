@@ -740,8 +740,8 @@ RTN
 
 @within-surface ( x* y* -- x* y* flag )
 
-	( clamp ) DUP2 8// NIP .surface/h LDZ > ,&skip JCN
-	( clamp ) OVR2 8// NIP .surface/w LDZ > ,&skip JCN
+	( clamp ) DUP2 8// NIP .surface/h LDZ #01 SUB > ,&skip JCN
+	( clamp ) OVR2 8// NIP .surface/w LDZ #01 SUB > ,&skip JCN
 	#01 RTN
 	&skip
 		#00 RTN
