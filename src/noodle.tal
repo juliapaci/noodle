@@ -278,7 +278,7 @@ JMP2r
 @get-tool ( -- ptr* )
 
 	( set erase from right-click/mode )
-	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 GTH .brush/mode LDZ ADD #01 JCN SWP2 POP2 .brush/oper STZ2
+	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 GTH .brush/mode LDZ ADD [ #01 JCN SWP2 POP2 ] .brush/oper STZ2
 	( get function )
 	#00 .Mouse/state DEI #00 GTH #10 SFT .cursor/last LDZ #00 GTH ADD #10 SFT .brush/tool LDZ #30 SFT ADD ;tools ADD2 LDA2
 	( record state )
@@ -356,8 +356,7 @@ BRK
 	LIT 'y NEQk NIP ,&no-ykey JCN #05 ;select-tool JSR2 &no-ykey
 	LIT '[ NEQk NIP ,&no-lbracket JCN .brush/size LDZ #01 SUB ;select-size JSR2 &no-lbracket
 	LIT '] NEQk NIP ,&no-rbracket JCN .brush/size LDZ INC ;select-size JSR2 &no-rbracket
-	DUP
-		DUP #30 GTH SWP #39 LTH #0101 NEQ2 ,&no-numkey JCN
+	DUPk #30 GTH SWP #39 LTH #0101 NEQ2 ,&no-numkey JCN
 		( size ) DUP #31 SUB ;select-patt JSR2 &no-numkey
 	POP
 
@@ -799,7 +798,7 @@ JMP2r
 @read-size ( 00x00* -- )
 
 	DUP2 ;sbyte JSR2 #00 EQU ,&cancel JCN
-	DUP2 INC2 INC2 LDA LIT 'x NEQ ,&cancel JCN
+	INC2k INC2 LDA LIT 'x NEQ ,&cancel JCN
 	DUP2 #0003 ADD2 ;sbyte JSR2 #00 EQU ,&cancel JCN
 	( y ) DUP2 #0003 ADD2 ;sbyte JSR2 STH
 	( x ) ;sbyte JSR2 STHr
@@ -829,11 +828,11 @@ JMP2r
 	#05 .Screen/auto DEO
 	;data .Screen/addr DEO2
 	.surface/y LDZ2 .Screen/y DEO2
-	.surface/h LDZ .viewport/h LDZ LTHk JMP SWP POP #00
+	.surface/h LDZ .viewport/h LDZ [ LTHk JMP SWP POP ] #00
 	&ver
 		#00 OVR #00 .surface/w LDZ MUL2 #30 SFT2 ;data ADD2 .Screen/addr DEO2
 		.surface/x LDZ2 .Screen/x DEO2
-		.surface/w LDZ .viewport/w LDZ LTHk JMP SWP POP #00
+		.surface/w LDZ .viewport/w LDZ [ LTHk JMP SWP POP ] #00
 		&hor
 			#09 .Screen/sprite DEO
 			INC GTHk ,&hor JCN
@@ -947,7 +946,7 @@ JMP2r
 	( draw new cursor )
 	.cursor/x2 LDZ2
 	.cursor/y2 LDZ2
-	#4143 .Mouse/state DEI #01 JCN SWP POP
+	#4143 .Mouse/state DEI [ #01 JCN SWP POP ]
 		,draw-pointer JSR
 
 JMP2r
@@ -1573,7 +1572,7 @@ JMP2r
 			#0000 ,&x STR2
 			,&y LDR2 INC2 ,&y STR2
 			&continue
-		.File/success DEI2 #0000 NEQ2 ,&stream JCN
+		.File/success DEI2 ORA ,&stream JCN
 	#00 .Screen/auto DEO
 	( rename )
 	;&icn-ext ;filepath ;scap JSR2 #0003 SUB2 ;scpy JSR2
