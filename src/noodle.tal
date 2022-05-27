@@ -98,7 +98,7 @@ JMP2r
 		&no-start
 	( end )
 	.Console/read DEI
-	DUP DUP #1f GTH SWP #7f LTH AND ,&no-end JCN
+	DUPk #1f GTH SWP #7f LTH AND ,&no-end JCN
 		#00 ,&listening STR
 		&no-end
 	( capture )
@@ -799,7 +799,7 @@ JMP2r
 @read-size ( 00x00* -- )
 
 	DUP2 ;sbyte JSR2 #00 EQU ,&cancel JCN
-	DUP2 #0002 ADD2 LDA LIT 'x NEQ ,&cancel JCN
+	DUP2 INC2 INC2 LDA LIT 'x NEQ ,&cancel JCN
 	DUP2 #0003 ADD2 ;sbyte JSR2 #00 EQU ,&cancel JCN
 	( y ) DUP2 #0003 ADD2 ;sbyte JSR2 STH
 	( x ) ;sbyte JSR2 STHr
@@ -974,7 +974,7 @@ JMP2r
 
 	.viewport-label/x LDZ2 #0002 SUB2 .Screen/x DEO2
 	.viewport-label/y LDZ2 #0002 SUB2 .Screen/y DEO2
-	.viewport/w LDZ INC .viewport/h LDZ #02 ADD #00 ;fill-rect JSR2
+	.viewport/w LDZ INC .viewport/h LDZ INC INC #00 ;fill-rect JSR2
 
 JMP2r
 
@@ -1120,7 +1120,7 @@ JMP2r
 @within-rect ( x* y* rect -- flag )
 
 	STH
-	( y LTH rect.y1 ) DUP2 STHkr #02 ADD LDZ2 ;lts2 JSR2 ,&skip JCN
+	( y LTH rect.y1 ) DUP2 STHkr INC INC LDZ2 ;lts2 JSR2 ,&skip JCN
 	( y GTH rect.y2 ) DUP2 STHkr #06 ADD LDZ2 ;gts2 JSR2 ,&skip JCN
 	SWP2
 	( x LTH rect.x1 ) DUP2 STHkr LDZ2 ;lts2 JSR2 ,&skip JCN

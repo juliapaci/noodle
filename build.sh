@@ -4,6 +4,12 @@ echo "Cleaning.."
 rm -rf bin
 mkdir bin
 
+if [ -e "$HOME/roms/uxnlin.rom" ]
+then
+	echo "Linting.."
+	uxncli $HOME/roms/uxnlin.rom src/noodle.tal
+fi
+
 echo "Assembling.."
 uxnasm src/noodle.tal bin/noodle.rom 
 
