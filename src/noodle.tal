@@ -680,7 +680,7 @@ JMP2r
 	DUP #0c EQU ,&remove JCN
 	POP POP2 POP2 JMP2r
 	&remove
-		POP ;remove-pixel JSR2 JMP2r
+		POP ;remove-pixel JSR2
 
 JMP2r
 
@@ -735,7 +735,7 @@ JMP2r
 	( clamp ) OVR2 #03 SFT2 NIP .surface/w LDZ #01 SUB GTH ,&skip JCN
 	#01 JMP2r
 	&skip
-		#00 JMP2r
+	#00
 
 JMP2r
 
@@ -1424,7 +1424,7 @@ JMP2r
 		POP #00 JMP2r
 	&number #30 SUB JMP2r
 	&uc #37 SUB JMP2r
-	&lc #57 SUB JMP2r
+	&lc #57 SUB
 
 JMP2r
 
