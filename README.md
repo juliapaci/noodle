@@ -18,6 +18,10 @@ If do not wish to assemble it yourself, you can download [noodle.rom](https://ra
 sudo mount -o loop sd_card.img sd_card/ && sudo cp ~/roms/noodle.rom sd_card/uxn/boot.rom && sync && sudo umount sd_card
 ```
 
+## TGA Import
+
+The tga file should not use RLE compression, and should be indexed from the top-left corner.
+
 ## Controls
 
 - `right-click` or `escape`, erase
