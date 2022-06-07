@@ -131,11 +131,11 @@ JMP2r
 
 @on-frame-trap ( -> )
 
-	.state/timer LDZ
+	.state/timer LDZk
 	DUP #07 AND ,&no-blink JCN
 		DUP #03 SFT #01 AND #10 SFT #06 ADD ;draw-filepath JSR2
 		&no-blink
-	INC .state/timer STZ
+	INC SWP STZ
 
 BRK
 
@@ -1514,7 +1514,7 @@ JMP2r
 
 @print ( short* -- )
 
-	&short ( short* -- ) SWP ,&byte JSR
+	SWP ,&byte JSR
 	&byte ( byte -- ) DUP #04 SFT ,&char JSR
 	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
 
