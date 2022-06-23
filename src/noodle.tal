@@ -39,6 +39,9 @@
 	#70fe .System/r DEO2
 	#c0f3 .System/g DEO2
 	#90f3 .System/b DEO2
+	( size )
+	#0240 .Screen/width DEO2
+	#0160 .Screen/height DEO2
 	( theme support )
 	;load-theme JSR2
 	( default brush )
@@ -791,6 +794,7 @@ JMP2r
 	;get-length JSR2 .File/length DEO2
 	;data .File/write DEO2
 	( draw )
+	#00 .state/changed STZ ;draw-filestate JSR2
 	;draw-viewport JSR2
 
 JMP2r
