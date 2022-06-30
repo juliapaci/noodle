@@ -39,9 +39,6 @@
 	#70fe .System/r DEO2
 	#c0f3 .System/g DEO2
 	#90f3 .System/b DEO2
-	( size )
-	#0240 .Screen/width DEO2
-	#0160 .Screen/height DEO2
 	( theme support )
 	;load-theme JSR2
 	( default brush )
@@ -49,10 +46,10 @@
 	#00 .brush/patt STZ
 	#00 .brush/tool STZ
 	( initial position )
-	#0008 #0008 ;set-panel-position JSR2
-	#0028 #0012 ;set-viewport-position JSR2
-	.Screen/width DEI2 #03 SFT2 NIP #07 SUB
-	.Screen/height DEI2 #03 SFT2 NIP #04 SUB
+	#0010 #0018 ;set-panel-position JSR2
+	#0038 #0024 ;set-viewport-position JSR2
+	.Screen/width DEI2 #03 SFT2 NIP #09 SUB
+	.Screen/height DEI2 #03 SFT2 NIP #06 SUB
 		;set-viewport-size JSR2
 	.viewport/w LDZ #02 SUB
 	.viewport/h LDZ #02 SUB

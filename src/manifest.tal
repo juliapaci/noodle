@@ -96,7 +96,7 @@ JMP2r
 		&no-sub
 	( don't leave if menu is active )
 	;draw-menu/sel LDA #ff EQU
-	.Mouse/y DEI2 #0007 GTH2 
+	.Mouse/y DEI2 #000b GTH2
 		AND ;on-menu-leave JCN2
 
 BRK
