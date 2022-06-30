@@ -1,6 +1,6 @@
 %FLIP { STH2k LDA2 SWP STH2r STA2 }
 
-@load-file-tga ( -- )
+@file-open-tga ( -- )
 
 	( header )
 	;filepath .File/name DEO2

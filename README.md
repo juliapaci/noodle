@@ -24,6 +24,19 @@ The tga file should not use RLE compression, and should be indexed from the top-
 
 ## Controls
 
+- `ctrl+n`, clear
+- `ctrl+r`, rename
+- `ctrl+o`, load
+- `ctrl+s`, save
+
+
+- `q`, pen tool
+- `w`, brush tool
+- `e`, line tool
+- `r`, magic tool
+- `t`, rectangle tool
+- `y`, zoom tool
+
 - `right-click` or `escape`, erase
 - `arrows`, move zoom
 - `space` or `shift`, toogle zoom
@@ -31,13 +44,4 @@ The tga file should not use RLE compression, and should be indexed from the top-
 - `backspace`, blank canvas
 - `1-8`, select brush pattern
 - `[]`, set brush size
-- `ctrl+n`, clear
-- `ctrl+r`, rename
-- `ctrl+o`, load
-- `ctrl+s`, save
-- `q`, pen tool
-- `w`, brush tool
-- `e`, line tool
-- `r`, magic tool
-- `t`, rectangle tool
-- `y`, zoom tool
+

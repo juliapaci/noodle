@@ -11,7 +11,7 @@
 
 @state &timer $1 &changed $1
 @brush &tool $1 &size $1 &patt $1 &oper $2 &mode $1
-@cursor &x1 $2 &y1 $2 &x2 $2 &y2 $2 &last $1 &drag $1
+@cursor &x $2 &y $2 &x2 $2 &y2 $2 &last $1 &drag $1
 @zoom &active $1 &x $2 &y $2
 @guide &x $2 &y $2 &x2 $2 &y2 $2
 @line &x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
@@ -59,7 +59,8 @@
 		;set-surface-size JSR2
 	( let's begin. )
 	;untrap JSR2
-	;new-file JSR2
+	;file-new JSR2
+	;menu-init JSR2
 
 BRK
 
@@ -122,7 +123,7 @@ BRK
 
 	DUP ,&no-null JCN POP JMP2r &no-null
 	[ #08 ] NEQk NIP ,&no-pop JCN ;filepath ;spop JSR2 POP JMP2r &no-pop
-	[ #0a ] NEQk NIP ,&no-load JCN ;load-file JSR2 &no-load
+	[ #0a ] NEQk NIP ,&no-load JCN ;file-open JSR2 &no-load
 	[ #7f ] NEQk NIP ,&no-delete JCN ;filepath #0040 ;mclr JSR2 POP JMP2r &no-delete
 	[ #20 ] GTHk NIP ,&no-special JCN ;untrap JSR2 POP JMP2r &no-special
 	;filepath ;slen JSR2 NIP #3f EQU ,&no-push JCN
@@ -157,6 +158,8 @@ BRK
 BRK
 
 @on-mouse ( -> )
+
+	.Mouse/y DEI2 #0008 LTH2 ;trap-menu JCN2
 
 	;draw-cursor JSR2
 	( when drag&release )
@@ -202,8 +205,8 @@ BRK
 
 	( set frame )
 	.cursor/drag STZ
-	.Mouse/x DEI2 .cursor/x1 STZ2
-	.Mouse/y DEI2 .cursor/y1 STZ2
+	.Mouse/x DEI2 .cursor/x STZ2
+	.Mouse/y DEI2 .cursor/y STZ2
 
 JMP2r
 
@@ -211,9 +214,9 @@ JMP2r
 
 	;clear-panel JSR2
 	;draw-viewport JSR2
-	DUP2 .cursor/y1 LDZ2 SUB2 STH2 .cursor/y1 STZ2
+	DUP2 .cursor/y LDZ2 SUB2 STH2 .cursor/y STZ2
 		.panel/y LDZ2 STH2r ADD2 STH2
-	DUP2 .cursor/x1 LDZ2 SUB2 STH2 .cursor/x1 STZ2
+	DUP2 .cursor/x LDZ2 SUB2 STH2 .cursor/x STZ2
 		.panel/x LDZ2 STH2r ADD2 STH2r
 		;set-panel-position JSR2
 
@@ -231,9 +234,9 @@ BRK
 @on-drag-viewport-label ( x* y* -> )
 
 	;clear-viewport JSR2
-	DUP2 .cursor/y1 LDZ2 SUB2 STH2 .cursor/y1 STZ2
+	DUP2 .cursor/y LDZ2 SUB2 STH2 .cursor/y STZ2
 		.viewport/y LDZ2 STH2r ADD2 STH2
-	DUP2 .cursor/x1 LDZ2 SUB2 STH2 .cursor/x1 STZ2
+	DUP2 .cursor/x LDZ2 SUB2 STH2 .cursor/x STZ2
 		.viewport/x LDZ2 STH2r ADD2 STH2r
 		;set-viewport-position JSR2
 	;draw-panel JSR2
@@ -335,63 +338,64 @@ BRK
 
 @on-button ( -> )
 
-	.Controller/button DEI
-		DUP #01 AND ;on-button-ctrl JCN2
-		DUP #f0 AND ;on-button-arrow JCN2
-		DUP #04 NEQ ,&no-shift JCN
-			;toggle-zoom JSR2
-			&no-shift
-		DUP #08 NEQ ,&no-esc JCN
-			.brush/mode LDZk #00 EQU SWP STZ
-			;draw-sizepane JSR2
-			&no-esc
-	POP
-
-	.Controller/key DEI
-	#00 NEQk NIP ,&continue JCN POP BRK &continue
-	#09 NEQk NIP ,&no-invert JCN POP ;invert JSR2 BRK &no-invert
-	#20 NEQk NIP ,&no-space JCN ;toggle-zoom JSR2 &no-space
-	LIT 'q NEQk NIP ,&no-qkey JCN #00 ;select-tool JSR2 &no-qkey
-	LIT 'w NEQk NIP ,&no-wkey JCN #01 ;select-tool JSR2 &no-wkey
-	LIT 'e NEQk NIP ,&no-ekey JCN #02 ;select-tool JSR2 &no-ekey
-	LIT 'r NEQk NIP ,&no-rkey JCN #03 ;select-tool JSR2 &no-rkey
-	LIT 't NEQk NIP ,&no-tkey JCN #04 ;select-tool JSR2 &no-tkey
-	LIT 'y NEQk NIP ,&no-ykey JCN #05 ;select-tool JSR2 &no-ykey
-	LIT '[ NEQk NIP ,&no-lbracket JCN .brush/size LDZ #01 SUB ;select-size JSR2 &no-lbracket
-	LIT '] NEQk NIP ,&no-rbracket JCN .brush/size LDZ INC ;select-size JSR2 &no-rbracket
-	DUPk #30 GTH SWP #39 LTH #0101 NEQ2 ,&no-numkey JCN
-		( size ) DUP #31 SUB ;select-patt JSR2 &no-numkey
-	POP
-
-BRK
-
-@on-button-ctrl ( button -> )
-
-	POP
-	.Controller/key DEI
-	( new/rename/open/save )
-	[ LIT 'n ] NEQk NIP ,&no-new JCN ;new-file JSR2 POP BRK &no-new
-	[ LIT 'r ] NEQk NIP ,&no-name JCN ;trap JSR2 POP BRK &no-name
-	[ LIT 'o ] NEQk NIP ,&no-open JCN ;load-file JSR2 POP BRK &no-open
-	[ LIT 's ] NEQk NIP ,&no-save JCN ;save-file JSR2 POP BRK &no-save
-	POP
-
-BRK
-
-@on-button-arrow ( button -> )
-
-	.zoom/active LDZ ,&is-zoom JCN POP BRK &is-zoom
-
-	DUP #10 AND #00 EQU ,&no-u JCN .zoom/y LDZ2k #0001 SUB2 ROT STZ2 &no-u
-	DUP #20 AND #00 EQU ,&no-d JCN .zoom/y LDZ2k INC2 ROT STZ2 &no-d
-	DUP #40 AND #00 EQU ,&no-l JCN .zoom/x LDZ2k #0001 SUB2 ROT STZ2 &no-l
-	DUP #80 AND #00 EQU ,&no-r JCN .zoom/x LDZ2k INC2 ROT STZ2 &no-r
-	POP
-	;draw-surface JSR2
+	.Controller/button DEI2 ;find-modkey JSR2
+		DUP2 #0000 EQU2 ,&skip JCN DUP2 JSR2 &skip POP2
 
 BRK
 
 ( helpers )
+
+@tool-pen ( -- ) #00 ;select-tool JSR2 JMP2r
+@tool-brush ( -- ) #01 ;select-tool JSR2 JMP2r
+@tool-line ( -- ) #02 ;select-tool JSR2 JMP2r
+@tool-magic ( -- ) #03 ;select-tool JSR2 JMP2r
+@tool-rect ( -- ) #04 ;select-tool JSR2 JMP2r
+@tool-zoom ( -- ) #05 ;select-tool JSR2 JMP2r
+
+@brush-toggle ( -- ) .brush/mode LDZk #00 EQU SWP STZ ;draw-sizepane JSR2 JMP2r
+@brush-decr ( -- ) .brush/size LDZ #01 SUB ;select-size JSR2 JMP2r
+@brush-incr ( -- ) .brush/size LDZ INC ;select-size JSR2 JMP2r
+
+@pattern-1 ( -- ) #00 ;select-patt JSR2 JMP2r
+@pattern-2 ( -- ) #01 ;select-patt JSR2 JMP2r
+@pattern-3 ( -- ) #02 ;select-patt JSR2 JMP2r
+@pattern-4 ( -- ) #03 ;select-patt JSR2 JMP2r
+@pattern-5 ( -- ) #04 ;select-patt JSR2 JMP2r
+@pattern-6 ( -- ) #05 ;select-patt JSR2 JMP2r
+@pattern-7 ( -- ) #06 ;select-patt JSR2 JMP2r
+@pattern-8 ( -- ) #07 ;select-patt JSR2 JMP2r
+
+@move-up ( -- )
+
+	.zoom/active LDZ ,&is-zoom JCN JMP2r &is-zoom
+	.zoom/y LDZ2k #0001 SUB2 ROT STZ2
+	;draw-surface JSR2
+
+JMP2r
+
+@move-down ( -- )
+
+	.zoom/active LDZ ,&is-zoom JCN JMP2r &is-zoom
+	.zoom/y LDZ2k INC2 ROT STZ2
+	;draw-surface JSR2
+
+JMP2r
+
+@move-left ( -- )
+
+	.zoom/active LDZ ,&is-zoom JCN JMP2r &is-zoom
+	.zoom/x LDZ2k #0001 SUB2 ROT STZ2
+	;draw-surface JSR2
+
+JMP2r
+
+@move-right ( -- )
+
+	.zoom/active LDZ ,&is-zoom JCN JMP2r &is-zoom
+	.zoom/x LDZ2k INC2 ROT STZ2
+	;draw-surface JSR2
+
+JMP2r
 
 @select-tool ( tool -- )
 
@@ -428,7 +432,7 @@ JMP2r
 
 JMP2r
 
-@toggle-zoom ( -- )
+@view-toggle ( -- )
 
 	.zoom/active LDZk #00 EQU SWP STZ
 	;draw-viewport JSR2
@@ -436,7 +440,7 @@ JMP2r
 
 JMP2r
 
-@invert ( -- )
+@edit-invert ( -- )
 
 	;data STH2k ;get-length JSR2 ADD2 STH2r
 	&loop
@@ -566,10 +570,10 @@ JMP2r
 
 @paint-rect ( -- )
 
-	.cursor/y2 LDZ2 .cursor/y1 LDZ2 ( flip sign ) GTH2k JMP SWP2
+	.cursor/y2 LDZ2 .cursor/y LDZ2 ( flip sign ) GTH2k JMP SWP2
 	&ver
 		STH2k
-		.cursor/x2 LDZ2 .cursor/x1 LDZ2 ( flip sign ) GTH2k JMP SWP2
+		.cursor/x2 LDZ2 .cursor/x LDZ2 ( flip sign ) GTH2k JMP SWP2
 		&hor
 			DUP2 STH2kr ;patternize JSR2 #00 EQU ,&no-pixel JCN
 				DUP2 STH2kr .brush/oper LDZ2 JSR2
@@ -756,7 +760,7 @@ JMP2r
 
 ( file )
 
-@new-file ( path* -- )
+@file-new ( path* -- )
 
 	#00 ;draw-filepath JSR2
 	( rename to untitled.txt )
@@ -770,12 +774,18 @@ JMP2r
 
 JMP2r
 
-@load-file ( -- )
+@file-rename ( -- )
+
+	;trap JSR2
+
+JMP2r
+
+@file-open ( -- )
 
 	( erase data )
 	;data ;get-length JSR2 ;mclr JSR2
 	#00 .state/changed STZ ;draw-filestate JSR2
-	;filepath ;scap JSR2 #0003 SUB2 ;&tga-ext ;scmp JSR2 ;load-file-tga JCN2
+	;filepath ;scap JSR2 #0003 SUB2 ;&tga-ext ;scmp JSR2 ;file-open-tga JCN2
 	( load )
 	;filepath .File/name DEO2
 	#fff0 ;data SUB2 .File/length DEO2
@@ -788,7 +798,7 @@ JMP2r
 JMP2r
 	&tga-ext "tga $1
 
-@save-file ( path* -- )
+@file-save ( path* -- )
 
 	;filepath .File/name DEO2
 	;get-length JSR2 .File/length DEO2
@@ -812,6 +822,10 @@ JMP2r
 	&cancel POP2 JMP2r
 
 ( Drawing )
+
+@redraw-all ( -- )
+
+	;draw-panel JSR2
 
 @draw-viewport ( -- )
 
@@ -1067,7 +1081,7 @@ JMP2r
 	STH
 	.viewport-label/x LDZ2 #0008 ADD2 .Screen/x DEO2
 	.viewport-label/y LDZ2 #0002 SUB2 .Screen/y DEO2
-	;filepath STHkr ;draw-str JSR2
+	;filepath STHkr ;draw-string JSR2
 	( cap )
 	;save-icns/cap .Screen/addr DEO2
 	STHr #00 NEQ .Screen/sprite DEO
@@ -1091,7 +1105,7 @@ JMP2r
 
 ( strings )
 
-@draw-str ( text* color -- )
+@draw-string ( text* color -- )
 
 	STH
 	#01 .Screen/auto DEO
@@ -1201,7 +1215,7 @@ JMP2r
 @pencil ( x* y* -> )
 
 	&down
-		OVR2 OVR2 .cursor/y1 STZ2 .cursor/x1 STZ2
+		OVR2 OVR2 .cursor/y STZ2 .cursor/x STZ2
 		OVR2 OVR2 .brush/oper LDZ2 JSR2
 	&up
 		;draw-tile JSR2
@@ -1209,9 +1223,9 @@ JMP2r
 		BRK
 	&drag
 		OVR2 OVR2 STH2 STH2
-		.cursor/x1 LDZ2 .cursor/y1 LDZ2 STH2r STH2r
+		.cursor/x LDZ2 .cursor/y LDZ2 STH2r STH2r
 		;paint-line JSR2
-		.cursor/y1 STZ2 .cursor/x1 STZ2
+		.cursor/y STZ2 .cursor/x STZ2
 		BRK
 	&hover
 		POP2 POP2
@@ -1238,13 +1252,13 @@ BRK
 	&down
 		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
 		( erase guide ) .guide #40 ;line-diag JSR2
-		.cursor/y1 STZ2 .cursor/x1 STZ2
+		.cursor/y STZ2 .cursor/x STZ2
 		BRK
 	&up
 		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
 		( erase guide ) .guide #40 ;line-diag JSR2
 		.cursor/y2 STZ2 .cursor/x2 STZ2
-		.cursor/x1 LDZ2 .cursor/y1 LDZ2 .cursor/x2 LDZ2 .cursor/y2 LDZ2 ;paint-line JSR2
+		.cursor/x LDZ2 .cursor/y LDZ2 .cursor/x2 LDZ2 .cursor/y2 LDZ2 ;paint-line JSR2
 		#01 .state/changed STZ ;draw-filestate JSR2
 		BRK
 	&drag
@@ -1252,7 +1266,7 @@ BRK
 		( erase guide ) .guide #40 ;line-diag JSR2
 		.cursor/y2 STZ2 .cursor/x2 STZ2
 		( update guide )
-		.cursor/x1 LDZ2 .cursor/y1 LDZ2 ;to-screen JSR2 INC2 .guide/y STZ2 INC2 .guide/x STZ2
+		.cursor/x LDZ2 .cursor/y LDZ2 ;to-screen JSR2 INC2 .guide/y STZ2 INC2 .guide/x STZ2
 		.cursor/x2 LDZ2 .cursor/y2 LDZ2 ;to-screen JSR2 .guide/y2 STZ2 .guide/x2 STZ2
 		( erase guide ) .guide #43 ;line-diag JSR2
 		BRK
@@ -1280,7 +1294,7 @@ BRK
 	&down
 		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
 		( erase guide ) #40 ;guide-rect JSR2
-		.cursor/y1 STZ2 .cursor/x1 STZ2
+		.cursor/y STZ2 .cursor/x STZ2
 		BRK
 	&up
 		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
@@ -1294,7 +1308,7 @@ BRK
 		( erase guide ) #40 ;guide-rect JSR2
 		.cursor/y2 STZ2 .cursor/x2 STZ2
 		( update guide )
-		.cursor/x1 LDZ2 .cursor/y1 LDZ2 ,to-screen JSR .guide/y STZ2 .guide/x STZ2
+		.cursor/x LDZ2 .cursor/y LDZ2 ,to-screen JSR .guide/y STZ2 .guide/x STZ2
 		.cursor/x2 LDZ2 .cursor/y2 LDZ2 ,to-screen JSR .guide/y2 STZ2 .guide/x2 STZ2
 		( draw guide ) #43 ;guide-rect JSR2
 		BRK
@@ -1321,7 +1335,7 @@ JMP2r
 	&down
 		#00 .surface/h LDZ #01 SFT2 SUB2 .zoom/y STZ2
 		#00 .surface/w LDZ #01 SFT2 SUB2 .zoom/x STZ2
-		;toggle-zoom JSR2
+		;view-toggle JSR2
 		BRK
 	&up
 	&drag
@@ -1533,6 +1547,7 @@ JMP2r
 
 JMP2r
 
+~src/manifest.tal
 ~src/tga.tal
 ~src/assets.tal
 

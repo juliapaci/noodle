@@ -8,6 +8,7 @@ if [ -e "$HOME/roms/uxnlin.rom" ]
 then
 	echo "Linting.."
 	uxncli $HOME/roms/uxnlin.rom src/noodle.tal
+	uxncli $HOME/roms/uxnlin.rom src/manifest.tal
 	uxncli $HOME/roms/uxnlin.rom src/tga.tal
 fi
 
@@ -28,4 +29,4 @@ then
 fi
 
 echo "Running.."
-uxn11 bin/noodle.rom lemon15x12.icn
+uxnemu bin/noodle.rom lemon15x12.icn
