@@ -51,6 +51,10 @@ BRK
 
 	#ff ;draw-menu/sel STA
 	#ff ;draw-sub/sel STA
+
+	#0701 ;draw-menu/theme STA2
+	#0e07 ;draw-sub/theme STA2
+
 	;draw-menu JSR2
 
 JMP2r
@@ -69,7 +73,7 @@ JMP2r
 	#42 .Mouse/state DEI #00 NEQ ADD .Screen/sprite DEO
 	( when touch cat )
 	.Mouse/state DEI #00 EQU ,&no-touch-cat JCN
-	.Mouse/y DEI2 #0008 GTH2 ,&no-touch-cat JCN
+	.Mouse/y DEI2 #000c GTH2 ,&no-touch-cat JCN
 		.Mouse/x DEI2 ;menu-picking JSR2 ;menu-select JSR2
 		( release ) #00 .Mouse/state DEO
 		BRK
@@ -77,7 +81,7 @@ JMP2r
 	( when sub active )
 	;draw-menu/sel LDA #ff EQU ,&no-sub JCN
 		( when sel changed )
-		.Mouse/y DEI2 #03 SFT2 NIP #01 SUB
+		.Mouse/y DEI2 #0004 SUB2 #03 SFT2 NIP #01 SUB
 		DUP ;draw-sub/sel LDA EQU ,&no-change JCN
 			DUP ;draw-sub/sel STA
 			;draw-menu/sel LDA #ff ;draw-sub JSR2
@@ -105,7 +109,7 @@ BRK
 
 @menu-picking ( x* -- cat )
 
-	#0028 DIV2 NIP
+	#0010 SUB2 #0028 DIV2 NIP
 
 JMP2r
 
@@ -258,12 +262,12 @@ JMP2r
 @draw-menu ( -- )
 
 	#0010 .Screen/x DEO2 
-	#0000 .Screen/y DEO2
+	#0004 .Screen/y DEO2
 	#01 .Screen/auto DEO
 	#00 ,&id STR
 	;manifest/menu
 	&cat
-		#0701 [ LIT &sel $1 ] [ LIT &id $1 ] EQU [ JMP SWP POP ] ;draw-chr/color STA
+		[ LIT2 &theme $2 ] [ LIT &sel $1 ] [ LIT &id $1 ] EQU [ JMP SWP POP ] ;draw-chr/color STA
 		INC2k ;draw-str JSR2 POP2 #00 .Screen/sprite DEO
 		;skip-sub JSR2
 		,&id LDR INC ,&id STR
@@ -283,11 +287,9 @@ JMP2r
 	LDAk STH INC2 ;skip-str JSR2
 	STHr #00
 	&subcat
-		STHk 
-		#0d07
-		STHr [ LIT &sel $1 ] EQU [ JMP SWP POP ] [ LIT &mask $1 ] AND ;draw-chr/color STA
+		STHk [ LIT2 &theme $2 ] STHr [ LIT &sel $1 ] EQU [ JMP SWP POP ] [ LIT &mask $1 ] AND ;draw-chr/color STA
 		[ LIT2 &anchor $2 ] .Screen/x DEO2
-		#00 OVR INC #30 SFT2 .Screen/y DEO2
+		#00 OVR INC #30 SFT2 #0004 ADD2 .Screen/y DEO2
 		SWP2 ;draw-label JSR2 SWP2
 		INC GTHk ,&subcat JCN
 	POP2 POP2

@@ -159,7 +159,7 @@ BRK
 
 @on-mouse ( -> )
 
-	.Mouse/y DEI2 #0008 LTH2 ;trap-menu JCN2
+	.Mouse/y DEI2 #000c LTH2 ;trap-menu JCN2
 
 	;draw-cursor JSR2
 	( when drag&release )
