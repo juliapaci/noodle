@@ -822,7 +822,15 @@ JMP2r
 
 @redraw-all ( -- )
 
+	( clear cursor )
+	.cursor/x LDZ2 .Screen/x DEO2
+	.cursor/y LDZ2 .Screen/y DEO2
+	#40 .Screen/sprite DEO
+
 	;draw-panel JSR2
+	;draw-viewport JSR2
+
+JMP2r
 
 @draw-viewport ( -- )
 

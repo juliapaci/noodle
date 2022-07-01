@@ -44,6 +44,11 @@
 	#ff ;draw-menu/sel STA
 	#ff ;draw-sub/sel STA
 
+	( clear cursor )
+	.cursor/x2 LDZ2 .Screen/x DEO2
+	.cursor/y2 LDZ2 .Screen/y DEO2
+	#40 .Screen/sprite DEO
+
 	#0901 ;draw-menu/theme STA2
 	#0e09 ;draw-sub/theme STA2
 
