@@ -36,16 +36,8 @@
 			00 '7 :pattern-7 "Vertical $1
 			00 '8 :pattern-8 "Horizontal $1
 		01 "View $1
-			04 00 :view-toggle "ZoomToggle $1
+			04 00 :view-toggle "Zoom $1
 		$1
-
-@trap-menu ( -> )
-
-	;on-mouse-menu .Mouse/vector DEO2
-	;on-control-menu .Controller/vector DEO2
-	,menu-init JSR
-
-BRK
 
 @menu-init ( -- )
 
@@ -58,6 +50,14 @@ BRK
 	;draw-menu JSR2
 
 JMP2r
+
+@trap-menu ( -> )
+
+	;on-mouse-menu .Mouse/vector DEO2
+	;on-control-menu .Controller/vector DEO2
+	,menu-init JSR
+
+BRK
 
 @on-mouse-menu ( -> )
 
