@@ -121,10 +121,14 @@ JMP2r
 @menu-close ( -- )
 
 	;untrap JSR2
-	( hide ) ;draw-menu/sel LDA #00 ;draw-sub JSR2
-	#ff ;draw-menu/sel STA
-	;draw-menu JSR2
-	;redraw-all JSR2
+	;draw-menu/sel LDA
+	DUP #ff EQU ,&no-clear JCN
+		DUP #00 ;draw-sub JSR2
+		#ff ;draw-menu/sel STA
+		;draw-menu JSR2
+		;redraw-all JSR2
+	&no-clear
+	POP
 
 JMP2r
 
@@ -154,12 +158,11 @@ JMP2r
 @menu-select-sub ( sub -- )
 
 	;get-sub JSR2
+	;menu-close JSR2
 	DUP2 #0000 EQU2 ,&skip JCN
-		;menu-close JSR2 
-		( run routine ) JSR2 JMP2r
+		DUP2 JSR2
 		&skip
 	POP2
-	;menu-close JSR2
 
 JMP2r
 
@@ -266,7 +269,7 @@ JMP2r
 
 @draw-menu ( -- )
 
-	#0010 .Screen/x DEO2 
+	#0010 .Screen/x DEO2
 	#0004 .Screen/y DEO2
 	#01 .Screen/auto DEO
 	#00 ,&id STR
@@ -307,7 +310,7 @@ JMP2r
 @draw-label ( label* -- next-label* )
 
 	LDA2k SWP2
-	#0004 ADD2 STH2k ;draw-str JSR2 
+	#0004 ADD2 STH2k ;draw-str JSR2
 	( fill )
 	#0c STH2r ;slen JSR2 NIP SUB #00
 	&loop
