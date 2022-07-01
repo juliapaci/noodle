@@ -10,6 +10,8 @@
 			01 's :file-save "Save $1
 		01 "Edit $1
 			00 09 :edit-invert "Invert $1
+		01 "View $1
+			04 00 :view-toggle "Zoom $1
 		04 "Move $1
 			10 00 :move-up "Up $1
 			20 00 :move-down "Down $1
@@ -23,11 +25,9 @@
 			00 't :tool-rect "Rect $1
 			00 'y :tool-zoom "Zoom $1
 			00 'x :tool-erase "Erase $1
-		01 "View $1
-			04 00 :view-toggle "Zoom $1
-		02 "Brush $1
-			00 '[ :brush-decr "BrushDecr $1
-			00 '] :brush-incr "BrushIncr $1
+		02 "Size $1
+			00 '[ :size-decr "Decr $1
+			00 '] :size-incr "Incr $1
 		08 "Pattern $1
 			00 '1 :pattern-1 "Full $1
 			00 '2 :pattern-2 "HalftoneA $1
