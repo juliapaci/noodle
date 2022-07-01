@@ -827,8 +827,8 @@ JMP2r
 	.cursor/y LDZ2 .Screen/y DEO2
 	#40 .Screen/sprite DEO
 
-	;draw-panel JSR2
 	;draw-viewport JSR2
+	;draw-panel JSR2
 
 JMP2r
 
@@ -1083,13 +1083,15 @@ JMP2r
 
 @draw-filepath ( color -- )
 
-	STH
+	( path )
 	.viewport-label/x LDZ2 #0008 ADD2 .Screen/x DEO2
 	.viewport-label/y LDZ2 #0002 SUB2 .Screen/y DEO2
-	;filepath STHkr ;draw-string JSR2
+	#01 .Screen/auto DEO
+	DUP ;draw-chr/color STA
+	;filepath ;draw-str JSR2 POP2
 	( cap )
 	;save-icns/cap .Screen/addr DEO2
-	STHr #00 NEQ .Screen/sprite DEO
+	#00 NEQ .Screen/sprite DEO
 
 JMP2r
 
@@ -1113,7 +1115,7 @@ JMP2r
 @draw-string ( text* color -- )
 
 	STH
-	#01 .Screen/auto DEO
+
 	&while
 		LDAk STHkr ,draw-char JSR
 		INC2 LDAk ,&while JCN
