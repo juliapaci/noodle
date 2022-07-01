@@ -47,8 +47,8 @@
 	#00 .brush/tool STZ
 	( initial position )
 	#0010 #0018 ;set-panel-position JSR2
-	#0038 #0024 ;set-viewport-position JSR2
-	.Screen/width DEI2 #03 SFT2 NIP #09 SUB
+	#0030 #0022 ;set-viewport-position JSR2
+	.Screen/width DEI2 #03 SFT2 NIP #08 SUB
 	.Screen/height DEI2 #03 SFT2 NIP #06 SUB
 		;set-viewport-size JSR2
 	.viewport/w LDZ #02 SUB
@@ -349,7 +349,7 @@ BRK
 @tool-rect ( -- ) #04 ;select-tool JSR2 JMP2r
 @tool-zoom ( -- ) #05 ;select-tool JSR2 JMP2r
 
-@brush-toggle ( -- ) .brush/mode LDZk #00 EQU SWP STZ ;draw-sizepane JSR2 JMP2r
+@tool-erase ( -- ) .brush/mode LDZk #00 EQU SWP STZ ;draw-sizepane JSR2 JMP2r
 @brush-decr ( -- ) .brush/size LDZ #01 SUB ;select-size JSR2 JMP2r
 @brush-incr ( -- ) .brush/size LDZ INC ;select-size JSR2 JMP2r
 

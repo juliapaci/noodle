@@ -15,17 +15,19 @@
 			20 00 :move-down "Down $1
 			40 00 :move-left "Left $1
 			80 00 :move-right "Right $1
-		06 "Tool $1
+		07 "Tool $1
 			00 'q :tool-pen "Pen $1
 			00 'w :tool-brush "Brush $1
 			00 'e :tool-line "Line $1
 			00 'r :tool-magic "Magic $1
 			00 't :tool-rect "Rect $1
 			00 'y :tool-zoom "Zoom $1
-		03 "Brush $1
+			00 'x :tool-erase "Erase $1
+		01 "View $1
+			04 00 :view-toggle "Zoom $1
+		02 "Brush $1
 			00 '[ :brush-decr "BrushDecr $1
 			00 '] :brush-incr "BrushIncr $1
-			00 'x :brush-toggle "Erase $1
 		08 "Pattern $1
 			00 '1 :pattern-1 "Full $1
 			00 '2 :pattern-2 "HalftoneA $1
@@ -35,8 +37,6 @@
 			00 '6 :pattern-6 "DiagonalB $1
 			00 '7 :pattern-7 "Vertical $1
 			00 '8 :pattern-8 "Horizontal $1
-		01 "View $1
-			04 00 :view-toggle "Zoom $1
 		$1
 
 @menu-init ( -- )
@@ -44,8 +44,8 @@
 	#ff ;draw-menu/sel STA
 	#ff ;draw-sub/sel STA
 
-	#0701 ;draw-menu/theme STA2
-	#0e07 ;draw-sub/theme STA2
+	#0901 ;draw-menu/theme STA2
+	#0e09 ;draw-sub/theme STA2
 
 	;draw-menu JSR2
 
