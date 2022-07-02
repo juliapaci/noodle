@@ -469,7 +469,9 @@ JMP2r
 
 @set-panel-position ( x* y* -- )
 
+	( miny ) #0010 GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .panel/y STZ2 #0088 ADD2 .panel/y2 STZ2
+	( minx ) #0008 GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .panel/x STZ2 #0018 ADD2 .panel/x2 STZ2
 	;draw-panel JSR2
 
@@ -477,13 +479,21 @@ JMP2r
 
 @set-viewport-position ( x* y* -- )
 
+	( miny ) #001a GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .viewport/y STZ2 #00 .viewport/h LDZ #30 SFT2 ADD2 .viewport/y2 STZ2
+	( minx ) #0028 GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .viewport/x STZ2 #00 .viewport/w LDZ #30 SFT2 ADD2 .viewport/x2 STZ2
 	;center-surface JSR2
 
 JMP2r
 
 @set-surface-size ( w h -- )
+
+	( clamp )
+	.viewport/h LDZ #02 SUB LTHk [ JMP SWP POP ]
+	SWP
+	.viewport/w LDZ #02 SUB LTHk [ JMP SWP POP ]
+	SWP
 
 	( only redraw on change )
 	DUP2 .surface/size LDZ2 EQU2 ,&cancel JCN
