@@ -7,6 +7,14 @@
 |90 @Mouse &vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
+%menu-def { #01 }
+%menu-sel { #09 }
+%menu-hov { #0e }
+%menu-auto { #01 }
+%menu-label { DEO }
+%menu-l { #30 }
+%menu-r { #03 }
+
 |0000
 
 @state &timer $1 &changed $1
@@ -57,9 +65,50 @@
 	( let's begin. )
 	;untrap JSR2
 	;file-new JSR2
-	;menu-init JSR2
+	;draw-menu JSR2
 
 BRK
+
+@manifest
+
+	&name "Noodle $1
+	&date "2022-06-30 $1
+	&menu
+		04 "File $1
+			01 'n :file-new "New $1
+			01 'r :file-rename "Rename $1
+			01 'o :file-open "Open $1
+			01 's :file-save "Save $1
+		01 "Edit $1
+			00 09 :edit-invert "Invert $1
+		01 "View $1
+			04 00 :view-toggle "Zoom $1
+		04 "Move $1
+			10 00 :move-up "Up $1
+			20 00 :move-down "Down $1
+			40 00 :move-left "Left $1
+			80 00 :move-right "Right $1
+		07 "Tool $1
+			00 'q :tool-pen "Pen $1
+			00 'w :tool-brush "Brush $1
+			00 'e :tool-line "Line $1
+			00 'r :tool-magic "Magic $1
+			00 't :tool-rect "Rect $1
+			00 'y :tool-zoom "Zoom $1
+			00 'x :tool-erase "Erase $1
+		02 "Size $1
+			00 '[ :size-decr "Decr $1
+			00 '] :size-incr "Incr $1
+		08 "Pattern $1
+			00 '1 :pattern-1 "Full $1
+			00 '2 :pattern-2 "HalftoneA $1
+			00 '3 :pattern-3 "HalftoneB $1
+			00 '4 :pattern-4 "PokeDot $1
+			00 '5 :pattern-5 "DiagonalA $1
+			00 '6 :pattern-6 "DiagonalB $1
+			00 '7 :pattern-7 "Vertical $1
+			00 '8 :pattern-8 "Horizontal $1
+		$1
 
 @untrap ( -- )
 
@@ -158,7 +207,8 @@ BRK
 
 	.Mouse/y DEI2 #000c LTH2 ;trap-menu JCN2
 
-	;draw-cursor JSR2
+	;draw-cursor2 JSR2
+
 	( when drag&release )
 	.cursor/drag LDZ #00 EQU ,&no-release JCN
 	.Mouse/state DEI #00 NEQ ,&no-release JCN
@@ -842,6 +892,42 @@ JMP2r
 
 JMP2r
 
+@draw-cursor2 ( -- )
+
+	( clear brush size )
+	.cursor/x2 LDZ2
+	.cursor/y2 LDZ2
+	( clear size cursor )
+	OVR2 OVR2
+	#0003 SUB2 .Screen/y DEO2
+	#0003 SUB2 .Screen/x DEO2
+	#40 .Screen/sprite DEO
+	( clear last cursor )
+	#40 ;draw-pointer JSR2
+
+	( record cursor positions )
+	.Mouse/x DEI2 .cursor/x2 STZ2
+	.Mouse/y DEI2 .cursor/y2 STZ2
+
+	( draw size cursor )
+	.brush/tool LDZ DUP #01 EQU SWP #03 EQU #0000 EQU2 ;&outside-canvas JCN2
+	( outside canvas )
+	.Mouse/x DEI2 .Mouse/y DEI2 .surface ;within-rect JSR2 #00 EQU ;&outside-canvas JCN2
+		.cursor/x2 LDZ2 #0003 SUB2 .Screen/x DEO2
+		.cursor/y2 LDZ2 #0003 SUB2 .Screen/y DEO2
+		;brush-icns #00 .brush/size LDZ #30 SFT2 ADD2 .Screen/addr DEO2
+		.Mouse/state DEI #00 NEQ DUP #10 SFT #41 ADD .Screen/sprite DEO
+		#00 EQU ,&outside-canvas JCN JMP2r
+	&outside-canvas
+
+	( draw new cursor )
+	.cursor/x2 LDZ2
+	.cursor/y2 LDZ2
+	#4143 .Mouse/state DEI [ #01 JCN SWP POP ]
+		;draw-pointer JSR2
+
+JMP2r
+
 @draw-viewport ( -- )
 
 	.viewport/size LDZ2 #0000 GTH2 JMP JMP2r
@@ -947,42 +1033,6 @@ JMP2r
 
 JMP2r
 	&cancel POP2 POP2 JMP2r
-
-@draw-cursor ( -- )
-
-	( clear brush size )
-	.cursor/x2 LDZ2
-	.cursor/y2 LDZ2
-	( clear size cursor )
-	OVR2 OVR2
-	#0003 SUB2 .Screen/y DEO2
-	#0003 SUB2 .Screen/x DEO2
-	#40 .Screen/sprite DEO
-	( clear last cursor )
-	#40 ;draw-pointer JSR2
-
-	( record cursor positions )
-	.Mouse/x DEI2 .cursor/x2 STZ2
-	.Mouse/y DEI2 .cursor/y2 STZ2
-
-	( draw size cursor )
-	.brush/tool LDZ DUP #01 EQU SWP #03 EQU #0000 EQU2 ;&outside-canvas JCN2
-	( outside canvas )
-	.Mouse/x DEI2 .Mouse/y DEI2 .surface ;within-rect JSR2 #00 EQU ;&outside-canvas JCN2
-		.cursor/x2 LDZ2 #0003 SUB2 .Screen/x DEO2
-		.cursor/y2 LDZ2 #0003 SUB2 .Screen/y DEO2
-		;brush-icns #00 .brush/size LDZ #30 SFT2 ADD2 .Screen/addr DEO2
-		.Mouse/state DEI #00 NEQ DUP #10 SFT #41 ADD .Screen/sprite DEO
-		#00 EQU ,&outside-canvas JCN JMP2r
-	&outside-canvas
-
-	( draw new cursor )
-	.cursor/x2 LDZ2
-	.cursor/y2 LDZ2
-	#4143 .Mouse/state DEI [ #01 JCN SWP POP ]
-		,draw-pointer JSR
-
-JMP2r
 
 @draw-pointer ( x* y* color -- )
 
@@ -1122,18 +1172,6 @@ JMP2r
 
 ( strings )
 
-@draw-string ( text* color -- )
-
-	STH
-
-	&while
-		LDAk STHkr ,draw-char JSR
-		INC2 LDAk ,&while JCN
-	POP2
-	POPr
-
-JMP2r
-
 @draw-byte ( byte color -- )
 
 	STH DUP #04 SFT STHkr ,draw-hex JSR STHr
@@ -1146,6 +1184,19 @@ JMP2r
 
 	SWP #20 SUB #00 SWP #30 SFT2 ;font ADD2 .Screen/addr DEO2
 	.Screen/sprite DEO
+
+JMP2r
+
+@draw-chr ( char -- )
+
+	#20 SUB #00 SWP #30 SFT2 ;font ADD2 .Screen/addr DEO2
+	[ LIT &color 01 ] .Screen/sprite DEO
+
+JMP2r
+
+@get-strw ( str* -- width* )
+
+	;slen JSR2 #30 SFT2
 
 JMP2r
 
@@ -1445,97 +1496,11 @@ JMP2r
 
 JMP2r
 
-( memory generics )
-
-@mclr ( addr* len* -- )
-
-	OVR2 ADD2 SWP2
-	&loop
-		STH2k #00 STH2r STA
-		INC2 GTH2k ,&loop JCN
-	POP2 POP2
-
-JMP2r
-
-@mcpy ( src* dst* len* -- )
-
-	SWP2 STH2
-	OVR2 ADD2 SWP2
-	&loop
-		LDAk STH2kr STA INC2r
-		INC2 GTH2k ,&loop JCN
-	POP2 POP2
-	POP2r
-
-JMP2r
-
-( string generics )
-
-@slen ( str* -- len* )
-
-	DUP2 ,scap JSR SWP2 SUB2
-
-JMP2r
-
-@scap ( str* -- end* )
-
-	LDAk #00 NEQ JMP JMP2r
-	&while INC2 LDAk ,&while JCN
-
-JMP2r
-
-@scpy ( src* dst* -- )
-
-	STH2
-	&while
-		LDAk STH2kr STA INC2r
-		INC2 LDAk ,&while JCN
-	POP2
-	#00 STH2r STA
-
-JMP2r
-
-@sput ( char str* -- )
-
-	,scap JSR STA
-
-JMP2r
-
-@spop ( str* -- )
-
-	LDAk ,&no-null JCN
-		POP2 JMP2r &no-null
-	#00 ROT ROT ,scap JSR #0001 SUB2 STA
-
-JMP2r
-
-@scmp ( a* b* -- flag )
-
-	STH2
-	&loop
-		LDAk LDAkr STHr NEQ ,&end JCN
-		LDAk LDAkr STHr ORA ,&not-end JCN
-			POP2 POP2r #01 JMP2r
-			&not-end
-		INC2 INC2r ,&loop JMP
-	&end
-	POP2 POP2r #00
-
-JMP2r
-
 @abs2 DUP2 #0f SFT2 EQU #05 JCN #0000 SWP2 SUB2 JMP2r
 @lts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
 @gts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
 
 ( print )
-
-@print ( short* -- )
-
-	SWP ,&byte JSR
-	&byte ( byte -- ) DUP #04 SFT ,&char JSR
-	&char ( char -- ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD #18 DEO
-
-JMP2r
 
 @print-str ( str* -- )
 

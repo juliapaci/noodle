@@ -65,6 +65,20 @@ JMP2r
 
 JMP2r
 
+@scmp ( a* b* -- flag )
+
+	STH2
+	&loop
+		LDAk LDAkr STHr NEQ ,&end JCN
+		LDAk LDAkr STHr ORA ,&not-end JCN
+			POP2 POP2r #01 JMP2r
+			&not-end
+		INC2 INC2r ,&loop JMP
+	&end
+	POP2 POP2r #00
+
+JMP2r
+
 @image-types-txts
 	&no-image "no-data $1
 	&raw-color "RAW-color $1
