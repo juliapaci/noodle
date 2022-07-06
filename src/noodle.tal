@@ -19,7 +19,7 @@
 
 @state &timer $1 &changed $1
 @brush &tool $1 &size $1 &patt $1 &oper $2 &mode $1
-@cursor &x $2 &y $2 &x2 $2 &y2 $2 &last $1 &drag $1
+@cursor &x0 $2 &y0 $2 &x $2 &y $2 &last $1 &drag $1
 @zoom &active $1 &x $2 &y $2
 @guide &x $2 &y $2 &x2 $2 &y2 $2
 @line &x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
@@ -132,8 +132,8 @@ JMP2r
 	#06 ;draw-filepath JSR2
 	#00 .Mouse/state DEO
 	( clear brush )
-	.cursor/x2 LDZ2 .Screen/x DEO2
-	.cursor/y2 LDZ2 .Screen/y DEO2
+	.cursor/x LDZ2 .Screen/x DEO2
+	.cursor/y LDZ2 .Screen/y DEO2
 	#40 .Screen/sprite DEO
 
 JMP2r
@@ -252,8 +252,8 @@ BRK
 
 	( set frame )
 	.cursor/drag STZ
-	.Mouse/x DEI2 .cursor/x STZ2
-	.Mouse/y DEI2 .cursor/y STZ2
+	.Mouse/x DEI2 .cursor/x0 STZ2
+	.Mouse/y DEI2 .cursor/y0 STZ2
 
 JMP2r
 
@@ -261,9 +261,9 @@ JMP2r
 
 	;clear-panel JSR2
 	;draw-viewport JSR2
-	DUP2 .cursor/y LDZ2 SUB2 STH2 .cursor/y STZ2
+	DUP2 .cursor/y0 LDZ2 SUB2 STH2 .cursor/y0 STZ2
 		.panel/y LDZ2 STH2r ADD2 STH2
-	DUP2 .cursor/x LDZ2 SUB2 STH2 .cursor/x STZ2
+	DUP2 .cursor/x0 LDZ2 SUB2 STH2 .cursor/x0 STZ2
 		.panel/x LDZ2 STH2r ADD2 STH2r
 		;set-panel-position JSR2
 
@@ -281,9 +281,9 @@ BRK
 @on-drag-viewport-label ( x* y* -> )
 
 	;clear-viewport JSR2
-	DUP2 .cursor/y LDZ2 SUB2 STH2 .cursor/y STZ2
+	DUP2 .cursor/y0 LDZ2 SUB2 STH2 .cursor/y0 STZ2
 		.viewport/y LDZ2 STH2r ADD2 STH2
-	DUP2 .cursor/x LDZ2 SUB2 STH2 .cursor/x STZ2
+	DUP2 .cursor/x0 LDZ2 SUB2 STH2 .cursor/x0 STZ2
 		.viewport/x LDZ2 STH2r ADD2 STH2r
 		;set-viewport-position JSR2
 	;draw-panel JSR2
@@ -627,10 +627,10 @@ JMP2r
 
 @paint-rect ( -- )
 
-	.cursor/y2 LDZ2 .cursor/y LDZ2 ( flip sign ) GTH2k JMP SWP2
+	.cursor/y LDZ2 .cursor/y0 LDZ2 ( flip sign ) GTH2k JMP SWP2
 	&ver
 		STH2k
-		.cursor/x2 LDZ2 .cursor/x LDZ2 ( flip sign ) GTH2k JMP SWP2
+		.cursor/x LDZ2 .cursor/x0 LDZ2 ( flip sign ) GTH2k JMP SWP2
 		&hor
 			DUP2 STH2kr ;patternize JSR2 #00 EQU ,&no-pixel JCN
 				DUP2 STH2kr .brush/oper LDZ2 JSR2
@@ -883,8 +883,8 @@ JMP2r
 @redraw-all ( -- )
 
 	( clear cursor )
-	.cursor/x LDZ2 .Screen/x DEO2
-	.cursor/y LDZ2 .Screen/y DEO2
+	.cursor/x0 LDZ2 .Screen/x DEO2
+	.cursor/y0 LDZ2 .Screen/y DEO2
 	#40 .Screen/sprite DEO
 
 	;draw-viewport JSR2
@@ -895,8 +895,8 @@ JMP2r
 @draw-cursor2 ( -- )
 
 	( clear brush size )
-	.cursor/x2 LDZ2
-	.cursor/y2 LDZ2
+	.cursor/x LDZ2
+	.cursor/y LDZ2
 	( clear size cursor )
 	OVR2 OVR2
 	#0003 SUB2 .Screen/y DEO2
@@ -906,23 +906,23 @@ JMP2r
 	#40 ;draw-pointer JSR2
 
 	( record cursor positions )
-	.Mouse/x DEI2 .cursor/x2 STZ2
-	.Mouse/y DEI2 .cursor/y2 STZ2
+	.Mouse/x DEI2 .cursor/x STZ2
+	.Mouse/y DEI2 .cursor/y STZ2
 
 	( draw size cursor )
 	.brush/tool LDZ DUP #01 EQU SWP #03 EQU #0000 EQU2 ;&outside-canvas JCN2
 	( outside canvas )
 	.Mouse/x DEI2 .Mouse/y DEI2 .surface ;within-rect JSR2 #00 EQU ;&outside-canvas JCN2
-		.cursor/x2 LDZ2 #0003 SUB2 .Screen/x DEO2
-		.cursor/y2 LDZ2 #0003 SUB2 .Screen/y DEO2
+		.cursor/x LDZ2 #0003 SUB2 .Screen/x DEO2
+		.cursor/y LDZ2 #0003 SUB2 .Screen/y DEO2
 		;brush-icns #00 .brush/size LDZ #30 SFT2 ADD2 .Screen/addr DEO2
 		.Mouse/state DEI #00 NEQ DUP #10 SFT #41 ADD .Screen/sprite DEO
 		#00 EQU ,&outside-canvas JCN JMP2r
 	&outside-canvas
 
 	( draw new cursor )
-	.cursor/x2 LDZ2
-	.cursor/y2 LDZ2
+	.cursor/x LDZ2
+	.cursor/y LDZ2
 	#4143 .Mouse/state DEI [ #01 JCN SWP POP ]
 		;draw-pointer JSR2
 
@@ -1283,7 +1283,7 @@ JMP2r
 @pencil ( x* y* -> )
 
 	&down
-		OVR2 OVR2 .cursor/y STZ2 .cursor/x STZ2
+		OVR2 OVR2 .cursor/y0 STZ2 .cursor/x0 STZ2
 		OVR2 OVR2 .brush/oper LDZ2 JSR2
 	&up
 		;draw-tile JSR2
@@ -1291,9 +1291,9 @@ JMP2r
 		BRK
 	&drag
 		OVR2 OVR2 STH2 STH2
-		.cursor/x LDZ2 .cursor/y LDZ2 STH2r STH2r
+		.cursor/x0 LDZ2 .cursor/y0 LDZ2 STH2r STH2r
 		;paint-line JSR2
-		.cursor/y STZ2 .cursor/x STZ2
+		.cursor/y0 STZ2 .cursor/x0 STZ2
 		BRK
 	&hover
 		POP2 POP2
@@ -1318,24 +1318,24 @@ BRK
 @stroke ( x* y* -> )
 
 	&down
-		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
+		( clear cursor ) .cursor/x LDZ2 .cursor/y LDZ2 #40 ;draw-pointer JSR2
 		( erase guide ) .guide #40 ;line-diag JSR2
-		.cursor/y STZ2 .cursor/x STZ2
+		.cursor/y0 STZ2 .cursor/x0 STZ2
 		BRK
 	&up
-		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
+		( clear cursor ) .cursor/x LDZ2 .cursor/y LDZ2 #40 ;draw-pointer JSR2
 		( erase guide ) .guide #40 ;line-diag JSR2
-		.cursor/y2 STZ2 .cursor/x2 STZ2
-		.cursor/x LDZ2 .cursor/y LDZ2 .cursor/x2 LDZ2 .cursor/y2 LDZ2 ;paint-line JSR2
+		.cursor/y STZ2 .cursor/x STZ2
+		.cursor/x0 LDZ2 .cursor/y0 LDZ2 .cursor/x LDZ2 .cursor/y LDZ2 ;paint-line JSR2
 		#01 .state/changed STZ ;draw-filestate JSR2
 		BRK
 	&drag
-		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
+		( clear cursor ) .cursor/x LDZ2 .cursor/y LDZ2 #40 ;draw-pointer JSR2
 		( erase guide ) .guide #40 ;line-diag JSR2
-		.cursor/y2 STZ2 .cursor/x2 STZ2
+		.cursor/y STZ2 .cursor/x STZ2
 		( update guide )
-		.cursor/x LDZ2 .cursor/y LDZ2 ;to-screen JSR2 INC2 .guide/y STZ2 INC2 .guide/x STZ2
-		.cursor/x2 LDZ2 .cursor/y2 LDZ2 ;to-screen JSR2 .guide/y2 STZ2 .guide/x2 STZ2
+		.cursor/x0 LDZ2 .cursor/y0 LDZ2 ;to-screen JSR2 INC2 .guide/y STZ2 INC2 .guide/x STZ2
+		.cursor/x LDZ2 .cursor/y LDZ2 ;to-screen JSR2 .guide/y2 STZ2 .guide/x2 STZ2
 		( erase guide ) .guide #43 ;line-diag JSR2
 		BRK
 	&hover
@@ -1360,24 +1360,24 @@ BRK
 @box ( x* y* -> )
 
 	&down
-		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
+		( clear cursor ) .cursor/x LDZ2 .cursor/y LDZ2 #40 ;draw-pointer JSR2
 		( erase guide ) #40 ;guide-rect JSR2
-		.cursor/y STZ2 .cursor/x STZ2
+		.cursor/y0 STZ2 .cursor/x0 STZ2
 		BRK
 	&up
-		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
+		( clear cursor ) .cursor/x LDZ2 .cursor/y LDZ2 #40 ;draw-pointer JSR2
 		( erase guide ) #40 ;guide-rect JSR2
-		.cursor/y2 STZ2 .cursor/x2 STZ2
+		.cursor/y STZ2 .cursor/x STZ2
 		;paint-rect JSR2
 		#01 .state/changed STZ ;draw-filestate JSR2
 		BRK
 	&drag
-		( clear cursor ) .cursor/x2 LDZ2 .cursor/y2 LDZ2 #40 ;draw-pointer JSR2
+		( clear cursor ) .cursor/x LDZ2 .cursor/y LDZ2 #40 ;draw-pointer JSR2
 		( erase guide ) #40 ;guide-rect JSR2
-		.cursor/y2 STZ2 .cursor/x2 STZ2
+		.cursor/y STZ2 .cursor/x STZ2
 		( update guide )
-		.cursor/x LDZ2 .cursor/y LDZ2 ,to-screen JSR .guide/y STZ2 .guide/x STZ2
-		.cursor/x2 LDZ2 .cursor/y2 LDZ2 ,to-screen JSR .guide/y2 STZ2 .guide/x2 STZ2
+		.cursor/x0 LDZ2 .cursor/y0 LDZ2 ,to-screen JSR .guide/y STZ2 .guide/x STZ2
+		.cursor/x LDZ2 .cursor/y LDZ2 ,to-screen JSR .guide/y2 STZ2 .guide/x2 STZ2
 		( draw guide ) #43 ;guide-rect JSR2
 		BRK
 	&hover
