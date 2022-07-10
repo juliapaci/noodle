@@ -1164,33 +1164,27 @@ JMP2r
 	#01 .Screen/auto DEO
 	.surface/x LDZ2 .Screen/x DEO2
 	.surface/y LDZ2 #0008 SUB2 .Screen/y DEO2
-	.surface/w LDZ #08 ;draw-byte JSR2
-	LIT 'x #08 ;draw-char JSR2
-	.surface/h LDZ #08 ;draw-byte JSR2
+	#08 ;draw-chr/color STA
+	.surface/w LDZ ;draw-byte JSR2
+	LIT 'x ;draw-chr JSR2
+	.surface/h LDZ ;draw-byte JSR2
 
 JMP2r
 
 ( strings )
 
-@draw-byte ( byte color -- )
+@draw-byte ( byte -- )
 
-	STH DUP #04 SFT STHkr ,draw-hex JSR STHr
+	 DUP #04 SFT ,draw-hex JSR
 
-@draw-hex ( char color -- )
+@draw-hex ( char -- )
 
-	SWP #0f AND [ DUP #09 GTH #27 MUL ADD #30 ADD ] SWP
-
-@draw-char ( char color -- )
-
-	SWP #20 SUB #00 SWP #30 SFT2 ;font ADD2 .Screen/addr DEO2
-	.Screen/sprite DEO
-
-JMP2r
+	 #0f AND DUP #09 GTH #07 MUL ADD #30 ADD
 
 @draw-chr ( char -- )
 
 	#20 SUB #00 SWP #30 SFT2 ;font ADD2 .Screen/addr DEO2
-	[ LIT &color 01 ] .Screen/sprite DEO
+	[ LIT &color 03 ] .Screen/sprite DEO
 
 JMP2r
 
