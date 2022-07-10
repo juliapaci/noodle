@@ -10,6 +10,7 @@
 %menu-def { #01 }
 %menu-sel { #09 }
 %menu-hov { #0e }
+%menu-hit { #000c }
 %menu-auto { #01 }
 %menu-label { DEO }
 %menu-l { #30 }
