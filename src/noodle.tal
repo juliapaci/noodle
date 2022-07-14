@@ -917,7 +917,7 @@ JMP2r
 		.cursor/x LDZ2 #0003 SUB2 .Screen/x DEO2
 		.cursor/y LDZ2 #0003 SUB2 .Screen/y DEO2
 		;brush-icns #00 .brush/size LDZ #30 SFT2 ADD2 .Screen/addr DEO2
-		.Mouse/state DEI #00 NEQ DUP DUP ADD #41 ADD .Screen/sprite DEO
+		.Mouse/state DEI #00 NEQ DUPk ADD #41 ADD .Screen/sprite DEO
 		#00 EQU ,&outside-canvas JCN JMP2r
 	&outside-canvas
 
