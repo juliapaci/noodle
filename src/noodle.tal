@@ -931,7 +931,7 @@ JMP2r
 
 @draw-viewport ( -- )
 
-	.viewport/size LDZ2 #0000 GTH2 JMP JMP2r
+	.viewport/size LDZ2 ORA #01 JCN JMP2r
 
 	.viewport/x LDZ2 #0008 SUB2 .viewport/y LDZ2 #0008 SUB2 .viewport/w LDZ .viewport/h LDZ ;frame-inline-chrs ;draw-frame JSR2
 
@@ -941,7 +941,7 @@ JMP2r
 
 @draw-surface ( -- )
 
-	.surface/size LDZ2 #0000 GTH2 JMP JMP2r
+	.surface/size LDZ2 ORA #01 JCN JMP2r
 
 	.zoom/active LDZ ;draw-surface-zoom JCN2
 
