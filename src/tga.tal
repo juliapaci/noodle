@@ -20,7 +20,7 @@
 		&no-raw-bw
 	( error )
 	;&error-unknown-txt ;print-str JSR2
-	[ #00 ;image/image-type LDA #10 SFT ] ;image-types ADD2 LDA2 ;print-str JSR2 #0a18 DEO
+	[ #00 ;image/image-type LDA DUP ADD ] ;image-types ADD2 LDA2 ;print-str JSR2 #0a18 DEO
 
 JMP2r
 	&error-unknown-txt "Unsupported 20 "tga-type: 20 $1
