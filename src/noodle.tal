@@ -999,7 +999,7 @@ JMP2r
 			INC GTHk ,&hor JCN
 		POP2
 		POPr
-		.Screen/y DEI2 #0008 ADD2 .Screen/y DEO2
+		.Screen/y DEI2k #0008 ADD2 ROT DEO2
 		INC GTHk ,&ver JCN
 	POP2
 
@@ -1494,17 +1494,6 @@ JMP2r
 @abs2 DUP2 #0f SFT2 EQU #05 JCN #0000 SWP2 SUB2 JMP2r
 @lts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
 @gts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
-
-( print )
-
-@print-str ( str* -- )
-
-	#0001 SUB2
-	&while
-		INC2 LDAk DUP #18 DEO ,&while JCN
-	POP2
-
-JMP2r
 
 ~src/manifest.tal
 ~src/tga.tal
