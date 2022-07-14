@@ -212,7 +212,7 @@ BRK
 
 	( when drag&release )
 	.cursor/drag LDZ #00 EQU ,&no-release JCN
-	.Mouse/state DEI #00 NEQ ,&no-release JCN
+	.Mouse/state DEI ,&no-release JCN
 		;stop-drag JSR2 BRK
 		&no-release
 	( route touch )
@@ -304,7 +304,7 @@ BRK
 	.Mouse/state DEI ,&on-click JCN
 		POP2 POP2 BRK
 		&on-click
-	.panel/y LDZ2 #0003 ADD2 SUB2 #000a DIV2 NIP STH
+	.panel/y LDZ2 INC2 INC2 INC2 SUB2 #000a DIV2 NIP STH
 	.panel/x LDZ2 SUB2 #000a DIV2 NIP STHr
 	( within x )
 	OVR #02 LTH ,&valid JCN POP2 BRK &valid
@@ -387,7 +387,7 @@ BRK
 @on-button ( -> )
 
 	.Controller/button DEI2 ;find-modkey JSR2
-		DUP2 #0000 EQU2 ,&skip JCN DUP2 JSR2 &skip POP2
+		ORAk #00 EQU ,&skip JCN DUP2 JSR2 &skip POP2
 
 BRK
 
@@ -871,8 +871,8 @@ JMP2r
 
 	DUP2 ;sbyte JSR2 #00 EQU ,&cancel JCN
 	INC2k INC2 LDA LIT 'x NEQ ,&cancel JCN
-	DUP2 #0003 ADD2 ;sbyte JSR2 #00 EQU ,&cancel JCN
-	( y ) DUP2 #0003 ADD2 ;sbyte JSR2 STH
+	INC2k INC2 INC2 ;sbyte JSR2 #00 EQU ,&cancel JCN
+	( y ) INC2k INC2 INC2 ;sbyte JSR2 STH
 	( x ) ;sbyte JSR2 STHr
 		;set-surface-size JSR2
 
