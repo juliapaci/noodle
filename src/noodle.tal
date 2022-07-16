@@ -83,7 +83,7 @@ BRK
 		01 "Edit $1
 			00 09 :edit-invert "Invert $1
 		01 "View $1
-			04 00 :view-toggle "Zoom $1
+			02 00 :view-toggle "Zoom $1
 		04 "Move $1
 			10 00 :move-up "Up $1
 			20 00 :move-down "Down $1
