@@ -332,7 +332,7 @@ JMP2r
 @get-tool ( -- ptr* )
 
 	( set erase from right-click/mode )
-	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 GTH .brush/mode LDZ ADD [ #01 JCN SWP2 POP2 ] .brush/oper STZ2
+	[ ;remove-pixel ;add-pixel ] .Mouse/state DEI #01 GTH .brush/mode LDZ ADD #01 [ JCN SWP2 POP2 ] .brush/oper STZ2
 	( get function )
 	#00 .Mouse/state DEI #00 GTH DUP ADD .cursor/last LDZ #00 GTH ADD DUP ADD .brush/tool LDZ #30 SFT ADD ;tools ADD2 LDA2
 	( record state )
@@ -646,14 +646,15 @@ JMP2r
 
 @paint-brush ( x* y* -- )
 
-	STH2 STH2
-	#08 #00
+	,&x STR2 ,&y STR2
+	#0800
 	&ver
-		#08 #00
+		#0800
 		&hor
 			OVR2 NIP OVR SWP
 			DUP2 STH STH ;size-icns #00 .brush/size LDZ #30 SFT2 ADD2 #00 STHr ADD2 LDA #07 STHr SUB SFT #01 AND #00 EQU ,&skip JCN
-			DUP2 [ #00 SWP ROT #00 SWP SWP2 ] STH2kr SWP2r STH2kr SWP2r ROT2 ADD2 ROT2 ROT2 ADD2 SWP2 OVR2 OVR2 ;patternize JSR2 #00 EQU ,&no-pixel JCN
+			DUP2 #00 SWP ROT #00 SWP SWP2 [ LIT2 &y $2 ] [ LIT2 &x $2 ] ROT2 ADD2 ROT2 ROT2 ADD2 SWP2
+			OVR2 OVR2 ;patternize JSR2 #00 EQU ,&no-pixel JCN
 					OVR2 OVR2 .brush/oper LDZ2 JSR2
 					;draw-tile JSR2
 					,&skip JMP
@@ -665,7 +666,6 @@ JMP2r
 			POP2
 		INC GTHk ,&ver JCN
 	POP2
-	POP2r POP2r
 
 JMP2r
 
@@ -715,7 +715,7 @@ JMP2r
 	&ver
 		.brush/size LDZ #00
 		&hor
-			OVR2 NIP OVR SWP [ #00 SWP ROT #00 SWP ]
+			OVR2 NIP OVR SWP #00 SWP ROT #00 SWP
 			STH2kr SWP2r STH2kr SWP2r ROT2 ADD2 ROT2 ROT2 ADD2 SWP2
 			( skip blanks )
 			OVR2 OVR2 ;get-pixel JSR2 #00 EQU ,&blank JCN
@@ -924,7 +924,7 @@ JMP2r
 	( draw new cursor )
 	.cursor/x LDZ2
 	.cursor/y LDZ2
-	#4143 .Mouse/state DEI [ #01 JCN SWP POP ]
+	#4143 .Mouse/state DEI #01 [ JCN SWP POP ]
 		;draw-pointer JSR2
 
 JMP2r
@@ -948,11 +948,11 @@ JMP2r
 	#05 .Screen/auto DEO
 	;data .Screen/addr DEO2
 	.surface/y LDZ2 .Screen/y DEO2
-	.surface/h LDZ .viewport/h LDZ [ LTHk JMP SWP POP ] #00
+	.surface/h LDZ .viewport/h LDZ LTHk [ JMP SWP POP ] #00
 	&ver
 		#00 OVR #00 .surface/w LDZ MUL2 #30 SFT2 ;data ADD2 .Screen/addr DEO2
 		.surface/x LDZ2 .Screen/x DEO2
-		.surface/w LDZ .viewport/w LDZ [ LTHk JMP SWP POP ] #00
+		.surface/w LDZ .viewport/w LDZ LTHk [ JMP SWP POP ] #00
 		&hor
 			#09 .Screen/sprite DEO
 			INC GTHk ,&hor JCN
