@@ -293,8 +293,8 @@ BRK
 
 @on-drag-surface-handle ( x* y* -> )
 
-	#00 .viewport/h LDZ #01 SFT #30 SFT2 .viewport/y LDZ2 ADD2 SUB2 #02 SFT2 NIP STH
-	#00 .viewport/w LDZ #01 SFT #30 SFT2 .viewport/x LDZ2 ADD2 SUB2 #02 SFT2 NIP STHr
+	#00 .viewport/h LDZ #31 SFT2 .viewport/y LDZ2 ADD2 SUB2 #02 SFT2 NIP STH
+	#00 .viewport/w LDZ #31 SFT2 .viewport/x LDZ2 ADD2 SUB2 #02 SFT2 NIP STHr
 		;set-surface-size JSR2
 
 BRK
