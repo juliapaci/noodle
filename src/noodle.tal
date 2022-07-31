@@ -1027,7 +1027,7 @@ JMP2r
 
 	#01 .Screen/auto DEO
 	.viewport/y LDZ2 .Screen/y DEO2
-	.viewport/h LDZ #00
+	.viewport/h LDZ #01 SUB #00
 	&ver
 		STHk
 		.viewport/x LDZ2 .Screen/x DEO2
