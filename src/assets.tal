@@ -63,32 +63,6 @@
 	80c0 e0f0 f8e0 1000
 	2020 20b8 7c7c 3838
 
-( chr )
-
-@menu-chr
-	ffff ffff ffff ffff ffff ffff ffff ffff
-	ffff ffff ffff ff00 ffff ffff ffff ffff
-@frame-outline-chrs
-	( tl ) 3f40 8080 8080 8080 003f 7f7f 7f7f 7f7f
-	( tc ) ff00 0000 0000 0000 00ff ffff ffff ffff
-	( tr ) fc02 0101 0101 0101 00fc fefe fefe fefe
-	( mr ) 0101 0101 0101 0101 fefe fefe fefe fefe
-	( ml ) 8080 8080 8080 8080 7f7f 7f7f 7f7f 7f7f
-	( bl ) 8080 8080 8080 403f 7f7f 7f7f 7f7f 3f00
-	( bc ) 0000 0000 0000 00ff ffff ffff ffff ff00
-	( br ) 0101 0101 0101 02fc fefe fefe fefe fc00
-	( mc ) 0000 0000 0000 0000 ffff ffff ffff ffff
-@frame-inline-chrs
-	( tl ) 0000 0000 0000 0102 0000 0000 0000 0001
-	( tc ) 0000 0000 0000 ff00 0000 0000 0000 00ff
-	( tr ) 0000 0000 0000 8040 0000 0000 0000 0080
-	( mr ) 4040 4040 4040 4040 8080 8080 8080 8080
-	( ml ) 0202 0202 0202 0202 0101 0101 0101 0101
-	( bl ) 0201 0000 0000 0000 0100 0000 0000 0000
-	( bc ) 00ff 0000 0000 0000 ff00 0000 0000 0000
-	( br ) 4080 0000 0000 0000 8000 0000 0000 0000
-	( mc ) 0000 0000 0000 0000 cccc 3333 cccc 3333
-
 @font ( atari8 )
 0000 0000 0000 0000 6060 6060 6000 6000
 6666 6600 0000 0000 006c fe6c 6cfe 6c00
@@ -138,3 +112,13 @@ c060 3018 0c06 0300 3c0c 0c0c 0c0c 3c00
 0000 7e0c 1830 7e00 1c30 3060 3030 1c00
 1818 1818 1818 1818 380c 0c06 0c0c 3800
 0000 60f2 9e0c 0000 0018 1834 3462 7e00
+
+( chr )
+
+@menu-chr
+	ffff ffff ffff ffff ffff ffff ffff ffff
+	ffff ffff ffff ff00 ffff ffff ffff ffff
+@frame1-chr
+	( e ) 0000 0000 070f 0f0f 0000 0007 0f1f 1f1f
+	( h ) 0000 0000 ffff ffff 0000 00ff ffff ffff
+	( v ) f0f0 f0f0 f0f0 f0f0 f8f8 f8f8 f8f8 f8f8

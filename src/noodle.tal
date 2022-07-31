@@ -516,9 +516,9 @@ JMP2r
 
 @set-panel-position ( x* y* -- )
 
-	( miny ) #0010 GTH2k [ JMP SWP2 POP2 ]
+	( miny ) #0018 GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .panel/y STZ2 #0088 ADD2 .panel/y2 STZ2
-	( minx ) #0008 GTH2k [ JMP SWP2 POP2 ]
+	( minx ) #000c GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .panel/x STZ2 #0018 ADD2 .panel/x2 STZ2
 	;draw-panel JSR2
 
@@ -938,7 +938,7 @@ JMP2r
 	( draw new cursor )
 	.cursor/x LDZ2
 	.cursor/y LDZ2
-	#4143 .Mouse/state DEI #01 [ JCN SWP POP ]
+	#4142 .Mouse/state DEI #01 [ JCN SWP POP ]
 		;draw-pointer JSR2
 
 JMP2r
@@ -947,7 +947,9 @@ JMP2r
 
 	.viewport/size LDZ2 ORA #01 JCN JMP2r
 
-	.viewport/x LDZ2 #0008 SUB2 .viewport/y LDZ2 #0008 SUB2 .viewport/w LDZ .viewport/h LDZ ;frame-inline-chrs ;draw-frame JSR2
+	.viewport/x LDZ2 .Screen/x DEO2
+	.viewport/y LDZ2 .Screen/y DEO2
+	.viewport/w LDZ .viewport/h LDZ ;frame1-chr ;draw-frame JSR2
 
 	( titlebar )
 	;draw-filestate JSR2
@@ -1060,9 +1062,14 @@ JMP2r
 
 @clear-panel ( -- )
 
-	.panel/x LDZ2 .Screen/x DEO2
-	.panel/y LDZ2 .Screen/y DEO2
-	#03 #11 #00 ;draw-fill JSR2
+	.panel/x LDZ2 #0004 SUB2 .Screen/x DEO2
+	.panel/y LDZ2 #0004 SUB2 .Screen/y DEO2
+	#32 .Screen/auto DEO
+	#1200
+	&l
+		#00 .Screen/sprite DEO
+		INC GTHk ,&l JCN
+	POP2
 
 JMP2r
 
@@ -1077,7 +1084,13 @@ JMP2r
 @draw-panel ( -- )
 
 	( frame )
-	.panel/x LDZ2 .panel/y LDZ2 #01 #0f ;frame-outline-chrs ;draw-frame JSR2
+	.panel/x LDZ2 #0004 ADD2 .Screen/x DEO2
+	.panel/y LDZ2 #0004 ADD2 .Screen/y DEO2
+	#0210 ;frame1-chr ;draw-frame JSR2
+	.panel/x LDZ2 #0004 ADD2 .Screen/x DEO2
+	.panel/y LDZ2 #0004 ADD2 .Screen/y DEO2
+	#0210 #03 ;draw-fill JSR2
+
 	( tools )
 	,draw-toolpane JSR
 	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0026 ADD2 #01 ,line-hor JSR
@@ -1137,7 +1150,7 @@ JMP2r
 	&loop
 		#00 OVR #01 AND #09 MUL [ LIT2 &anchor-x $2 ] ADD2 .Screen/x DEO2
 		#00 OVR #01 SFT #0a MUL [ LIT2 &anchor-y $2 ] ADD2 .Screen/y DEO2
-		DUP STHkr EQU DUP ADD #09 ADD .Screen/sprite DEO
+		#0e OVR STHkr EQU SUB .Screen/sprite DEO
 		INC GTHk ,&loop JCN
 	POP2
 	POPr
@@ -1418,51 +1431,12 @@ BRK
 
 @untitled-txt "untitled.icn $1
 
-( frame )
-
-@draw-frame ( x* y* w h sprite* -- )
-
-	.Screen/addr DEO2
-	,&h STR ,&w STR
-	DUP2 .Screen/y DEO2 ,&y STR2
-	DUP2 .Screen/x DEO2 ,&x STR2
-	#01 .Screen/auto DEO
-	#85 .Screen/sprite DEO
-	,&next JSR [ LIT &w $1 ] ,&repeat JSR
-	#02 .Screen/auto DEO
-	,&next JSR #85 .Screen/sprite DEO
-	,&next JSR [ LIT &h $1 ] ,&repeat JSR
-	( left )
-	[ LIT2 &y $2 ] #0008 ADD2 .Screen/y DEO2
-	[ LIT2 &x $2 ] .Screen/x DEO2
-	,&next JSR ,&h LDR ,&repeat JSR
-	#01 .Screen/auto DEO
-	,&next JSR #85 .Screen/sprite DEO
-	,&next JSR ,&w LDR ,&repeat JSR
-	,&next JSR #85 .Screen/sprite DEO
-	( fill )
-	,&next JSR
-	,&x LDR2 #0008 ADD2 .Screen/x DEO2
-	,&y LDR2 #0008 ADD2 .Screen/y DEO2
-	,&w LDR ,&h LDR #81 ,draw-fill JSR
-
-JMP2r
-	&next
-		.Screen/addr DEI2k #0010 ADD2 ROT DEO2
-	JMP2r
-	&repeat
-		#00
-		&repeat-loop
-			#81 .Screen/sprite DEO
-			INC GTHk ,&repeat-loop JCN
-		POP2
-	JMP2r
-
 @draw-fill ( w h color -- )
 
 	STH
 	#01 .Screen/auto DEO
 	.Screen/x DEI2 ,&anchor-x STR2
+	;&bg .Screen/addr DEO2
 	SWP ,&w STR #00
 	&ver
 		[ LIT &w $1 ] #00
@@ -1477,6 +1451,38 @@ JMP2r
 	POPr
 
 JMP2r
+	&bg ffff ffff ffff ffff
+
+@draw-frame ( w h chr* -- )
+
+	STH2 ,&h STR ,&w STR
+	.Screen/x DEI2 DUP2 #0008 SUB2 .Screen/x DEO2
+	.Screen/y DEI2 #0008 SUB2 DUP2 .Screen/y DEO2
+	( ul ) #00 STH2kr #05 ,&single JSR
+	( uu ) [ LIT &w $1 ] #00 STH2kr #0010 ADD2 #01 ,&repeat JSR
+	( ur ) #10 STH2kr #06 ,&single JSR
+	( rr ) [ LIT &h $1 ] #00 STH2kr #0020 ADD2 #02 ,&repeat JSR
+	#0008 ADD2 .Screen/y DEO2
+	#0008 SUB2 .Screen/x DEO2
+	( ll ) ,&h LDR #10 STH2kr #0020 ADD2 #02 ,&repeat JSR
+	( dl ) #20 STH2kr #01 ,&single JSR
+	( bb ) ,&w LDR #20 STH2kr #0010 ADD2 #01 ,&repeat JSR
+	( dr ) #30 STH2r #00 ,&single JSR
+
+JMP2r
+	&repeat ( times color addr* auto -- )
+		.Screen/auto DEO
+		.Screen/addr DEO2
+		STH
+		#00 &l STHkr ,&paint JSR INC GTHk ,&l JCN POP2
+		POPr
+	JMP2r
+	&single ( color addr* auto -- )
+		.Screen/auto DEO
+		.Screen/addr DEO2
+	&paint ( mask -- )
+		[ LIT &color 85 ] SWP ORA .Screen/sprite DEO
+	JMP2r
 
 ( hex parsing )
 
