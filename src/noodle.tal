@@ -69,8 +69,8 @@
 	.Screen/width DEI2 #03 SFT2 NIP #08 SUB
 	.Screen/height DEI2 #03 SFT2 NIP #06 SUB
 		;set-viewport-size JSR2
-	.viewport/w LDZ #02 SUB
-	.viewport/h LDZ #02 SUB
+	.viewport/w LDZ #05 SUB
+	.viewport/h LDZ #06 SUB
 		;set-surface-size JSR2
 	#0000 DUP2 ;set-panel-position JSR2
 	( let's begin. )
@@ -991,7 +991,7 @@ JMP2r
 	#05 .Screen/auto DEO
 	;data .Screen/addr DEO2
 	.surface/y LDZ2 .Screen/y DEO2
-	.surface/h LDZ .viewport/h LDZ LTHk [ JMP SWP POP ] #00
+	.surface/h LDZ .viewport/h LDZ #02 SUB LTHk [ JMP SWP POP ] #00
 	&ver
 		#00 OVR #00 .surface/w LDZ MUL2 #30 SFT2 ;data ADD2 .Screen/addr DEO2
 		.surface/x LDZ2 .Screen/x DEO2
@@ -1005,8 +1005,8 @@ JMP2r
 	POP2
 
 	( draw surface handle )
-	.surface/w LDZ .viewport/w LDZ #02 SUB GTH ,&no-handle JCN
-	.surface/h LDZ .viewport/h LDZ #02 SUB GTH ,&no-handle JCN
+	.surface/w LDZ .viewport/w LDZ #03 SUB GTH ,&no-handle JCN
+	.surface/h LDZ .viewport/h LDZ #03 SUB GTH ,&no-handle JCN
 	.surface/size LDZ2 #0000 EQU2 ,&no-handle JCN
 
 		;surface-handle-icn .Screen/addr DEO2
