@@ -7,6 +7,8 @@
 |90 @Mouse &vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
+( menu )
+
 %menu-def { #0a }
 %menu-sel { #0b }
 %menu-hov { #03 }
@@ -15,6 +17,14 @@
 %menu-label { DEO }
 %menu-l { #30 }
 %menu-r { #03 }
+
+( debugger )
+
+%BUG { ;print/byte JSR2 #0a18 DEO }
+%BUG2 { ;print JSR2 #0a18 DEO }
+%BUGk { DUP ;print/byte JSR2 #0a18 DEO }
+%BUG2k { DUP2 ;print JSR2 #0a18 DEO }
+%ECHO { ;pstr JSR2 #0a18 DEO }
 
 |0000
 
@@ -820,7 +830,17 @@ JMP2r
 	#00 ;draw-filepath JSR2
 	( rename to untitled.txt )
 	;filepath #0020 ;mclr JSR2
-	;untitled-txt ;filepath #000c ;mcpy JSR2
+	;&untitled-txt ;filepath ;scat JSR2
+
+	.surface/w LDZ
+		DUP #04 SFT ;hexc JSR2 ;filepath ;sput JSR2
+		;hexc JSR2 ;filepath ;sput JSR2
+		LIT 'x ;filepath ;sput JSR2
+	.surface/h LDZ
+		DUP #04 SFT ;hexc JSR2 ;filepath ;sput JSR2
+		;hexc JSR2 ;filepath ;sput JSR2
+	;&icn-ext ;filepath ;scat JSR2
+
 	( erase data )
 	;data ;get-length JSR2 ;mclr JSR2
 	#00 .state/changed STZ ;draw-filestate JSR2
@@ -828,6 +848,8 @@ JMP2r
 	;draw-viewport JSR2
 
 JMP2r
+	&untitled-txt "untitled $1
+	&icn-ext ".icn $1
 
 @file-rename ( -- )
 
@@ -1439,8 +1461,6 @@ JMP2r
 
 BRK
 
-@untitled-txt "untitled.icn $1
-
 @draw-fill ( w h patt* -- )
 
 	#01 .Screen/auto DEO
@@ -1521,6 +1541,7 @@ JMP2r
 @abs2 DUP2 #0f SFT2 EQU #05 JCN #0000 SWP2 SUB2 JMP2r
 @lts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
 @gts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
+@hexc ( hex -- char ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD JMP2r
 
 ~src/manifest.tal
 ~src/tga.tal
