@@ -1089,7 +1089,15 @@ JMP2r
 	#0210 ;frame1-chr ;draw-frame JSR2
 	.panel/x LDZ2 #0004 ADD2 .Screen/x DEO2
 	.panel/y LDZ2 #0004 ADD2 .Screen/y DEO2
-	#0210 #03 ;draw-fill JSR2
+
+	#12 .Screen/auto DEO
+	;fill-icn .Screen/addr DEO2
+	#1000
+	&l
+		#03 .Screen/sprite DEO
+		INC GTHk ,&l JCN
+	POP2
+
 
 	( tools )
 	,draw-toolpane JSR
@@ -1436,7 +1444,7 @@ BRK
 	STH
 	#01 .Screen/auto DEO
 	.Screen/x DEI2 ,&anchor-x STR2
-	;&bg .Screen/addr DEO2
+	;fill-icn .Screen/addr DEO2
 	SWP ,&w STR #00
 	&ver
 		[ LIT &w $1 ] #00
@@ -1451,7 +1459,6 @@ BRK
 	POPr
 
 JMP2r
-	&bg ffff ffff ffff ffff
 
 @draw-frame ( w h chr* -- )
 
