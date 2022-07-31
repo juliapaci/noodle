@@ -55,14 +55,14 @@
 	#00 .brush/patt STZ
 	#00 .brush/tool STZ
 	( initial position )
-	#0010 #0018 ;set-panel-position JSR2
-	#0030 #0022 ;set-viewport-position JSR2
+	#0000 DUP2 ;set-viewport-position JSR2
 	.Screen/width DEI2 #03 SFT2 NIP #08 SUB
 	.Screen/height DEI2 #03 SFT2 NIP #06 SUB
 		;set-viewport-size JSR2
 	.viewport/w LDZ #02 SUB
 	.viewport/h LDZ #02 SUB
 		;set-surface-size JSR2
+	#0000 DUP2 ;set-panel-position JSR2
 	( let's begin. )
 	;untrap JSR2
 	;file-new JSR2
@@ -114,7 +114,7 @@ BRK
 	;on-button .Controller/vector DEO2
 	;on-mouse .Mouse/vector DEO2
 	( filepath )
-	#06 ;draw-filepath JSR2
+	#ff ;draw-filepath JSR2
 	#00 .Mouse/state DEO
 
 JMP2r
@@ -126,7 +126,7 @@ JMP2r
 	;on-button-trap .Controller/vector DEO2
 	;on-mouse-trap .Mouse/vector DEO2
 	( filepath )
-	#06 ;draw-filepath JSR2
+	#ff ;draw-filepath JSR2
 	#00 .Mouse/state DEO
 	( clear brush )
 	.cursor/x LDZ2 .Screen/x DEO2
@@ -150,7 +150,7 @@ JMP2r
 		&no-end
 	( capture )
 	,capture-trap JSR
-	#06 ;draw-filepath JSR2
+	#ff ;draw-filepath JSR2
 
 BRK
 
@@ -158,7 +158,7 @@ BRK
 
 	#00 ;draw-filepath JSR2
 	.Controller/key DEI DUP #0d EQU #03 MUL SUB ,capture-trap JSR
-	#06 ;draw-filepath JSR2
+	#ff ;draw-filepath JSR2
 
 BRK
 
@@ -526,9 +526,9 @@ JMP2r
 
 @set-viewport-position ( x* y* -- )
 
-	( miny ) #001a GTH2k [ JMP SWP2 POP2 ]
+	( miny ) #0024 GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .viewport/y STZ2 #00 .viewport/h LDZ #30 SFT2 ADD2 .viewport/y2 STZ2
-	( minx ) #0028 GTH2k [ JMP SWP2 POP2 ]
+	( minx ) #002b GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .viewport/x STZ2 #00 .viewport/w LDZ #30 SFT2 ADD2 .viewport/x2 STZ2
 	;center-surface JSR2
 
@@ -584,7 +584,7 @@ JMP2r
 	&resume-y
 	( viewport handle )
 	.viewport/x2 LDZ2 #0008 SUB2 DUP2 .viewport-handle/x STZ2 #0008 ADD2 .viewport-handle/x2 STZ2
-	.viewport/y2 LDZ2 #0008 SUB2 DUP2 .viewport-handle/y STZ2 #0008 ADD2 .viewport-handle/y2 STZ2
+	.viewport/y2 LDZ2 #0010 SUB2 DUP2 .viewport-handle/y STZ2 #0008 ADD2 .viewport-handle/y2 STZ2
 	( surface handle )
 	.surface/x2 LDZ2 DUP2 .surface-handle/x STZ2 #0008 ADD2 .surface-handle/x2 STZ2
 	.surface/y2 LDZ2 DUP2 .surface-handle/y STZ2 #0008 ADD2 .surface-handle/y2 STZ2
@@ -948,12 +948,17 @@ JMP2r
 	.viewport/size LDZ2 ORA #01 JCN JMP2r
 
 	.viewport/x LDZ2 .Screen/x DEO2
-	.viewport/y LDZ2 .Screen/y DEO2
+	.viewport/y LDZ2 #0008 SUB2 .Screen/y DEO2
 	.viewport/w LDZ .viewport/h LDZ ;frame1-chr ;draw-frame JSR2
+
+	.viewport/x LDZ2 .Screen/x DEO2
+	.viewport/y LDZ2 #0008 SUB2 .Screen/y DEO2
+	#0c ;draw-fill/color STA
+	.viewport/w LDZ .viewport/h LDZ ;check-icn ;draw-fill JSR2
 
 	( titlebar )
 	;draw-filestate JSR2
-	#06 ;draw-filepath JSR2
+	#ff ;draw-filepath JSR2
 
 @draw-surface ( -- )
 
@@ -991,8 +996,8 @@ JMP2r
 	( draw viewport handle )
 	;viewport-handle-icn .Screen/addr DEO2
 	.viewport/x2 LDZ2 #0008 SUB2 .Screen/x DEO2
-	.viewport/y2 LDZ2 #0008 SUB2 .Screen/y DEO2
-	#05 .Screen/sprite DEO
+	.viewport/y2 LDZ2 #0010 SUB2 .Screen/y DEO2
+	#0a .Screen/sprite DEO
 
 JMP2r
 
@@ -1075,9 +1080,10 @@ JMP2r
 
 @clear-viewport ( -- )
 
-	.viewport-label/x LDZ2 #0002 SUB2 .Screen/x DEO2
-	.viewport-label/y LDZ2 #0002 SUB2 .Screen/y DEO2
-	.viewport/w LDZ INC .viewport/h LDZ INC INC #00 ;draw-fill JSR2
+	.viewport-label/x LDZ2 #0008 SUB2 .Screen/x DEO2
+	.viewport-label/y LDZ2 #0008 SUB2 .Screen/y DEO2
+	#00 ;draw-fill/color STA
+	.viewport/w LDZ INC INC .viewport/h LDZ INC INC ;fill-icn ;draw-fill JSR2
 
 JMP2r
 
@@ -1087,9 +1093,10 @@ JMP2r
 	.panel/x LDZ2 #0004 ADD2 .Screen/x DEO2
 	.panel/y LDZ2 #0004 ADD2 .Screen/y DEO2
 	#0210 ;frame1-chr ;draw-frame JSR2
+
+	( fill )
 	.panel/x LDZ2 #0004 ADD2 .Screen/x DEO2
 	.panel/y LDZ2 #0004 ADD2 .Screen/y DEO2
-
 	#12 .Screen/auto DEO
 	;fill-icn .Screen/addr DEO2
 	#1000
@@ -1097,7 +1104,6 @@ JMP2r
 		#03 .Screen/sprite DEO
 		INC GTHk ,&l JCN
 	POP2
-
 
 	( tools )
 	,draw-toolpane JSR
@@ -1167,26 +1173,22 @@ JMP2r
 
 @draw-filestate ( -- )
 
-	#04 .Screen/auto DEO
+	#01 .Screen/auto DEO
 	.viewport-label/x LDZ2 .Screen/x DEO2
-	.viewport-label/y LDZ2 #0002 SUB2 .Screen/y DEO2
-	;save-icns .Screen/addr DEO2
-	#01 .Screen/sprite DEO
-	#0a .state/changed LDZ #05 MUL ADD .Screen/sprite DEO
+	.viewport-label/y LDZ2 .Screen/y DEO2
+	;state-icn .Screen/addr DEO2
+	#0e .state/changed LDZ SUB .Screen/sprite DEO
 
 JMP2r
 
-@draw-filepath ( color -- )
+@draw-filepath ( mask -- )
 
 	( path )
 	.viewport-label/x LDZ2 #0008 ADD2 .Screen/x DEO2
-	.viewport-label/y LDZ2 #0002 SUB2 .Screen/y DEO2
+	.viewport-label/y LDZ2 .Screen/y DEO2
 	#01 .Screen/auto DEO
-	DUP ;draw-chr/color STA
+	#0e AND ;draw-chr/color STA
 	;filepath ;draw-str JSR2 POP2
-	( cap )
-	;save-icns/cap .Screen/addr DEO2
-	#00 NEQ .Screen/sprite DEO
 
 JMP2r
 
@@ -1439,24 +1441,22 @@ BRK
 
 @untitled-txt "untitled.icn $1
 
-@draw-fill ( w h color -- )
+@draw-fill ( w h patt* -- )
 
-	STH
 	#01 .Screen/auto DEO
-	.Screen/x DEI2 ,&anchor-x STR2
-	;fill-icn .Screen/addr DEO2
-	SWP ,&w STR #00
-	&ver
-		[ LIT &w $1 ] #00
-		&hor
-			STHkr .Screen/sprite DEO
-			INC GTHk ,&hor JCN
+	.Screen/addr DEO2
+	SWP ,&x STR
+	#00
+	&h
+		[ LIT &x $1 ] #00
+		&w
+			[ LIT &color 03 ] .Screen/sprite DEO
+			INC GTHk ,&w JCN
 		POP2
-		.Screen/y DEI2k #0008 ADD2 ROT DEO2
-		[ LIT2 &anchor-x $2 ] .Screen/x DEO2
-		INC GTHk ,&ver JCN
+		;draw-lb JSR2
+		.Screen/x DEI2k #00 ,&x LDR #30 SFT2 SUB2 ROT DEO2
+		INC GTHk ,&h JCN
 	POP2
-	POPr
 
 JMP2r
 
@@ -1490,6 +1490,12 @@ JMP2r
 	&paint ( mask -- )
 		[ LIT &color 85 ] SWP ORA .Screen/sprite DEO
 	JMP2r
+
+@draw-lb ( -- )
+
+	.Screen/y DEI2k #0008 ADD2 ROT DEO2
+
+JMP2r
 
 ( hex parsing )
 

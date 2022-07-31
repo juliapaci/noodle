@@ -6,11 +6,10 @@
 	0000 0001 0307 0f1f
 @fill-icn
 	ffff ffff ffff ffff
-@save-icns
-	3f7f ffff ffff ffff
-	0000 040e 1f0e 0400
-	&cap
-	fcfe ffff ffff ffff
+@check-icn
+	aa55 aa55 aa55 aa55
+@state-icn
+	1038 7cfe 7c38 1000
 @eyes-icns
 	0000 0082 4438 0000
 	0038 4492 2810 0000
