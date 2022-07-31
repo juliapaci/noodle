@@ -7,9 +7,9 @@
 |90 @Mouse &vector $2 &x $2 &y $2 &state $1 &pad $3 &scrollx $2 &scrolly $2
 |a0 @File &vector $2 &success $2 &stat $2 &delete $1 &append $1 &name $2 &length $2 &read $2 &write $2
 
-%menu-def { #01 }
-%menu-sel { #09 }
-%menu-hov { #0e }
+%menu-def { #0a }
+%menu-sel { #0b }
+%menu-hov { #03 }
 %menu-hit { #000c }
 %menu-auto { #01 }
 %menu-label { DEO }
@@ -44,10 +44,10 @@
 	;on-drag-viewport-handle .viewport-handle/drag-event STZ2
 	;on-drag-viewport-label .viewport-label/drag-event STZ2
 	;on-drag-surface-handle .surface-handle/drag-event STZ2
-	( colors )
-	#70fe .System/r DEO2
-	#c0f3 .System/g DEO2
-	#90f3 .System/b DEO2
+	( theme )
+	#500f .System/r DEO2
+	#b70f .System/g DEO2
+	#a70f .System/b DEO2
 	( theme support )
 	;load-theme JSR2
 	( default brush )
@@ -66,50 +66,48 @@
 	( let's begin. )
 	;untrap JSR2
 	;file-new JSR2
+	;draw-menu-bg JSR2
 	;draw-menu JSR2
 
 BRK
 
 @manifest
 
-	&name "Noodle $1
-	&date "2022-06-30 $1
-	&menu
-		04 "File $1
-			01 'n :file-new "New $1
-			01 'r :file-rename "Rename $1
-			01 'o :file-open "Open $1
-			01 's :file-save "Save $1
-		01 "Edit $1
-			00 09 :edit-invert "Invert $1
-		01 "View $1
-			02 00 :view-toggle "Zoom $1
-		04 "Move $1
-			10 00 :move-up "Up $1
-			20 00 :move-down "Down $1
-			40 00 :move-left "Left $1
-			80 00 :move-right "Right $1
-		07 "Tool $1
-			00 'q :tool-pen "Pen $1
-			00 'w :tool-brush "Brush $1
-			00 'e :tool-line "Line $1
-			00 'r :tool-magic "Magic $1
-			00 't :tool-rect "Rect $1
-			00 'y :tool-zoom "Zoom $1
-			00 'x :tool-erase "Erase $1
-		02 "Size $1
-			00 '[ :size-decr "Decr $1
-			00 '] :size-incr "Incr $1
-		08 "Pattern $1
-			00 '1 :pattern-1 "Full $1
-			00 '2 :pattern-2 "HalftoneA $1
-			00 '3 :pattern-3 "HalftoneB $1
-			00 '4 :pattern-4 "PokeDot $1
-			00 '5 :pattern-5 "DiagonalA $1
-			00 '6 :pattern-6 "DiagonalB $1
-			00 '7 :pattern-7 "Vertical $1
-			00 '8 :pattern-8 "Horizontal $1
-		$1
+	04 "Noodle $1
+		01 'n :file-new "New $1
+		01 'r :file-rename "Rename $1
+		01 'o :file-open "Open $1
+		01 's :file-save "Save $1
+	01 "Edit $1
+		00 09 :edit-invert "Invert $1
+	01 "View $1
+		02 00 :view-toggle "Zoom $1
+	04 "Move $1
+		10 00 :move-up "Up $1
+		20 00 :move-down "Down $1
+		40 00 :move-left "Left $1
+		80 00 :move-right "Right $1
+	07 "Tool $1
+		00 'q :tool-pen "Pen $1
+		00 'w :tool-brush "Brush $1
+		00 'e :tool-line "Line $1
+		00 'r :tool-magic "Magic $1
+		00 't :tool-rect "Rect $1
+		00 'y :tool-zoom "Zoom $1
+		00 'x :tool-erase "Erase $1
+	02 "Size $1
+		00 '[ :size-decr "Decr $1
+		00 '] :size-incr "Incr $1
+	08 "Pattern $1
+		00 '1 :pattern-1 "Full $1
+		00 '2 :pattern-2 "HalftoneA $1
+		00 '3 :pattern-3 "HalftoneB $1
+		00 '4 :pattern-4 "PokeDot $1
+		00 '5 :pattern-5 "DiagonalA $1
+		00 '6 :pattern-6 "DiagonalB $1
+		00 '7 :pattern-7 "Vertical $1
+		00 '8 :pattern-8 "Horizontal $1
+	$1
 
 @untrap ( -- )
 
@@ -883,6 +881,8 @@ JMP2r
 
 @redraw-all ( -- )
 
+	;draw-menu-bg JSR2
+
 	( clear cursor )
 	.cursor/x0 LDZ2 .Screen/x DEO2
 	.cursor/y0 LDZ2 .Screen/y DEO2
@@ -890,6 +890,20 @@ JMP2r
 
 	;draw-viewport JSR2
 	;draw-panel JSR2
+
+JMP2r
+
+@draw-menu-bg ( -- )
+
+	#0000 DUP2 .Screen/x DEO2 .Screen/y DEO2
+	;menu-chr .Screen/addr DEO2
+	#15 .Screen/auto DEO
+	.Screen/width DEI2 #03 SFT2 NIP #00
+	&l
+		;menu-chr .Screen/addr DEO2
+		#81 .Screen/sprite DEO
+		INC GTHk ,&l JCN
+	POP2
 
 JMP2r
 
