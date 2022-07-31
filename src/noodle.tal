@@ -552,6 +552,7 @@ JMP2r
 
 	.surface/h STZ
 	.surface/w STZ
+	;draw-suface-size JSR2
 
 	,center-surface JSR
 
@@ -880,6 +881,7 @@ JMP2r
 @redraw-all ( -- )
 
 	;draw-menu-bg JSR2
+	;draw-suface-size JSR2
 
 	( clear cursor )
 	.cursor/x0 LDZ2 .Screen/x DEO2
@@ -972,8 +974,6 @@ JMP2r
 		.Screen/y DEI2k #0008 ADD2 ROT DEO2
 		INC GTHk ,&ver JCN
 	POP2
-
-	;draw-filesize JSR2
 
 	( draw surface handle )
 	.surface/w LDZ .viewport/w LDZ #02 SUB GTH ,&no-handle JCN
@@ -1169,16 +1169,12 @@ JMP2r
 
 JMP2r
 
-@draw-filesize ( -- )
-
-	.zoom/active LDZ #00 EQU #01 JCN JMP2r
-	.viewport/w LDZ #05 GTH #01 JCN JMP2r
-	.surface/y LDZ2 .viewport/y LDZ2 GTH2 #01 JCN JMP2r
+@draw-suface-size ( -- )
 
 	#01 .Screen/auto DEO
-	.surface/x LDZ2 .Screen/x DEO2
-	.surface/y LDZ2 #0008 SUB2 .Screen/y DEO2
-	#08 ;draw-chr/color STA
+	.Screen/width DEI2 #0038 SUB2 .Screen/x DEO2
+	#0004 .Screen/y DEO2
+	#0c ;draw-chr/color STA
 	.surface/w LDZ ;draw-byte JSR2
 	LIT 'x ;draw-chr JSR2
 	.surface/h LDZ ;draw-byte JSR2
