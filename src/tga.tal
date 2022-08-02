@@ -19,8 +19,8 @@
 		;pixel-raw-bw #0001 ,parse-tga JSR POP JMP2r
 		&no-raw-bw
 	( error )
-	;&error-unknown-txt ;print-str JSR2
-	[ #00 ;image/image-type LDA DUP ADD ] ;image-types ADD2 LDA2 ;print-str JSR2 #0a18 DEO
+	;&error-unknown-txt ;pstr JSR2
+	[ #00 ;image/image-type LDA DUP ADD ] ;image-types ADD2 LDA2 ;pstr JSR2 #0a18 DEO
 
 JMP2r
 	&error-unknown-txt "Unsupported 20 "tga-type: 20 $1
@@ -42,12 +42,13 @@ JMP2r
 		.File/success DEI2 ORA ,&stream JCN
 	#00 .Screen/auto DEO
 	( rename )
-	;&icn-ext ;filepath ;scap JSR2 #0003 SUB2 ;scpy JSR2
+	;filepath ;scap JSR2 #0004 SUB2 ;write-size JSR2
+	;&icn-ext ;filepath ;scap JSR2 ;scpy JSR2
 	;draw-surface JSR2
 
 JMP2r
 	&pixel $4
-	&icn-ext "icn $1
+	&icn-ext ".icn $1
 
 @pixel-raw-true ( pixel* -- color )
 
@@ -66,7 +67,7 @@ JMP2r
 JMP2r
 
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
-@print-str ( str* -- ) &while LDAk #18 DEO INC2 LDAk ,&while JCN POP2 JMP2r
+@pstr ( str* -- ) &while LDAk #18 DEO INC2 LDAk ,&while JCN POP2 JMP2r
 
 @image-types-txts
 	&no-image "no-data $1

@@ -384,6 +384,12 @@ JMP2r
 
 JMP2r
 
+@exit ( -- )
+
+	#010f DEO
+
+JMP2r
+
 ( assets )
 
 @hand-icn
