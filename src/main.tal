@@ -9,19 +9,6 @@
 
 ( menu )
 
-%menu-hit { #000c }
-%menu-label { DEO }
-%menu-l { #30 }
-%menu-r { #03 }
-
-( debugger )
-
-%BUG { ;print/byte JSR2 #0a18 DEO }
-%BUG2 { ;print JSR2 #0a18 DEO }
-%BUGk { DUP ;print/byte JSR2 #0a18 DEO }
-%BUG2k { DUP2 ;print JSR2 #0a18 DEO }
-%ECHO { ;pstr JSR2 #0a18 DEO }
-
 |0000
 
 @state &timer $1 &changed $1
@@ -1667,9 +1654,3 @@ JMP2r
 	&w $2 &h $2
 	&depth $1
 	&descriptor $1
-
-
-~src/manifest.tal
-~src/assets.tal
-
-@data

@@ -123,3 +123,5 @@ c060 3018 0c06 0300 3c0c 0c0c 0c0c 3c00
 	( e ) 0000 0000 070f 0f0f 0000 0007 0f1f 1f1f
 	( h ) 0000 0000 ffff ffff 0000 00ff ffff ffff
 	( v ) f0f0 f0f0 f0f0 f0f0 f8f8 f8f8 f8f8 f8f8
+
+@data

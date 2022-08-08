@@ -7,18 +7,19 @@ mkdir bin
 if [ -e "$HOME/roms/uxnlin.rom" ]
 then
 	echo "Linting.."
-	uxncli $HOME/roms/uxnlin.rom src/noodle.tal
+	uxncli $HOME/roms/uxnlin.rom src/main.tal
 	uxncli $HOME/roms/uxnlin.rom src/manifest.tal
 fi
 
 echo "Assembling.."
-uxnasm src/noodle.tal bin/noodle.rom 
+cat src/main.tal src/manifest.tal src/assets.tal > bin/noodle.tal
+uxncli $HOME/roms/drifblim.rom bin/noodle.tal bin/noodle.rom
 
 echo "Installing.."
 if [ -d "$HOME/roms" ] && [ -e ./bin/noodle.rom ]
 then
 	cp ./bin/noodle.rom $HOME/roms
-    echo "Installed in $HOME/roms" 
+    echo "Installed in $HOME/roms"
 fi
 
 if [ "${1}" = '--push' ]; 

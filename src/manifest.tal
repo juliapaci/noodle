@@ -20,7 +20,7 @@ BRK
 	#42 .Mouse/state DEI #00 NEQ ADD .Screen/sprite DEO
 	( when touch cat )
 	.Mouse/state DEI #00 EQU ,&no-touch-cat JCN
-	.Mouse/y DEI2 menu-hit GTH2 ,&no-touch-cat JCN
+	.Mouse/y DEI2 #000c GTH2 ,&no-touch-cat JCN
 		.Mouse/x DEI2 ;get-xcat JSR2 ;menu-select JSR2
 		( release ) #00 .Mouse/state DEO
 		BRK
@@ -28,7 +28,7 @@ BRK
 	( when sub active )
 	;draw-menu/sel LDA #ff EQU ,&no-sub JCN
 		( when sel changed )
-		.Mouse/y DEI2 #0004 SUB2 menu-r SFT2 NIP #01 SUB
+		.Mouse/y DEI2 #0004 SUB2 #03 SFT2 NIP #01 SUB
 		DUP ;draw-sub/sel LDA EQU ,&no-change JCN
 			DUP ;draw-sub/sel STA
 			;draw-menu/sel LDA #ff ;draw-sub JSR2
@@ -43,7 +43,7 @@ BRK
 		&no-sub
 	( don't leave if menu is active )
 	;draw-menu/sel LDA #ff NEQ ,&no-leave JCN
-	.Mouse/y DEI2 menu-hit LTH2 ,&no-leave JCN
+	.Mouse/y DEI2 #000c LTH2 ,&no-leave JCN
 		,menu-close JSR
 		&no-leave
 
@@ -251,7 +251,7 @@ JMP2r
 	&subcat
 		STHk #03 #0b STHr [ LIT &sel ff ] EQU [ JMP SWP POP ] [ LIT &mask $1 ] AND ;draw-chr/color STA
 		[ LIT2 &anchor $2 ] .Screen/x DEO2
-		#00 OVR INC menu-l SFT2 #0004 ADD2 .Screen/y DEO2
+		#00 OVR INC #30 SFT2 #0004 ADD2 .Screen/y DEO2
 		SWP2 ;draw-label JSR2 SWP2
 		INC GTHk ,&subcat JCN
 	POP2 POP2
@@ -267,7 +267,7 @@ JMP2r
 		.Screen/auto DEI
 			#f2 .Screen/auto DEO
 			;blank-icn .Screen/addr DEO2
-			;draw-chr/color LDA .Screen/sprite menu-label
+			;draw-chr/color LDA .Screen/sprite DEO
 		.Screen/auto DEO
 	.Screen/y DEO2
 	( mod )
