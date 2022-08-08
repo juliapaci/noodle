@@ -9,7 +9,6 @@ then
 	echo "Linting.."
 	uxncli $HOME/roms/uxnlin.rom src/noodle.tal
 	uxncli $HOME/roms/uxnlin.rom src/manifest.tal
-	uxncli $HOME/roms/uxnlin.rom src/tga.tal
 fi
 
 echo "Assembling.."

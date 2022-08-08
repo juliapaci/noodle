@@ -9,11 +9,7 @@
 
 ( menu )
 
-%menu-def { #0a }
-%menu-sel { #0b }
-%menu-hov { #03 }
 %menu-hit { #000c }
-%menu-auto { #01 }
 %menu-label { DEO }
 %menu-l { #30 }
 %menu-r { #03 }
@@ -1235,6 +1231,29 @@ JMP2r
 
 ( strings )
 
+@get-strw ( str* -- width* )
+
+	;slen JSR2 #30 SFT2
+
+JMP2r
+
+@draw-str-right ( text* -- )
+
+	DUP2 ,get-strw JSR STH2
+	.Screen/x DEI2k STH2r SUB2 ROT DEO2
+
+@draw-str ( str* -- str* )
+
+	LDAk #00 EQU ,&skip JCN
+	#01 .Screen/auto DEO
+	&while
+		LDAk ,draw-chr JSR
+		INC2 LDAk ,&while JCN
+	&skip
+	INC2
+
+JMP2r
+
 @draw-byte ( byte -- )
 
 	 DUP #04 SFT ,draw-hex JSR
@@ -1247,12 +1266,6 @@ JMP2r
 
 	#20 SUB #00 SWP #30 SFT2 ;font ADD2 .Screen/addr DEO2
 	[ LIT &color 03 ] .Screen/sprite DEO
-
-JMP2r
-
-@get-strw ( str* -- width* )
-
-	;slen JSR2 #30 SFT2
 
 JMP2r
 
@@ -1549,9 +1562,114 @@ JMP2r
 @lts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
 @gts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
 @hexc ( hex -- char ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD JMP2r
+@scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
+@pstr ( str* -- ) &while LDAk #18 DEO INC2 LDAk ,&while JCN POP2 JMP2r
+
+( tga )
+
+@file-open-tga ( -- )
+
+	( header )
+	;filepath .File/name DEO2
+	#0012 .File/length DEO2
+	;image .File/read DEO2
+	( flip endianness )
+	;image/w ,&flip JSR ;image/h ,&flip JSR
+	( resize canvas )
+	;image/w LDA2 #03 SFT2 NIP ;image/h LDA2 #03 SFT2 NIP ;set-surface-size JSR2
+	( get parser )
+	;image/image-type LDA
+	#02 NEQk NIP ,&no-raw-true JCN
+		;pixel-raw-true #0004 ,parse-tga JSR POP JMP2r
+		&no-raw-true
+	#03 NEQk NIP ,&no-raw-bw JCN
+		;pixel-raw-bw #0001 ,parse-tga JSR POP JMP2r
+		&no-raw-bw
+	( error )
+	;&error-unknown-txt ;pstr JSR2
+	[ #00 ;image/image-type LDA DUP ADD ] ;image-types ADD2 LDA2 ;pstr JSR2 #0a18 DEO
+
+JMP2r
+	&flip STH2k LDA2 SWP STH2r STA2 JMP2r
+	&error-unknown-txt "Unsupported 20 "tga-type: 20 $1
+
+@parse-tga ( filter* length* -- )
+
+	.File/length DEO2 ,&filter STR2
+	#01 .Screen/auto DEO
+	#0000 ,&x STR2
+	#0000 ,&y STR2
+	&stream
+		;&pixel STH2k .File/read DEO2
+		[ LIT2 &x $2 ] [ LIT2 &y $2 ] STH2r [ LIT2 &filter $2 ] JSR2 #07 SFT ;set-pixel JSR2
+		( move )
+		,&x LDR2 INC2 DUP2 ,&x STR2 ;image/w LDA2 NEQ2 ,&continue JCN
+			#0000 ,&x STR2
+			,&y LDR2 INC2 ,&y STR2
+			&continue
+		.File/success DEI2 ORA ,&stream JCN
+	#00 .Screen/auto DEO
+	( rename )
+	;filepath ;scap JSR2 #0004 SUB2 ;write-size JSR2
+	;&icn-ext ;filepath ;scap JSR2 ;scpy JSR2
+	;draw-surface JSR2
+
+JMP2r
+	&pixel $4
+	&icn-ext ".icn $1
+
+@pixel-raw-true ( pixel* -- color )
+
+	STH2
+	( b ) #00 STH2kr LDA INC2r
+	( g ) #00 STH2kr LDA INC2r
+	( r ) #00 STH2r LDA
+	( res ) ADD2 ADD2 #0003 DIV2 NIP
+
+JMP2r
+
+@pixel-raw-bw ( pixel* -- color )
+
+	( res ) LDA
+
+JMP2r
+
+@image-types-txts
+	&no-image "no-data $1
+	&raw-color "RAW-color $1
+	&raw-true "RAW-true $1
+	&raw-bw "RAW-bw $1
+	&rle-color "RLE-color $1
+	&rle-true "RLE-true $1
+	&rle-bw "RLE-bw $1
+	&unknown "unknown $1
+
+@image-types
+	:image-types-txts/no-image
+	:image-types-txts/raw-color
+	:image-types-txts/raw-true
+	:image-types-txts/raw-bw
+	:image-types-txts/unknown
+	:image-types-txts/unknown
+	:image-types-txts/unknown
+	:image-types-txts/unknown
+	:image-types-txts/unknown
+	:image-types-txts/rle-color
+	:image-types-txts/rle-true
+	:image-types-txts/rle-bw
+
+@image
+	&id-length $1
+	&color-map $1
+	&image-type $1
+	&map $5
+	&x $2 &y $2
+	&w $2 &h $2
+	&depth $1
+	&descriptor $1
+
 
 ~src/manifest.tal
-~src/tga.tal
 ~src/assets.tal
 
 @data

@@ -231,7 +231,7 @@ JMP2r
 	#00 ,&id STR
 	[ LIT2 &manifest :manifest ]
 	&cat
-		menu-sel menu-def [ LIT &sel ff ] [ LIT &id $1 ] EQU [ JMP SWP POP ] ;draw-chr/color STA
+		#0b #0a [ LIT &sel ff ] [ LIT &id $1 ] EQU [ JMP SWP POP ] ;draw-chr/color STA
 		INC2k ;draw-str JSR2 POP2 #20 ;draw-chr JSR2
 		;skip-sub JSR2
 		,&id LDR INC ,&id STR
@@ -249,7 +249,7 @@ JMP2r
 	LDAk STH INC2 ;skip-str JSR2
 	STHr #00
 	&subcat
-		STHk menu-hov menu-sel STHr [ LIT &sel ff ] EQU [ JMP SWP POP ] [ LIT &mask $1 ] AND ;draw-chr/color STA
+		STHk #03 #0b STHr [ LIT &sel ff ] EQU [ JMP SWP POP ] [ LIT &mask $1 ] AND ;draw-chr/color STA
 		[ LIT2 &anchor $2 ] .Screen/x DEO2
 		#00 OVR INC menu-l SFT2 #0004 ADD2 .Screen/y DEO2
 		SWP2 ;draw-label JSR2 SWP2
@@ -312,23 +312,6 @@ JMP2r
 	&cat ;&buf ;scat JSR2 ,&end JMP
 	&bsp "bsp $1 &tab "tab $1 &ent "ent $1 &spc "spc $1 &esc "esc $1 &del "del $1
 
-@draw-str-right ( text* -- )
-
-	DUP2 ;get-strw JSR2 STH2
-	.Screen/x DEI2k STH2r SUB2 ROT DEO2
-
-@draw-str ( str* -- str* )
-
-	LDAk #00 EQU ,&skip JCN
-	menu-auto .Screen/auto DEO
-	&while
-		LDAk ;draw-chr JSR2
-		INC2 LDAk ,&while JCN
-	&skip
-	INC2
-
-JMP2r
-
 @update-cursor ( color addr* -- )
 
 	#00 .Screen/auto DEO
@@ -369,9 +352,9 @@ JMP2r
 
 @scap ( str* -- end* ) LDAk #00 NEQ JMP JMP2r &w INC2 LDAk ,&w JCN JMP2r
 @spop ( str* -- ) LDAk ,&n JCN POP2 JMP2r &n ,scap JSR #0001 SUB2 #00 ROT ROT STA JMP2r
-@sput ( chr str* -- ) ,scap JSR STA JMP2r
+@sput ( chr str* -- ) ,scap JSR INC2k #00 ROT ROT STA STA JMP2r
 @slen ( str* -- len* ) DUP2 ,scap JSR SWP2 SUB2 JMP2r
-@scat ( src* dst* -- ) DUP2 ,slen JSR ADD2
+@scat ( src* dst* -- ) ,scap JSR
 @scpy ( src* dst* -- ) STH2 &w LDAk STH2kr STA INC2r INC2 LDAk ,&w JCN POP2 #00 STH2r STA JMP2r
 @mclr ( src* len* -- ) OVR2 ADD2 SWP2 &l STH2k #00 STH2r STA INC2 GTH2k ,&l JCN POP2 POP2 JMP2r
 @mcpy ( src* dst* len* -- ) SWP2 STH2 OVR2 ADD2 SWP2 &loop LDAk STH2kr STA INC2r INC2 GTH2k ,&loop JCN POP2 POP2 POP2r JMP2r
