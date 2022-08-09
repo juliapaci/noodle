@@ -383,25 +383,25 @@ BRK
 
 ( helpers )
 
-@tool-pen ( -- ) #00 ;select-tool JSR2 JMP2r
-@tool-brush ( -- ) #01 ;select-tool JSR2 JMP2r
-@tool-line ( -- ) #02 ;select-tool JSR2 JMP2r
-@tool-magic ( -- ) #03 ;select-tool JSR2 JMP2r
-@tool-rect ( -- ) #04 ;select-tool JSR2 JMP2r
-@tool-zoom ( -- ) #05 ;select-tool JSR2 JMP2r
+@tool-pen ( -- ) #00 ;select-tool JMP2
+@tool-brush ( -- ) #01 ;select-tool JMP2
+@tool-line ( -- ) #02 ;select-tool JMP2
+@tool-magic ( -- ) #03 ;select-tool JMP2
+@tool-rect ( -- ) #04 ;select-tool JMP2
+@tool-zoom ( -- ) #05 ;select-tool JMP2
 
-@tool-erase ( -- ) .brush/mode LDZk #00 EQU SWP STZ ;draw-sizepane JSR2 JMP2r
-@size-decr ( -- ) .brush/size LDZ #01 SUB ;select-size JSR2 JMP2r
-@size-incr ( -- ) .brush/size LDZ INC ;select-size JSR2 JMP2r
+@tool-erase ( -- ) .brush/mode LDZk #00 EQU SWP STZ ;draw-sizepane JMP2
+@size-decr ( -- ) .brush/size LDZ #01 SUB ;select-size JMP2
+@size-incr ( -- ) .brush/size LDZ INC ;select-size JMP2
 
-@pattern-1 ( -- ) #00 ;select-patt JSR2 JMP2r
-@pattern-2 ( -- ) #01 ;select-patt JSR2 JMP2r
-@pattern-3 ( -- ) #02 ;select-patt JSR2 JMP2r
-@pattern-4 ( -- ) #03 ;select-patt JSR2 JMP2r
-@pattern-5 ( -- ) #04 ;select-patt JSR2 JMP2r
-@pattern-6 ( -- ) #05 ;select-patt JSR2 JMP2r
-@pattern-7 ( -- ) #06 ;select-patt JSR2 JMP2r
-@pattern-8 ( -- ) #07 ;select-patt JSR2 JMP2r
+@pattern-1 ( -- ) #00 ;select-patt JMP2
+@pattern-2 ( -- ) #01 ;select-patt JMP2
+@pattern-3 ( -- ) #02 ;select-patt JMP2
+@pattern-4 ( -- ) #03 ;select-patt JMP2
+@pattern-5 ( -- ) #04 ;select-patt JMP2
+@pattern-6 ( -- ) #05 ;select-patt JMP2
+@pattern-7 ( -- ) #06 ;select-patt JMP2
+@pattern-8 ( -- ) #07 ;select-patt JMP2
 
 @move-up ( -- )
 
@@ -908,7 +908,6 @@ JMP2r
 @draw-menu-bg ( -- )
 
 	#0000 DUP2 .Screen/x DEO2 .Screen/y DEO2
-	;menu-chr .Screen/addr DEO2
 	#15 .Screen/auto DEO
 	.Screen/width DEI2 #03 SFT2 NIP INC #00
 	&l
