@@ -827,8 +827,8 @@ JMP2r
 
 	#00 ;draw-filepath JSR2
 	( rename to untitled.txt )
-	;filepath #0020 ;mclr JSR2
-	;&untitled-txt ;filepath ;scat JSR2
+	;filepath #0040 ;mclr JSR2
+	;&untitled-txt ;filepath ;scpy JSR2
 	;filepath ;scap JSR2 ;write-size JSR2
 	;&icn-ext ;filepath ;scat JSR2
 	( erase data )
