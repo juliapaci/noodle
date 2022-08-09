@@ -188,7 +188,7 @@ BRK
 
 @on-mouse-trap ( -> )
 
-	.Mouse/state DEI #00 NEQ JMP BRK
+	.Mouse/state DEI #00 NEQ [ JMP BRK ]
 	( release trap on touch )
 	;untrap JSR2
 
@@ -235,7 +235,7 @@ JMP2r
 @on-drag ( x* y* -> )
 
 	( get event )
-	.cursor/drag LDZ #08 ADD LDZ2	JMP2
+	.cursor/drag LDZ #08 ADD LDZ2 JMP2
 
 BRK
 
@@ -353,7 +353,7 @@ BRK
 @on-touch-viewport-handle ( x* y* -- )
 
 	POP2 POP2
-	.Mouse/state DEI #00 NEQ JMP BRK
+	.Mouse/state DEI #00 NEQ [ JMP BRK ]
 	.viewport-handle ;start-drag JSR2
 
 BRK
@@ -361,7 +361,7 @@ BRK
 @on-touch-viewport-label ( x* y* -- )
 
 	POP2 POP2
-	.Mouse/state DEI #00 NEQ JMP BRK
+	.Mouse/state DEI #00 NEQ [ JMP BRK ]
 	.viewport-label ;start-drag JSR2
 
 BRK
@@ -369,7 +369,7 @@ BRK
 @on-touch-surface-handle ( x* y* -- )
 
 	POP2 POP2
-	.Mouse/state DEI #00 NEQ JMP BRK
+	.Mouse/state DEI #00 NEQ [ JMP BRK ]
 	.surface-handle ;start-drag JSR2
 
 BRK
@@ -767,7 +767,7 @@ JMP2r
 
 	( keep x* ) OVR2 NIP #07 AND STH
 	( get byte ) ,get-row JSR LDAk
-	( mask ) #01 #07 STHr SUB #40 SFT SFT ORA
+	( mask ) #0107 STHr SUB #40 SFT SFT ORA
 	( save ) ROT ROT STA
 
 JMP2r
@@ -780,7 +780,7 @@ JMP2r
 
 	( keep x* ) OVR2 NIP #07 AND STH
 	( get byte ) ,get-row JSR LDAk
-	( mask ) #01 #07 STHr SUB #40 SFT SFT #ff EOR AND
+	( mask ) #0107 STHr SUB #40 SFT SFT #ff EOR AND
 	( save ) ROT ROT STA
 
 JMP2r

@@ -25,3 +25,5 @@ uxnemu bin/noodle.rom
 - [theme](https://wiki.xxiivv.com/site/theme.html)
 - [snarf](https://wiki.xxiivv.com/site/snarf.html)
 - [manifest](https://wiki.xxiivv.com/site/manifest.html)
+- Linted with [uxnlin](https://git.sr.ht/~rabbits/uxnlin)
+- Assembled with [drifblim](https://git.sr.ht/~rabbits/drifblim)
