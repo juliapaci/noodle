@@ -9,7 +9,8 @@ tasks:
         curl -fsS https://rabbits.srht.site/uxn/uxn-lin64.tar.gz | tar -zx
     - build: |
         cd noodle
-        ../uxn/uxnasm src/noodle.tal ../noodle.rom
+        cat src/main.tal src/manifest.tal src/assets.tal > bin/noodle.tal
+        ../uxn/uxnasm bin/noodle.tal ../noodle.rom
     - upload: |
         tar -czf out.tar.gz noodle.rom
         acurl() {
