@@ -1,24 +1,18 @@
 # Noodle
 
-[Noodle](https://wiki.xxiivv.com/site/noodle.html) is an illustration program, written in [Uxntal](https://wiki.xxiivv.com/site/uxntal.html).
+[Noodle](https://100r.co/site/noodle.html) is an illustration program, written in [Uxntal](https://wiki.xxiivv.com/site/uxntal.html).
 
 ## Build
 
-You must have an [Uxntal](https://git.sr.ht/~rabbits/uxn) assembler.
+You must have an [Uxn](https://git.sr.ht/~rabbits/uxn/) assembler and emulator.
 
 ```sh
-uxnasm src/noodle.tal bin/noodle.rom
+cat src/main.tal src/manifest.tal src/assets.tal > bin/noodle.tal
+uxnasm bin/noodle.tal bin/noodle.rom
+uxnemu bin/noodle.rom
 ```
 
 If do not wish to assemble it yourself, you can download [noodle.rom](https://rabbits.srht.site/noodle/noodle.rom).
-
-## Run
-
-You must have a Varvara emulator.
-
-```sh
-uxnemu bin/noodle.rom
-```
 
 ## Support
 
