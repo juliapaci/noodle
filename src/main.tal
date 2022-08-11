@@ -11,22 +11,22 @@
 
 |0000
 
-@state &timer $1 &changed $1
-@brush &tool $1 &size $1 &patt $1 &oper $2 &mode $1
-@cursor &x0 $2 &y0 $2 &x $2 &y $2 &last $1 &drag $1
-@zoom &active $1 &x $2 &y $2
-@guide &x $2 &y $2 &x2 $2 &y2 $2
-@line &x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
-@line-guide &x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
-( views )
-@panel &x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
-@viewport &x $2 &y $2 &x2 $2 &y2 $2 &size &w $1 &h $1
-@viewport-handle &x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
-@viewport-label &x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
-@surface &x $2 &y $2 &x2 $2 &y2 $2 &size &w $1 &h $1
-@surface-handle &x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
-( project )
-@filepath $40
+	@state &timer $1 &changed $1
+	@brush &tool $1 &size $1 &patt $1 &oper $2 &mode $1
+	@cursor &x0 $2 &y0 $2 &x $2 &y $2 &last $1 &drag $1
+	@zoom &active $1 &x $2 &y $2
+	@guide &x $2 &y $2 &x2 $2 &y2 $2
+	@line &x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
+	@line-guide &x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
+	( views )
+	@panel &x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
+	@viewport &x $2 &y $2 &x2 $2 &y2 $2 &size &w $1 &h $1
+	@viewport-handle &x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
+	@viewport-label &x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
+	@surface &x $2 &y $2 &x2 $2 &y2 $2 &size &w $1 &h $1
+	@surface-handle &x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
+	( project )
+	@filepath $40
 
 |0100
 
@@ -100,6 +100,9 @@ BRK
 		00 '7 :pattern-7 "Vertical $1
 		00 '8 :pattern-8 "Horizontal $1
 	$1
+
+(
+@|vectors )
 
 @untrap ( -- )
 
@@ -381,7 +384,8 @@ BRK
 
 BRK
 
-( helpers )
+(
+@|helpers )
 
 @tool-pen ( -- ) #00 ;select-tool JMP2
 @tool-brush ( -- ) #01 ;select-tool JMP2
@@ -821,7 +825,8 @@ JMP2r
 
 JMP2r
 
-( file )
+(
+@|document )
 
 @file-new ( path* -- )
 
@@ -888,7 +893,8 @@ JMP2r
 JMP2r
 	&cancel POP2 JMP2r
 
-( Drawing )
+(
+@|drawing )
 
 @redraw-all ( -- )
 
@@ -1274,6 +1280,9 @@ JMP2r
 
 JMP2r
 
+(
+@|tools )
+
 @guide-line ( rect color -- )
 
 	( color ) STH
@@ -1523,7 +1532,8 @@ JMP2r
 
 JMP2r
 
-( hex parsing )
+(
+@|stdlib )
 
 @sbyte ( str* -- byte )
 
@@ -1551,7 +1561,8 @@ JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
 @pstr ( str* -- ) &while LDAk #18 DEO INC2 LDAk ,&while JCN POP2 JMP2r
 
-( tga )
+(
+@|tga )
 
 @file-open-tga ( -- )
 
