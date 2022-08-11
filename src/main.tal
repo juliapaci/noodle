@@ -72,17 +72,15 @@ BRK
 		01 'o :file-open "Open $1
 		01 's :file-save "Save $1
 		01 'q :exit "Exit $1
-	03 "Edit $1
+	01 "Edit $1
 		00 09 :edit-invert "Invert $1
-		00 '[ :size-decr "Decr $1
-		00 '] :size-incr "Incr $1
 	05 "Move $1
 		10 00 :move-up "Up $1
 		20 00 :move-down "Down $1
 		40 00 :move-left "Left $1
 		80 00 :move-right "Right $1
 		02 00 :view-toggle "Zoom $1
-	07 "Tool $1
+	09 "Tool $1
 		00 'q :tool-pen "Pen $1
 		00 'w :tool-brush "Brush $1
 		00 'e :tool-line "Line $1
@@ -90,6 +88,8 @@ BRK
 		00 't :tool-rect "Rect $1
 		00 'y :tool-zoom "Zoom $1
 		00 'x :tool-erase "Erase $1
+		00 '[ :size-decr "Decr.Size $1
+		00 '] :size-incr "Incr.Size $1
 	08 "Pattern $1
 		00 '1 :pattern-1 "Full $1
 		00 '2 :pattern-2 "HalftoneA $1
@@ -411,40 +411,40 @@ BRK
 
 	.zoom/active LDZ ,&is-zoom JCN JMP2r &is-zoom
 	.zoom/y LDZ2k #0001 SUB2 ROT STZ2
-	;draw-surface JSR2
+	;draw-surface ( .. )
 
-JMP2r
+JMP2
 
 @move-down ( -- )
 
 	.zoom/active LDZ ,&is-zoom JCN JMP2r &is-zoom
 	.zoom/y LDZ2k INC2 ROT STZ2
-	;draw-surface JSR2
+	;draw-surface ( .. )
 
-JMP2r
+JMP2
 
 @move-left ( -- )
 
 	.zoom/active LDZ ,&is-zoom JCN JMP2r &is-zoom
 	.zoom/x LDZ2k #0001 SUB2 ROT STZ2
-	;draw-surface JSR2
+	;draw-surface ( .. )
 
-JMP2r
+JMP2
 
 @move-right ( -- )
 
 	.zoom/active LDZ ,&is-zoom JCN JMP2r &is-zoom
 	.zoom/x LDZ2k INC2 ROT STZ2
-	;draw-surface JSR2
+	;draw-surface ( .. )
 
-JMP2r
+JMP2
 
 @select-tool ( tool -- )
 
 	.brush/tool STZ
-	;draw-toolpane JSR2
+	;draw-toolpane ( .. )
 
-JMP2r
+JMP2
 
 @select-patt ( patt -- )
 
@@ -454,9 +454,9 @@ JMP2r
 	.brush/tool LDZ ,&no-switch JCN
 		#01 ,select-tool JSR
 		&no-switch
-	;draw-pattpane JSR2
+	;draw-pattpane ( .. )
 
-JMP2r
+JMP2
 
 @select-size ( size -- )
 
@@ -470,17 +470,17 @@ JMP2r
 	.brush/tool LDZ ,&no-switch JCN
 		#01 ,select-tool JSR
 		&no-switch
-	;draw-sizepane JSR2
+	;draw-sizepane ( .. )
 
-JMP2r
+JMP2
 
 @view-toggle ( -- )
 
 	.zoom/active LDZk #00 EQU SWP STZ
 	;draw-viewport JSR2
-	;draw-panel JSR2
+	;draw-panel ( .. )
 
-JMP2r
+JMP2
 
 @edit-invert ( -- )
 
@@ -490,9 +490,9 @@ JMP2r
 		( save ) STH2r STA
 		INC2 GTH2k ,&loop JCN
 	POP2 POP2
-	;draw-surface JSR2
+	;draw-surface ( .. )
 
-JMP2r
+JMP2
 
 @set-viewport-size ( w h -- )
 
@@ -507,9 +507,9 @@ JMP2r
 	;clear-viewport JSR2
 	DUP .viewport/h STZ #00 SWP #30 SFT2 .viewport/y LDZ2 ADD2 .viewport/y2 STZ2
 	DUP .viewport/w STZ #00 SWP #30 SFT2 .viewport/x LDZ2 ADD2 .viewport/x2 STZ2
-	;center-surface JSR2
+	;center-surface ( .. )
 
-JMP2r
+JMP2
 	&cancel POP2 JMP2r
 
 @set-panel-position ( x* y* -- )
@@ -518,9 +518,9 @@ JMP2r
 	DUP2 .panel/y STZ2 #0088 ADD2 .panel/y2 STZ2
 	( minx ) #000c GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .panel/x STZ2 #0018 ADD2 .panel/x2 STZ2
-	;draw-panel JSR2
+	;draw-panel ( .. )
 
-JMP2r
+JMP2
 
 @set-viewport-position ( x* y* -- )
 
@@ -528,9 +528,9 @@ JMP2r
 	DUP2 .viewport/y STZ2 #00 .viewport/h LDZ #30 SFT2 ADD2 .viewport/y2 STZ2
 	( minx ) #002b GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .viewport/x STZ2 #00 .viewport/w LDZ #30 SFT2 ADD2 .viewport/x2 STZ2
-	;center-surface JSR2
+	;center-surface ( .. )
 
-JMP2r
+JMP2
 
 @set-surface-size ( w h -- )
 
@@ -590,9 +590,9 @@ JMP2r
 	.viewport/x LDZ2 .viewport-label/x STZ2
 	.viewport/x2 LDZ2 .viewport-label/x2 STZ2
 	.viewport/y LDZ2 DUP2 #0008 SUB2 .viewport-label/y STZ2 .viewport-label/y2 STZ2
-	;draw-viewport JSR2
+	;draw-viewport ( .. )
 
-JMP2r
+JMP2
 
 @paint-line ( x1* y1* x* y* -- )
 
@@ -635,9 +635,9 @@ JMP2r
 		POP2 POP2 POP2r
 		INC2 OVR2 OVR2 ;gts2 JSR2 ,&ver JCN
 	POP2 POP2
-	;draw-surface JSR2
+	;draw-surface ( .. )
 
-JMP2r
+JMP2
 
 @paint-brush ( x* y* -- )
 
@@ -1095,15 +1095,6 @@ JMP2r
 
 JMP2r
 
-@clear-viewport ( -- )
-
-	.viewport-label/x LDZ2 #0008 SUB2 .Screen/x DEO2
-	.viewport-label/y LDZ2 #0008 SUB2 .Screen/y DEO2
-	#00 ;draw-fill/color STA
-	.viewport/w LDZ INC INC .viewport/h LDZ INC INC ;fill-icn ;draw-fill JSR2
-
-JMP2r
-
 @draw-panel ( -- )
 
 	( frame )
@@ -1124,10 +1115,19 @@ JMP2r
 
 	( tools )
 	,draw-toolpane JSR
-	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0026 ADD2 #01 ,line-hor JSR
+	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0026 ADD2 #02 ,line-hor JSR
 	,draw-pattpane JSR
-	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0058 ADD2 #01 ,line-hor JSR
+	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0058 ADD2 #02 ,line-hor JSR
 	,draw-sizepane JSR
+
+JMP2r
+
+@clear-viewport ( -- )
+
+	.viewport-label/x LDZ2 #0008 SUB2 .Screen/x DEO2
+	.viewport-label/y LDZ2 #0008 SUB2 .Screen/y DEO2
+	#00 ;draw-fill/color STA
+	.viewport/w LDZ INC INC .viewport/h LDZ INC INC ;fill-icn ;draw-fill JSR2
 
 JMP2r
 
