@@ -56,22 +56,22 @@
 	.viewport/h LDZ #06 SUB
 		;set-surface-size JSR2
 	#0000 DUP2 ;set-panel-position JSR2
-	( let's begin. )
-	;untrap JSR2
+	( begin. )
 	;file-new JSR2
 	;draw-menu-bg JSR2
 	;draw-menu JSR2
+	;untrap JSR2
 
 BRK
 
 @manifest
 
 	05 "Noodle $1
-		01 'n :file-new "New $1
-		01 'r :file-rename "Rename $1
-		01 'o :file-open "Open $1
-		01 's :file-save "Save $1
-		01 'q :exit "Exit $1
+		01 "n :file-new "New $1
+		01 "r :file-rename "Rename $1
+		01 "o :file-open "Open $1
+		01 "s :file-save "Save $1
+		01 "q :exit "Exit $1
 	01 "Edit $1
 		00 09 :edit-invert "Invert $1
 	05 "Move $1
@@ -81,24 +81,24 @@ BRK
 		80 00 :move-right "Right $1
 		02 00 :view-toggle "Zoom $1
 	09 "Tool $1
-		00 'q :tool-pen "Pen $1
-		00 'w :tool-brush "Brush $1
-		00 'e :tool-line "Line $1
-		00 'r :tool-magic "Magic $1
-		00 't :tool-rect "Rect $1
-		00 'y :tool-zoom "Zoom $1
-		00 'x :tool-erase "Erase $1
-		00 '[ :size-decr "Decr.Size $1
-		00 '] :size-incr "Incr.Size $1
+		00 "q :tool-pen "Pen $1
+		00 "w :tool-brush "Brush $1
+		00 "e :tool-line "Line $1
+		00 "r :tool-magic "Magic $1
+		00 "t :tool-rect "Rect $1
+		00 "y :tool-zoom "Zoom $1
+		00 "x :tool-erase "Erase $1
+		00 "[ :size-decr "Decr.Size $1
+		00 "] :size-incr "Incr.Size $1
 	08 "Pattern $1
-		00 '1 :pattern-1 "Full $1
-		00 '2 :pattern-2 "HalftoneA $1
-		00 '3 :pattern-3 "HalftoneB $1
-		00 '4 :pattern-4 "PokeDot $1
-		00 '5 :pattern-5 "DiagonalA $1
-		00 '6 :pattern-6 "DiagonalB $1
-		00 '7 :pattern-7 "Vertical $1
-		00 '8 :pattern-8 "Horizontal $1
+		00 "1 :pattern-1 "Full $1
+		00 "2 :pattern-2 "HalftoneA $1
+		00 "3 :pattern-3 "HalftoneB $1
+		00 "4 :pattern-4 "PokeDot $1
+		00 "5 :pattern-5 "DiagonalA $1
+		00 "6 :pattern-6 "DiagonalB $1
+		00 "7 :pattern-7 "Vertical $1
+		00 "8 :pattern-8 "Horizontal $1
 	$1
 
 (
@@ -817,7 +817,7 @@ JMP2r
 	.surface/w LDZ
 		DUP #04 SFT ;hexc JSR2 STH2kr STA INC2r
 		;hexc JSR2 STH2kr STA INC2r
-	LIT 'x STH2kr STA INC2r
+	LIT "x STH2kr STA INC2r
 	.surface/h LDZ
 		DUP #04 SFT ;hexc JSR2 STH2kr STA INC2r
 		;hexc JSR2 STH2kr STA INC2r
@@ -884,7 +884,7 @@ JMP2r
 @read-size ( 00x00* -- )
 
 	DUP2 ;sbyte JSR2 #00 EQU ,&cancel JCN
-	INC2k INC2 LDA LIT 'x NEQ ,&cancel JCN
+	INC2k INC2 LDA LIT "x NEQ ,&cancel JCN
 	INC2k INC2 INC2 ;sbyte JSR2 #00 EQU ,&cancel JCN
 	( y ) INC2k INC2 INC2 ;sbyte JSR2 STH
 	( x ) ;sbyte JSR2 STHr
@@ -1216,7 +1216,7 @@ JMP2r
 	#0004 .Screen/y DEO2
 	#0c ;draw-chr/color STA
 	.surface/w LDZ ;draw-byte JSR2
-	LIT 'x ;draw-chr JSR2
+	LIT "x ;draw-chr JSR2
 	.surface/h LDZ ;draw-byte JSR2
 
 JMP2r
