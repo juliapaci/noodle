@@ -1664,3 +1664,5 @@ JMP2r
 	&w $2 &h $2
 	&depth $1
 	&descriptor $1
+
+~src/manifest.tal

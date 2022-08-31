@@ -12,8 +12,7 @@ then
 fi
 
 echo "Assembling.."
-cat src/main.tal src/manifest.tal src/assets.tal > bin/noodle.tal
-uxncli $HOME/roms/drifblim.rom bin/noodle.tal bin/noodle.rom
+uxncli $HOME/roms/drifblim.rom src/main.tal bin/noodle.rom
 
 echo "Installing.."
 if [ -d "$HOME/roms" ] && [ -e ./bin/noodle.rom ]
