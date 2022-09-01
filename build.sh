@@ -12,7 +12,7 @@ then
 fi
 
 echo "Assembling.."
-uxncli $HOME/roms/drifblim.rom src/main.tal bin/noodle.rom
+uxncli $HOME/roms/drifblim.rom # .drifblim
 
 echo "Installing.."
 if [ -d "$HOME/roms" ] && [ -e ./bin/noodle.rom ]
