@@ -1,31 +1,35 @@
 #!/bin/sh -e
 
-echo "Cleaning.."
+ASM="uxncli $HOME/roms/drifblim.rom"
+EMU="uxnemu"
+LIN="uxncli $HOME/roms/uxnlin.rom"
+
+SRC="src/noodle.tal"
+DST="bin/noodle.rom"
+
+CPY="$HOME/roms"
+ETC="src/manifest.tal"
+ARG="lemon15x12.icn"
+
+echo ">> Cleaning"
 rm -rf bin
 mkdir bin
 
-if [ -e "$HOME/roms/uxnlin.rom" ]
+if [[ "$*" == *"--lint"* ]]
 then
-	echo "Linting.."
-	uxncli $HOME/roms/uxnlin.rom src/main.tal
-	uxncli $HOME/roms/uxnlin.rom src/manifest.tal
+    echo ">> Linting $SRC"
+	$LIN $SRC $ETC
 fi
 
-echo "Assembling.."
-uxncli $HOME/roms/drifblim.rom # .drifblim
+echo ">> Assembling $SRC"
+$ASM $SRC $DST
 
-echo "Installing.."
-if [ -d "$HOME/roms" ] && [ -e ./bin/noodle.rom ]
+if [[ "$*" == *"--save"* ]]
 then
-	cp ./bin/noodle.rom $HOME/roms
-    echo "Installed in $HOME/roms"
+    echo ">> Saving $DST"
+	cp $DST $CPY
 fi
 
-if [ "${1}" = '--push' ]; 
-then
-	echo "Pushing.."
-	~/Applications/butler push bin/noodle.rom hundredrabbits/noodle:uxn
-fi
+echo ">> Running $DST"
+$EMU $DST $ARG
 
-echo "Running.."
-uxnemu bin/noodle.rom lemon15x12.icn
