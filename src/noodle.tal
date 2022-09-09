@@ -38,7 +38,7 @@
 	;on-drag-viewport-label .viewport-label/drag-event STZ2
 	;on-drag-surface-handle .surface-handle/drag-event STZ2
 	( theme )
-	#500f .System/r DEO2
+	#5f0f .System/r DEO2
 	#b70f .System/g DEO2
 	#a70f .System/b DEO2
 	( theme support )
@@ -68,7 +68,7 @@ BRK
 
 	05 "Noodle $1
 		01 "n :file-new "New $1
-		01 "r :file-rename "Rename $1
+		01 "r :trap "Rename $1
 		01 "o :file-open "Open $1
 		01 "s :file-save "Save $1
 		01 "q :exit "Exit $1
@@ -237,10 +237,9 @@ JMP2r
 
 @on-drag ( x* y* -> )
 
-	( get event )
-	.cursor/drag LDZ #08 ADD LDZ2 JMP2
+	( get event ) .cursor/drag LDZ #08 ADD LDZ2 ( .. )
 
-BRK
+JMP2
 
 @start-drag ( rect -- )
 
@@ -338,9 +337,9 @@ JMP2r
 	( canvas offset )
 	.surface/y LDZ2 SUB2 SWP2
 	.surface/x LDZ2 SUB2 SWP2
-		,get-tool JSR JMP2
+		,get-tool JSR ( .. )
 
-BRK
+JMP2
 
 @on-touch-viewport ( x* y* -- )
 
@@ -348,9 +347,9 @@ BRK
 	( canvas offset )
 	.viewport/y LDZ2 SUB2 #03 SFT2 .zoom/y LDZ2 ADD2 SWP2
 	.viewport/x LDZ2 SUB2 #03 SFT2 .zoom/x LDZ2 ADD2 SWP2
-		,get-tool JSR JMP2
+		,get-tool JSR ( .. )
 
-BRK
+JMP2
 	&cancel POP2 POP2 BRK
 
 @on-touch-viewport-handle ( x* y* -- )
@@ -740,9 +739,9 @@ JMP2r
 	DUP #0c EQU ,&remove JCN
 	POP POP2 POP2 JMP2r
 	&remove
-		POP ;remove-pixel JSR2
+		POP ;remove-pixel ( .. )
 
-JMP2r
+JMP2
 
 @get-pixel ( x* y* -- b )
 
@@ -840,17 +839,11 @@ JMP2r
 	;data ;get-length JSR2 ;mclr JSR2
 	#00 .state/changed STZ ;draw-filestate JSR2
 	( draw )
-	;draw-viewport JSR2
+	;draw-viewport ( .. )
 
-JMP2r
+JMP2
 	&untitled-txt "untitled $1
 	&icn-ext ".icn $1
-
-@file-rename ( -- )
-
-	;trap JSR2
-
-JMP2r
 
 @file-open ( -- )
 
@@ -865,9 +858,9 @@ JMP2r
 	( capture size )
 	;filepath ;scap JSR2 #0009 SUB2 ;read-size JSR2
 	( draw )
-	;draw-viewport JSR2
+	;draw-viewport ( .. )
 
-JMP2r
+JMP2
 	&tga-ext ".tga $1
 
 @file-save ( path* -- )
@@ -877,9 +870,9 @@ JMP2r
 	;data .File/write DEO2
 	( draw )
 	#00 .state/changed STZ ;draw-filestate JSR2
-	;draw-viewport JSR2
+	;draw-viewport ( .. )
 
-JMP2r
+JMP2
 
 @read-size ( 00x00* -- )
 
@@ -888,9 +881,9 @@ JMP2r
 	INC2k INC2 INC2 ;sbyte JSR2 #00 EQU ,&cancel JCN
 	( y ) INC2k INC2 INC2 ;sbyte JSR2 STH
 	( x ) ;sbyte JSR2 STHr
-		;set-surface-size JSR2
+		;set-surface-size ( .. )
 
-JMP2r
+JMP2
 	&cancel POP2 JMP2r
 
 (
@@ -907,9 +900,9 @@ JMP2r
 	#40 .Screen/sprite DEO
 
 	;draw-viewport JSR2
-	;draw-panel JSR2
+	;draw-panel ( .. )
 
-JMP2r
+JMP2
 
 @draw-menu-bg ( -- )
 
@@ -948,17 +941,18 @@ JMP2r
 		.cursor/x LDZ2 #0003 SUB2 .Screen/x DEO2
 		.cursor/y LDZ2 #0003 SUB2 .Screen/y DEO2
 		;brush-icns #00 .brush/size LDZ #30 SFT2 ADD2 .Screen/addr DEO2
-		.Mouse/state DEI #00 NEQ DUPk ADD #41 ADD .Screen/sprite DEO
-		#00 EQU ,&outside-canvas JCN JMP2r
+		.Mouse/state DEI #00 NEQ DUPk 
+			ADD DUP ADD #41 ADD .Screen/sprite DEO
+			#00 EQU ,&outside-canvas JCN JMP2r
 	&outside-canvas
 
 	( draw new cursor )
 	.cursor/x LDZ2
 	.cursor/y LDZ2
 	#4142 .Mouse/state DEI #01 [ JCN SWP POP ]
-		;draw-pointer JSR2
+		;draw-pointer ( .. )
 
-JMP2r
+JMP2
 
 @draw-viewport ( -- )
 
@@ -1127,9 +1121,9 @@ JMP2r
 	.viewport-label/x LDZ2 #0008 SUB2 .Screen/x DEO2
 	.viewport-label/y LDZ2 #0008 SUB2 .Screen/y DEO2
 	#00 ;draw-fill/color STA
-	.viewport/w LDZ INC INC .viewport/h LDZ INC INC ;fill-icn ;draw-fill JSR2
+	.viewport/w LDZ INC INC .viewport/h LDZ INC INC ;fill-icn ;draw-fill ( .. )
 
-JMP2r
+JMP2
 
 @line-hor ( x0* x1* y* color -- )
 
@@ -1217,9 +1211,9 @@ JMP2r
 	#0c ;draw-chr/color STA
 	.surface/w LDZ ;draw-byte JSR2
 	LIT "x ;draw-chr JSR2
-	.surface/h LDZ ;draw-byte JSR2
+	.surface/h LDZ ;draw-byte ( .. )
 
-JMP2r
+JMP2
 
 ( strings )
 
@@ -1609,9 +1603,9 @@ JMP2r
 	( rename )
 	;filepath ;scap JSR2 #0004 SUB2 ;write-size JSR2
 	;&icn-ext ;filepath ;scap JSR2 ;scpy JSR2
-	;draw-surface JSR2
+	;draw-surface ( .. )
 
-JMP2r
+JMP2
 	&pixel $4
 	&icn-ext ".icn $1
 

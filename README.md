@@ -7,7 +7,6 @@
 You must have an [Uxn](https://git.sr.ht/~rabbits/uxn/) assembler and emulator.
 
 ```sh
-cat src/main.tal src/manifest.tal src/assets.tal > bin/noodle.tal
 uxnasm bin/noodle.tal bin/noodle.rom
 uxnemu bin/noodle.rom
 ```

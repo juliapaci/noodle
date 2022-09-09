@@ -8,7 +8,6 @@ SRC="src/noodle.tal"
 DST="bin/noodle.rom"
 
 CPY="$HOME/roms"
-ETC="src/manifest.tal"
 ARG="lemon15x12.icn"
 
 echo ">> Cleaning"
@@ -18,7 +17,7 @@ mkdir bin
 if [[ "$*" == *"--lint"* ]]
 then
     echo ">> Linting $SRC"
-	$LIN $SRC $ETC
+	$LIN $SRC
 fi
 
 echo ">> Assembling $SRC"
