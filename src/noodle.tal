@@ -75,7 +75,9 @@ BRK
 		01 "o :file-open "Open $1
 		01 "s :file-save "Save $1
 		01 "q :exit "Exit $1
-	01 "Edit $1
+	03 "Edit $1
+		14 00 :shift-up "Up $1
+		24 00 :shift-down "Down $1
 		00 09 :edit-invert "Invert $1
 	05 "Move $1
 		10 00 :move-up "Up $1
@@ -408,6 +410,24 @@ BRK
 @pattern-6 ( -- ) #05 ;select-patt JMP2
 @pattern-7 ( -- ) #06 ;select-patt JMP2
 @pattern-8 ( -- ) #07 ;select-patt JMP2
+
+@shift-up ( -- )
+
+	;data DUP2 ;get-length JSR2 ADD2
+		#00 .surface/w LDZ #30 SFT2
+		;msfl JSR2
+	;draw-surface ( .. )
+
+JMP2
+
+@shift-down ( -- )
+
+	;data DUP2 ;get-length JSR2 ADD2
+		#00 .surface/w LDZ #30 SFT2
+		;msfr JSR2
+	;draw-surface ( .. )
+
+JMP2
 
 @move-up ( -- )
 
@@ -1558,6 +1578,8 @@ JMP2r
 @hexc ( hex -- char ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
 @pstr ( str* -- ) &while LDAk #18 DEO INC2 LDAk ,&while JCN POP2 JMP2r
+@msfl ( a* b* len* -- ) STH2 SWP2 EQU2k ,&e JCN &l DUP2k STH2kr ADD2 LDA ROT ROT STA INC2 GTH2k ,&l JCN POP2 POP2 &e POP2r JMP2r
+@msfr ( a* b* len* -- ) STH2 EQU2k ,&e JCN &l DUP2 LDAk ROT ROT STH2kr ADD2 STA #0001 SUB2 LTH2k ,&l JCN POP2 POP2 &e POP2r JMP2r
 
 (
 @|tga )
