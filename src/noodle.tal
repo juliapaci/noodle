@@ -554,9 +554,9 @@ JMP2
 	.surface/w STZ
 	;draw-suface-size JSR2
 
-	,center-surface JSR
+	,center-surface ( .. )
 
-JMP2r
+JMP
 	&cancel POP2 JMP2r
 
 @center-surface ( -- )
@@ -1155,9 +1155,9 @@ JMP2r
 	#08 .brush/patt LDZ
 	.panel/x LDZ2 #0004 ADD2
 	.panel/y LDZ2 #002d ADD2
-		,draw-icons JSR
+		,draw-icons ( .. )
 
-JMP2r
+JMP
 
 @draw-sizepane ( -- )
 
@@ -1165,9 +1165,9 @@ JMP2r
 	#08 .brush/size LDZ
 	.panel/x LDZ2 #0004 ADD2
 	.panel/y LDZ2 #005f ADD2
-		,draw-icons JSR
+		,draw-icons ( .. )
 
-JMP2r
+JMP
 
 @draw-icons ( length selection x* y* -- )
 
@@ -1506,9 +1506,10 @@ JMP2r
 	( ll ) ,&h LDR #10 STH2kr #0020 ADD2 #02 ,&repeat JSR
 	( dl ) #20 STH2kr #01 ,&single JSR
 	( bb ) ,&w LDR #20 STH2kr #0010 ADD2 #01 ,&repeat JSR
-	( dr ) #30 STH2r #00 ,&single JSR
+	( dr ) #30 STH2r #00 ,&single ( .. )
 
-JMP2r
+JMP
+
 	&repeat ( times color addr* auto -- )
 		.Screen/auto DEO
 		.Screen/addr DEO2
@@ -1607,6 +1608,7 @@ JMP2r
 	( rename )
 	;filepath ;scap JSR2 #0004 SUB2 ;write-size JSR2
 	;&icn-ext ;filepath ;scap JSR2 ;scpy JSR2
+	#01 .state/changed STZ ;draw-filestate JSR2
 	;draw-surface ( .. )
 
 JMP2
