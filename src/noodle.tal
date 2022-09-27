@@ -43,7 +43,7 @@
 	#a70f .System/b DEO2
 	( size )
 	#02a8 .Screen/width DEO2
-	#0200 .Screen/height DEO2
+	#01d0 .Screen/height DEO2
 	( theme support )
 	;load-theme JSR2
 	( default brush )
@@ -1577,7 +1577,7 @@ JMP2r
 		;pixel-raw-true #0004 ,parse-tga JSR POP JMP2r
 		&no-raw-true
 	#03 NEQk NIP ,&no-raw-bw JCN
-		;pixel-raw-bw #0002 ,parse-tga JSR POP JMP2r
+		;pixel-raw-bw #0001 ,parse-tga JSR POP JMP2r
 		&no-raw-bw
 	( error )
 	;&error-unknown-txt ;pstr JSR2
