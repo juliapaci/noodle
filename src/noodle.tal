@@ -41,6 +41,9 @@
 	#5f0f .System/r DEO2
 	#b70f .System/g DEO2
 	#a70f .System/b DEO2
+	( size )
+	#02a8 .Screen/width DEO2
+	#0200 .Screen/height DEO2
 	( theme support )
 	;load-theme JSR2
 	( default brush )
@@ -1574,7 +1577,7 @@ JMP2r
 		;pixel-raw-true #0004 ,parse-tga JSR POP JMP2r
 		&no-raw-true
 	#03 NEQk NIP ,&no-raw-bw JCN
-		;pixel-raw-bw #0001 ,parse-tga JSR POP JMP2r
+		;pixel-raw-bw #0002 ,parse-tga JSR POP JMP2r
 		&no-raw-bw
 	( error )
 	;&error-unknown-txt ;pstr JSR2
@@ -1586,20 +1589,21 @@ JMP2r
 
 @parse-tga ( filter* length* -- )
 
-	.File/length DEO2 ,&filter STR2
-	#01 .Screen/auto DEO
+	.File/length DEO2
+	,&filter STR2
 	#0000 ,&x STR2
 	#0000 ,&y STR2
 	&stream
-		;&pixel STH2k .File/read DEO2
-		[ LIT2 &x $2 ] [ LIT2 &y $2 ] STH2r [ LIT2 &filter $2 ] JSR2 #07 SFT ;set-pixel JSR2
+		;&pixel .File/read DEO2
+		.File/success DEI2 #0000 EQU2 ,&end JCN
+		[ LIT2 &x $2 ] [ LIT2 &y $2 ] ;&pixel [ LIT2 &filter $2 ] JSR2 #07 SFT #00 EQU ;set-pixel JSR2
 		( move )
 		,&x LDR2 INC2 DUP2 ,&x STR2 ;image/w LDA2 NEQ2 ,&continue JCN
 			#0000 ,&x STR2
 			,&y LDR2 INC2 ,&y STR2
 			&continue
-		.File/success DEI2 ORA ,&stream JCN
-	#00 .Screen/auto DEO
+		,&stream JMP
+	&end
 	( rename )
 	;filepath ;scap JSR2 #0004 SUB2 ;write-size JSR2
 	;&icn-ext ;filepath ;scap JSR2 ;scpy JSR2
