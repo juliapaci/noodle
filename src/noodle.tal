@@ -41,9 +41,9 @@
 	#5f0f .System/r DEO2
 	#b70f .System/g DEO2
 	#a70f .System/b DEO2
-	( size )
+	( size thinkpad )
 	#02a8 .Screen/width DEO2
-	#01d0 .Screen/height DEO2
+	#0180 .Screen/height DEO2
 	( theme support )
 	;load-theme JSR2
 	( default brush )
