@@ -1012,7 +1012,7 @@ JMP2
 			#0e .Screen/sprite DEO
 			INC GTHk ,&hor JCN
 		POP2
-		.Screen/y DEI2k #0008 ADD2 ROT DEO2
+		;draw-lb JSR2
 		INC GTHk ,&ver JCN
 	POP2
 
@@ -1053,7 +1053,7 @@ JMP2r
 			INC GTHk ,&hor JCN
 		POP2
 		POPr
-		.Screen/y DEI2k #0008 ADD2 ROT DEO2
+		;draw-lb JSR2
 		INC GTHk ,&ver JCN
 	POP2
 
