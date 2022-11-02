@@ -38,9 +38,9 @@
 	;on-drag-viewport-label .viewport-label/drag-event STZ2
 	;on-drag-surface-handle .surface-handle/drag-event STZ2
 	( theme )
-	#5f0f .System/r DEO2
-	#b70f .System/g DEO2
-	#a70f .System/b DEO2
+	#7f0f .System/r DEO2
+	#c70f .System/g DEO2
+	#970f .System/b DEO2
 	( size thinkpad )
 	#02a8 .Screen/width DEO2
 	#0180 .Screen/height DEO2
@@ -536,9 +536,9 @@ JMP2
 
 @set-panel-position ( x* y* -- )
 
-	( miny ) #0018 GTH2k [ JMP SWP2 POP2 ]
+	( miny ) #0014 GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .panel/y STZ2 #0088 ADD2 .panel/y2 STZ2
-	( minx ) #000c GTH2k [ JMP SWP2 POP2 ]
+	( minx ) #0008 GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .panel/x STZ2 #0018 ADD2 .panel/x2 STZ2
 	;draw-panel ( .. )
 
@@ -546,9 +546,9 @@ JMP2
 
 @set-viewport-position ( x* y* -- )
 
-	( miny ) #0024 GTH2k [ JMP SWP2 POP2 ]
+	( miny ) #0020 GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .viewport/y STZ2 #00 .viewport/h LDZ #30 SFT2 ADD2 .viewport/y2 STZ2
-	( minx ) #002b GTH2k [ JMP SWP2 POP2 ]
+	( minx ) #0028 GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .viewport/x STZ2 #00 .viewport/w LDZ #30 SFT2 ADD2 .viewport/x2 STZ2
 	;center-surface ( .. )
 
