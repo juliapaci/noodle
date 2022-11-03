@@ -67,9 +67,16 @@
 
 BRK
 
+@info
+	( name ) "Noodle $1
+	( license ) "Hundred 20 "Rabbits 20 7f 20 "2022 $1
+	( version ) "Version 20 "0.99 $1
+	$1
+
 @manifest
 
-	05 "Noodle $1
+	06 "Noodle $1
+		00 00 :about/toggle "About $1
 		01 "n :file-new "New $1
 		01 "r :trap "Rename $1
 		01 "o :file-open "Open $1
@@ -390,6 +397,28 @@ BRK
 
 (
 @|helpers )
+
+( TODO: Move to manifest )
+
+@about ( about modal handlers )
+&on-mouse ( -> )
+	.Mouse/state DEI ,&on-control JCN
+	BRK
+&on-control ( -> )
+	,&hide JSR
+BRK
+&toggle ( -- )
+	[ LIT &active 00 ] ,&hide JCN
+	#01 ,&active STR
+	;draw-about JSR2
+	;&on-mouse .Mouse/vector DEO2
+	;&on-control .Controller/vector DEO2
+JMP2r
+&hide ( -- )
+	#00 ,&active STR
+	;clear-about JSR2
+	;untrap ( .. )
+JMP2
 
 @tool-pen ( -- ) #00 ;select-tool JMP2
 @tool-brush ( -- ) #01 ;select-tool JMP2
@@ -927,6 +956,46 @@ JMP2
 
 JMP2
 
+@draw-about ( -- )
+
+	( frame )
+	.Screen/width DEI2 #01 SFT2 #0080 SUB2 STH2k .Screen/x DEO2
+	.Screen/height DEI2 #01 SFT2 #0020 SUB2 STH2k .Screen/y DEO2
+	#2008 ;frame1-chr ;draw-frame JSR2
+	( fill )
+	STH2kr .Screen/y DEO2
+	OVR2r STH2r .Screen/x DEO2
+	#20 #0371 ;fill-icn ;draw-fill-fast JSR2
+	( icon )
+	STH2kr .Screen/y DEO2
+	OVR2r STH2r .Screen/x DEO2
+	#08 #0876 ;appicon ;draw-fill-fast JSR2
+	( text )
+	STH2r #0008 ADD2 .Screen/y DEO2
+	LIT2r 0048 ADD2r
+	#01 .Screen/auto DEO
+	STH2kr .Screen/x DEO2
+	;info
+	&w
+		;draw-str JSR2
+		STH2kr .Screen/x DEO2
+		.Screen/y DEI2k #000c ADD2 ROT DEO2
+		LDAk ,&w JCN
+	POP2
+	POP2r
+
+JMP2r
+
+@clear-about ( -- )
+
+	.Screen/width DEI2 #01 SFT2 #0088 SUB2 .Screen/x DEO2
+	.Screen/height DEI2 #01 SFT2 #0028 SUB2 .Screen/y DEO2
+	#22 #0091 ;draw-fill-fast/blank JSR2
+	;redraw-all JSR2
+	;draw-menu ( .. )
+
+JMP2
+
 @draw-menu-bg ( -- )
 
 	#0000 DUP2 .Screen/x DEO2 .Screen/y DEO2
@@ -1122,13 +1191,7 @@ JMP2r
 	( fill )
 	.panel/x LDZ2 #0004 ADD2 .Screen/x DEO2
 	.panel/y LDZ2 #0004 ADD2 .Screen/y DEO2
-	#12 .Screen/auto DEO
-	;fill-icn .Screen/addr DEO2
-	#1000
-	&l
-		#03 .Screen/sprite DEO
-		INC GTHk ,&l JCN
-	POP2
+	#10 #03 #12 ;fill-icn ;draw-fill-fast JSR2
 
 	( tools )
 	,draw-toolpane JSR
@@ -1200,6 +1263,21 @@ JMP
 		#00 OVR #01 SFT #0a MUL [ LIT2 &anchor-y $2 ] ADD2 .Screen/y DEO2
 		#0e OVR STHkr EQU SUB .Screen/sprite DEO
 		INC GTHk ,&loop JCN
+	POP2
+	POPr
+
+JMP2r
+
+@draw-fill-fast ( width color auto addr* -- )
+
+	.Screen/addr DEO2
+	&blank
+	.Screen/auto DEO
+	STH
+	#00
+	&l2
+		STHkr .Screen/sprite DEO
+		INC GTHk ,&l2 JCN
 	POP2
 	POPr
 
