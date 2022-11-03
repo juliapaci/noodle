@@ -67,12 +67,6 @@
 
 BRK
 
-@info
-	( name ) "Noodle $1
-	( license ) "Hundred 20 "Rabbits 20 7f 20 "2022 $1
-	( version ) "Version 20 "1.00 $1
-	$1
-
 @manifest
 
 	06 "Noodle $1
@@ -397,28 +391,6 @@ BRK
 
 (
 @|helpers )
-
-( TODO: Move to manifest )
-
-@about ( about modal handlers )
-&on-mouse ( -> )
-	.Mouse/state DEI ,&on-control JCN
-	BRK
-&on-control ( -> )
-	,&hide JSR
-BRK
-&toggle ( -- )
-	[ LIT &active 00 ] ,&hide JCN
-	#01 ,&active STR
-	;draw-about JSR2
-	;&on-mouse .Mouse/vector DEO2
-	;&on-control .Controller/vector DEO2
-JMP2r
-&hide ( -- )
-	#00 ,&active STR
-	;clear-about JSR2
-	;untrap ( .. )
-JMP2
 
 @tool-pen ( -- ) #00 ;select-tool JMP2
 @tool-brush ( -- ) #01 ;select-tool JMP2
@@ -953,46 +925,6 @@ JMP2
 
 	;draw-viewport JSR2
 	;draw-panel ( .. )
-
-JMP2
-
-@draw-about ( -- )
-
-	( frame )
-	.Screen/width DEI2 #01 SFT2 #0080 SUB2 STH2k .Screen/x DEO2
-	.Screen/height DEI2 #01 SFT2 #0020 SUB2 STH2k .Screen/y DEO2
-	#2008 ;frame1-chr ;draw-frame JSR2
-	( fill )
-	STH2kr .Screen/y DEO2
-	OVR2r STH2r .Screen/x DEO2
-	#20 #0371 ;fill-icn ;draw-fill-fast JSR2
-	( icon )
-	STH2kr .Screen/y DEO2
-	OVR2r STH2r .Screen/x DEO2
-	#08 #0e76 ;appicon ;draw-fill-fast JSR2
-	( text )
-	STH2r #000c ADD2 .Screen/y DEO2
-	LIT2r 0048 ADD2r
-	#01 .Screen/auto DEO
-	STH2kr .Screen/x DEO2
-	;info
-	&w
-		;draw-str JSR2
-		;draw-lb JSR2k JSR2
-		STH2kr .Screen/x DEO2
-		LDAk ,&w JCN
-	POP2
-	POP2r
-
-JMP2r
-
-@clear-about ( -- )
-
-	.Screen/width DEI2 #01 SFT2 #0088 SUB2 .Screen/x DEO2
-	.Screen/height DEI2 #01 SFT2 #0028 SUB2 .Screen/y DEO2
-	#22 #0091 ;draw-fill-fast/blank JSR2
-	;redraw-all JSR2
-	;draw-menu ( .. )
 
 JMP2
 
@@ -1644,6 +1576,72 @@ JMP2r
 @pstr ( str* -- ) &while LDAk #18 DEO INC2 LDAk ,&while JCN POP2 JMP2r
 @msfl ( a* b* len* -- ) STH2 SWP2 EQU2k ,&e JCN &l DUP2k STH2kr ADD2 LDA ROT ROT STA INC2 GTH2k ,&l JCN POP2 POP2 &e POP2r JMP2r
 @msfr ( a* b* len* -- ) STH2 EQU2k ,&e JCN &l DUP2 LDAk ROT ROT STH2kr ADD2 STA #0001 SUB2 LTH2k ,&l JCN POP2 POP2 &e POP2r JMP2r
+
+(
+@|about )
+
+@about
+	( name ) "Noodle $1
+	( license ) "Hundred 20 "Rabbits 20 7f 20 "2022 $1
+	( version ) "Version 20 "1.00 $2
+&on-mouse ( -> )
+	.Mouse/state DEI ,&on-control JCN
+	BRK
+&on-control ( -> )
+	,&hide JSR
+BRK
+&toggle ( -- )
+	[ LIT &active 00 ] ,&hide JCN
+	#01 ,&active STR
+	;draw-about JSR2
+	;&on-mouse .Mouse/vector DEO2
+	;&on-control .Controller/vector DEO2
+JMP2r
+&hide ( -- )
+	#00 ,&active STR
+	;clear-about JSR2
+	;untrap ( .. )
+JMP2
+
+@draw-about ( -- )
+
+	( frame )
+	.Screen/width DEI2 #01 SFT2 #0080 SUB2 STH2k .Screen/x DEO2
+	.Screen/height DEI2 #01 SFT2 #0020 SUB2 STH2k .Screen/y DEO2
+	#2008 ;frame1-chr ;draw-frame JSR2
+	( fill )
+	STH2kr .Screen/y DEO2
+	OVR2r STH2r .Screen/x DEO2
+	#20 #0371 ;fill-icn ;draw-fill-fast JSR2
+	( icon )
+	STH2kr .Screen/y DEO2
+	OVR2r STH2r .Screen/x DEO2
+	#08 #0e76 ;appicon ;draw-fill-fast JSR2
+	( text )
+	STH2r #000c ADD2 .Screen/y DEO2
+	LIT2r 0048 ADD2r
+	#01 .Screen/auto DEO
+	STH2kr .Screen/x DEO2
+	;about
+	&w
+		;draw-str JSR2
+		;draw-lb JSR2k JSR2
+		STH2kr .Screen/x DEO2
+		LDAk ,&w JCN
+	POP2
+	POP2r
+
+JMP2r
+
+@clear-about ( -- )
+
+	.Screen/width DEI2 #01 SFT2 #0088 SUB2 .Screen/x DEO2
+	.Screen/height DEI2 #01 SFT2 #0028 SUB2 .Screen/y DEO2
+	#22 #0091 ;draw-fill-fast/blank JSR2
+	;redraw-all JSR2
+	;draw-menu ( .. )
+
+JMP2
 
 (
 @|tga )
