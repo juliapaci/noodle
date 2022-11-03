@@ -633,7 +633,7 @@ JMP
 	&resume-y
 	( viewport handle )
 	.viewport/x2 LDZ2 #0008 SUB2 DUP2 .viewport-handle/x STZ2 #0008 ADD2 .viewport-handle/x2 STZ2
-	.viewport/y2 LDZ2 #0010 SUB2 DUP2 .viewport-handle/y STZ2 #0008 ADD2 .viewport-handle/y2 STZ2
+	.viewport/y2 LDZ2 #0008 SUB2 DUP2 .viewport-handle/y STZ2 #0008 ADD2 .viewport-handle/y2 STZ2
 	( surface handle )
 	.surface/x2 LDZ2 DUP2 .surface-handle/x STZ2 #0008 ADD2 .surface-handle/x2 STZ2
 	.surface/y2 LDZ2 DUP2 .surface-handle/y STZ2 #0008 ADD2 .surface-handle/y2 STZ2
@@ -978,9 +978,8 @@ JMP2
 	;info
 	&w
 		;draw-str JSR2
+		;draw-lb JSR2k JSR2
 		STH2kr .Screen/x DEO2
-		;draw-lb JSR2
-		;draw-lb JSR2
 		LDAk ,&w JCN
 	POP2
 	POP2r
@@ -1053,12 +1052,12 @@ JMP2
 
 	.viewport/x LDZ2 .Screen/x DEO2
 	.viewport/y LDZ2 #0008 SUB2 .Screen/y DEO2
-	.viewport/w LDZ .viewport/h LDZ ;frame1-chr ;draw-frame JSR2
+	.viewport/size LDZ2 INC ;frame1-chr ;draw-frame JSR2
 
 	.viewport/x LDZ2 .Screen/x DEO2
 	.viewport/y LDZ2 #0008 SUB2 .Screen/y DEO2
 	#0c ;draw-fill/color STA
-	.viewport/w LDZ .viewport/h LDZ ;check-icn ;draw-fill JSR2
+	.viewport/size LDZ2 INC ;check-icn ;draw-fill JSR2
 
 	( titlebar )
 	;draw-filestate JSR2
@@ -1090,7 +1089,6 @@ JMP2
 	.surface/w LDZ .viewport/w LDZ #03 SUB GTH ,&no-handle JCN
 	.surface/h LDZ .viewport/h LDZ #03 SUB GTH ,&no-handle JCN
 	.surface/size LDZ2 #0000 EQU2 ,&no-handle JCN
-
 		;surface-handle-icn .Screen/addr DEO2
 		.surface-handle/x LDZ2 .Screen/x DEO2
 		.surface-handle/y LDZ2 .Screen/y DEO2
@@ -1099,8 +1097,8 @@ JMP2
 
 	( draw viewport handle )
 	;viewport-handle-icn .Screen/addr DEO2
-	.viewport/x2 LDZ2 #0008 SUB2 .Screen/x DEO2
-	.viewport/y2 LDZ2 #0010 SUB2 .Screen/y DEO2
+	.viewport-handle/x LDZ2 .Screen/x DEO2
+	.viewport-handle/y LDZ2 .Screen/y DEO2
 	#0a .Screen/sprite DEO
 
 JMP2r
@@ -1109,7 +1107,7 @@ JMP2r
 
 	#01 .Screen/auto DEO
 	.viewport/y LDZ2 .Screen/y DEO2
-	.viewport/h LDZ #01 SUB #00
+	.viewport/h LDZ #00
 	&ver
 		STHk
 		.viewport/x LDZ2 .Screen/x DEO2
@@ -1208,7 +1206,7 @@ JMP2r
 	.viewport-label/x LDZ2 #0008 SUB2 .Screen/x DEO2
 	.viewport-label/y LDZ2 #0008 SUB2 .Screen/y DEO2
 	#00 ;draw-fill/color STA
-	.viewport/w LDZ INC INC .viewport/h LDZ INC INC ;fill-icn ;draw-fill ( .. )
+	.viewport/w LDZ INC INC .viewport/h LDZ #03 ADD ;fill-icn ;draw-fill ( .. )
 
 JMP2
 
