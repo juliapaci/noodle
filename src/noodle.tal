@@ -969,9 +969,9 @@ JMP2
 	( icon )
 	STH2kr .Screen/y DEO2
 	OVR2r STH2r .Screen/x DEO2
-	#08 #0876 ;appicon ;draw-fill-fast JSR2
+	#08 #0e76 ;appicon ;draw-fill-fast JSR2
 	( text )
-	STH2r #0008 ADD2 .Screen/y DEO2
+	STH2r #000c ADD2 .Screen/y DEO2
 	LIT2r 0048 ADD2r
 	#01 .Screen/auto DEO
 	STH2kr .Screen/x DEO2
@@ -979,7 +979,8 @@ JMP2
 	&w
 		;draw-str JSR2
 		STH2kr .Screen/x DEO2
-		.Screen/y DEI2k #000c ADD2 ROT DEO2
+		;draw-lb JSR2
+		;draw-lb JSR2
 		LDAk ,&w JCN
 	POP2
 	POP2r
@@ -1195,9 +1196,9 @@ JMP2r
 
 	( tools )
 	,draw-toolpane JSR
-	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0026 ADD2 #02 ,line-hor JSR
+	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0026 ADD2 #02 ,draw-lineh JSR
 	,draw-pattpane JSR
-	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0058 ADD2 #02 ,line-hor JSR
+	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0058 ADD2 #02 ,draw-lineh JSR
 	,draw-sizepane JSR
 
 JMP2r
@@ -1211,7 +1212,7 @@ JMP2r
 
 JMP2
 
-@line-hor ( x0* x1* y* color -- )
+@draw-lineh ( x0* x1* y* color -- )
 
 	STH .Screen/y DEO2 SWP2
 	&loop
