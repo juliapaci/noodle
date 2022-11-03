@@ -70,7 +70,7 @@ BRK
 @info
 	( name ) "Noodle $1
 	( license ) "Hundred 20 "Rabbits 20 7f 20 "2022 $1
-	( version ) "Version 20 "0.99 $1
+	( version ) "Version 20 "1.00 $1
 	$1
 
 @manifest
@@ -552,8 +552,8 @@ JMP2
 	( limit size )
 	DUP #01 LTH ,&cancel JCN
 	OVR #01 LTH ,&cancel JCN
-	DUP .Screen/height DEI2 #03 SFT2 NIP #04 SUB GTH ,&cancel JCN
-	OVR .Screen/width DEI2 #03 SFT2 NIP #07 SUB GTH ,&cancel JCN
+	DUP .Screen/height DEI2 #03 SFT2 NIP #05 SUB GTH ,&cancel JCN
+	OVR .Screen/width DEI2 #03 SFT2 NIP #06 SUB GTH ,&cancel JCN
 
 	;clear-viewport JSR2
 	DUP .viewport/h STZ #00 SWP #30 SFT2 .viewport/y LDZ2 ADD2 .viewport/y2 STZ2
@@ -1183,23 +1183,21 @@ JMP2r
 @draw-panel ( -- )
 
 	( frame )
-	.panel/x LDZ2 #0004 ADD2 .Screen/x DEO2
-	.panel/y LDZ2 #0004 ADD2 .Screen/y DEO2
+	.panel/x LDZ2 #0004 ADD2 STH2k .Screen/x DEO2
+	.panel/y LDZ2 #0004 ADD2 STH2k .Screen/y DEO2
 	#0210 ;frame1-chr ;draw-frame JSR2
-
 	( fill )
-	.panel/x LDZ2 #0004 ADD2 .Screen/x DEO2
-	.panel/y LDZ2 #0004 ADD2 .Screen/y DEO2
-	#10 #03 #12 ;fill-icn ;draw-fill-fast JSR2
-
+	STH2r .Screen/y DEO2
+	STH2r .Screen/x DEO2
+	#10 #0312 ;fill-icn ;draw-fill-fast JSR2
 	( tools )
 	,draw-toolpane JSR
 	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0026 ADD2 #02 ,draw-lineh JSR
 	,draw-pattpane JSR
 	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0058 ADD2 #02 ,draw-lineh JSR
-	,draw-sizepane JSR
+	,draw-sizepane ( .. )
 
-JMP2r
+JMP
 
 @clear-viewport ( -- )
 
