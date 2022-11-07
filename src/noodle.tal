@@ -1578,17 +1578,11 @@ JMP2r
 (
 @|stdlib )
 
-@sbyte ( str* -- byte )
-
-	LDAk ,chex JSR #40 SFT STH
-	INC2 LDA ,chex JSR STHr ADD
-
-JMP2r
-
-@chex ( c -- val|ff ) LIT "0 SUB DUP #09 GTH JMP JMP2r #27 SUB DUP #0f GTH JMP JMP2r POP #ff JMP2r
 @abs2 DUP2 #0f SFT2 EQU #05 JCN #0000 SWP2 SUB2 JMP2r
 @lts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
 @gts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
+@sbyte ( str* -- byte ) LDAk ,chex JSR #40 SFT STH INC2 LDA ,chex JSR STHr ADD JMP2r
+@chex ( c -- val|ff ) LIT "0 SUB DUP #09 GTH JMP JMP2r #27 SUB DUP #0f GTH JMP JMP2r POP #ff JMP2r
 @hexc ( hex -- char ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
 @pstr ( str* -- ) &while LDAk #18 DEO INC2 LDAk ,&while JCN POP2 JMP2r
@@ -1601,7 +1595,7 @@ JMP2r
 @about
 	( name ) "Noodle $1
 	( license ) "Hundred 20 "Rabbits 20 7f 20 "2022 $1
-	( version ) "Version 20 "1.00 $2
+	( version ) "Version 20 "1.01 $2
 &on-mouse ( -> )
 	.Mouse/state DEI ,&on-control JCN
 	BRK
