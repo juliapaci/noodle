@@ -209,6 +209,24 @@ BRK
 
 	;draw-cursor2 JSR2
 
+	( when scroll )
+	.Mouse/scrolly DEI2
+	DUP2 #ffff NEQ2 ,&no-up JCN
+		POP2 ;move-up JSR2 BRK
+		&no-up
+	DUP2 #0001 NEQ2 ,&no-down JCN
+		POP2 ;move-down JSR2 BRK
+		&no-down
+	POP2
+	.Mouse/scrollx DEI2
+	DUP2 #ffff NEQ2 ,&no-left JCN
+		POP2 ;move-left JSR2 BRK
+		&no-left
+	DUP2 #0001 NEQ2 ,&no-right JCN
+		POP2 ;move-right JSR2 BRK
+		&no-right
+	POP2
+
 	( when drag&release )
 	.cursor/drag LDZ #00 EQU ,&no-release JCN
 	.Mouse/state DEI ,&no-release JCN
