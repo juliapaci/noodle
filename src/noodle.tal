@@ -19,12 +19,12 @@
 	@line &x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
 	@line-guide &x1 $2 &y1 $2 &x2 $2 &y2 $2 &sx $2 &sy $2 &dx $2 &dy $2 &e1 $2 &e2 $2
 	( views )
-	@panel &x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
+	@panel &x $2 &y $2 &x2 $2 &y2 $2 &event $2
 	@viewport &x $2 &y $2 &x2 $2 &y2 $2 &size &w $1 &h $1
-	@viewport-handle &x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
-	@viewport-label &x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
+	@viewport-handle &x $2 &y $2 &x2 $2 &y2 $2 &event $2
+	@viewport-label &x $2 &y $2 &x2 $2 &y2 $2 &event $2
 	@surface &x $2 &y $2 &x2 $2 &y2 $2 &size &w $1 &h $1
-	@surface-handle &x $2 &y $2 &x2 $2 &y2 $2 &drag-event $2
+	@surface-handle &x $2 &y $2 &x2 $2 &y2 $2 &event $2
 	( project )
 	@filepath $40
 
@@ -33,10 +33,10 @@
 	( vectors )
 	;on-console .Console/vector DEO2
 	( connect drag events )
-	;on-drag-panel .panel/drag-event STZ2
-	;on-drag-viewport-handle .viewport-handle/drag-event STZ2
-	;on-drag-viewport-label .viewport-label/drag-event STZ2
-	;on-drag-surface-handle .surface-handle/drag-event STZ2
+	;on-drag-panel .panel/event STZ2
+	;on-drag-viewport-handle .viewport-handle/event STZ2
+	;on-drag-viewport-label .viewport-label/event STZ2
+	;on-drag-surface-handle .surface-handle/event STZ2
 	( theme )
 	#7f0f .System/r DEO2
 	#c70f .System/g DEO2
@@ -239,7 +239,7 @@ BRK
 	( on panel )
 	OVR2 OVR2 .panel ;within-rect JSR2 ;on-touch-panel JCN2
 	.zoom/active LDZ ,&skip-handles JCN
-		OVR2 OVR2 .viewport-handle ;within-rect JSR2 ;on-touch-viewport-handle JCN2
+		OVR2 OVR2 .viewport-handle ;within-rect JSR2 ;on-touch-vp-handle JCN2
 		OVR2 OVR2 .viewport-label ;within-rect JSR2 ;on-touch-viewport-label JCN2
 		OVR2 OVR2 .surface-handle ;within-rect JSR2 ;on-touch-surface-handle JCN2
 		OVR2 OVR2 .surface ;within-rect JSR2 ;on-touch-surface JCN2
@@ -376,7 +376,7 @@ JMP2
 JMP2
 	&cancel POP2 POP2 BRK
 
-@on-touch-viewport-handle ( x* y* -- )
+@on-touch-vp-handle ( x* y* -- )
 
 	POP2 POP2
 	.Mouse/state DEI #00 NEQ [ JMP BRK ]
@@ -1728,28 +1728,28 @@ JMP2r
 JMP2r
 
 @image-types-txts
-	&no-image "no-data $1
-	&raw-color "RAW-color $1
-	&raw-true "RAW-true $1
-	&raw-bw "RAW-bw $1
-	&rle-color "RLE-color $1
-	&rle-true "RLE-true $1
-	&rle-bw "RLE-bw $1
-	&unknown "unknown $1
+	&null "no-data $1
+	&rawc "RAW-color $1
+	&rawt "RAW-true $1
+	&rawbw "RAW-bw $1
+	&rlec "RLE-color $1
+	&rlet "RLE-true $1
+	&rlebw "RLE-bw $1
+	&err "err $1
 
 @image-types
-	:image-types-txts/no-image
-	:image-types-txts/raw-color
-	:image-types-txts/raw-true
-	:image-types-txts/raw-bw
-	:image-types-txts/unknown
-	:image-types-txts/unknown
-	:image-types-txts/unknown
-	:image-types-txts/unknown
-	:image-types-txts/unknown
-	:image-types-txts/rle-color
-	:image-types-txts/rle-true
-	:image-types-txts/rle-bw
+	:image-types-txts/null
+	:image-types-txts/rawc
+	:image-types-txts/rawt
+	:image-types-txts/rawbw
+	:image-types-txts/err
+	:image-types-txts/err
+	:image-types-txts/err
+	:image-types-txts/err
+	:image-types-txts/err
+	:image-types-txts/rlec
+	:image-types-txts/rlet
+	:image-types-txts/rlebw
 
 @image
 	&id-length $1
