@@ -70,41 +70,41 @@ BRK
 @manifest
 
 	06 "Noodle $1
-		00 00 :about/toggle "About $1
-		01 "n :file-new "New $1
-		01 "r :trap "Rename $1
-		01 "o :file-open "Open $1
-		01 "s :file-save "Save $1
-		01 "q :exit "Exit $1
+		00 00 =about/toggle "About $1
+		01 "n =file-new "New $1
+		01 "r =trap "Rename $1
+		01 "o =file-open "Open $1
+		01 "s =file-save "Save $1
+		01 "q =exit "Exit $1
 	03 "Edit $1
-		14 00 :shift-up "Up $1
-		24 00 :shift-down "Down $1
-		00 09 :edit-invert "Invert $1
+		14 00 =shift-up "Up $1
+		24 00 =shift-down "Down $1
+		00 09 =edit-invert "Invert $1
 	05 "Move $1
-		10 00 :move-up "Up $1
-		20 00 :move-down "Down $1
-		40 00 :move-left "Left $1
-		80 00 :move-right "Right $1
-		02 00 :view-toggle "Zoom $1
+		10 00 =move-up "Up $1
+		20 00 =move-down "Down $1
+		40 00 =move-left "Left $1
+		80 00 =move-right "Right $1
+		02 00 =view-toggle "Zoom $1
 	09 "Tool $1
-		00 "q :tool-pen "Pen $1
-		00 "w :tool-brush "Brush $1
-		00 "e :tool-line "Line $1
-		00 "r :tool-magic "Magic $1
-		00 "t :tool-rect "Rect $1
-		00 "y :tool-zoom "Zoom $1
-		00 "x :tool-erase "Erase $1
-		00 "[ :size-decr "Decr.Size $1
-		00 "] :size-incr "Incr.Size $1
+		00 "q =tool-pen "Pen $1
+		00 "w =tool-brush "Brush $1
+		00 "e =tool-line "Line $1
+		00 "r =tool-magic "Magic $1
+		00 "t =tool-rect "Rect $1
+		00 "y =tool-zoom "Zoom $1
+		00 "x =tool-erase "Erase $1
+		00 "[ =size-decr "Decr.Size $1
+		00 "] =size-incr "Incr.Size $1
 	08 "Pattern $1
-		00 "1 :pattern-1 "Full $1
-		00 "2 :pattern-2 "HalftoneA $1
-		00 "3 :pattern-3 "HalftoneB $1
-		00 "4 :pattern-4 "PokeDot $1
-		00 "5 :pattern-5 "DiagonalA $1
-		00 "6 :pattern-6 "DiagonalB $1
-		00 "7 :pattern-7 "Vertical $1
-		00 "8 :pattern-8 "Horizontal $1
+		00 "1 =pattern-1 "Full $1
+		00 "2 =pattern-2 "HalftoneA $1
+		00 "3 =pattern-3 "HalftoneB $1
+		00 "4 =pattern-4 "PokeDot $1
+		00 "5 =pattern-5 "DiagonalA $1
+		00 "6 =pattern-6 "DiagonalB $1
+		00 "7 =pattern-7 "Vertical $1
+		00 "8 =pattern-8 "Horizontal $1
 	$1
 
 (
@@ -1379,12 +1379,12 @@ JMP2r
 ( Tools )
 
 @tools
-	:pencil/hover  :pencil/up  :pencil/down  :pencil/drag
-	:marker/hover  :marker/up  :marker/down  :marker/drag
-	:stroke/hover  :stroke/up  :stroke/down  :stroke/drag
-	:magic/hover   :magic/up   :magic/down   :magic/drag
-	:box/hover     :box/up     :box/down     :box/drag
-	:magnify/hover :magnify/up :magnify/down :magnify/drag
+	=pencil/hover  =pencil/up  =pencil/down  =pencil/drag
+	=marker/hover  =marker/up  =marker/down  =marker/drag
+	=stroke/hover  =stroke/up  =stroke/down  =stroke/drag
+	=magic/hover   =magic/up   =magic/down   =magic/drag
+	=box/hover     =box/up     =box/down     =box/drag
+	=magnify/hover =magnify/up =magnify/down =magnify/drag
 
 @pencil ( x* y* -> )
 
@@ -1738,18 +1738,18 @@ JMP2r
 	&err "err $1
 
 @image-types
-	:image-types-txts/null
-	:image-types-txts/rawc
-	:image-types-txts/rawt
-	:image-types-txts/rawbw
-	:image-types-txts/err
-	:image-types-txts/err
-	:image-types-txts/err
-	:image-types-txts/err
-	:image-types-txts/err
-	:image-types-txts/rlec
-	:image-types-txts/rlet
-	:image-types-txts/rlebw
+	=image-types-txts/null
+	=image-types-txts/rawc
+	=image-types-txts/rawt
+	=image-types-txts/rawbw
+	=image-types-txts/err
+	=image-types-txts/err
+	=image-types-txts/err
+	=image-types-txts/err
+	=image-types-txts/err
+	=image-types-txts/rlec
+	=image-types-txts/rlet
+	=image-types-txts/rlebw
 
 @image
 	&id-length $1
