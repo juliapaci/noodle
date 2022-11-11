@@ -13,6 +13,8 @@ uxnemu bin/noodle.rom
 
 If do not wish to assemble it yourself, you can download [noodle.rom](https://rabbits.srht.site/noodle/noodle.rom).
 
+[![builds.sr.ht status](https://builds.sr.ht/~rabbits/noodle.svg)](https://builds.sr.ht/~rabbits/noodle?)
+
 ## Support
 
 - [theme](https://wiki.xxiivv.com/site/theme.html)
