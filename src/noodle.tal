@@ -211,7 +211,7 @@ BRK
 
 	( when scroll )
 	.Mouse/scrolly DEI2
-	DUP2 #ffff NEQ2 ,&no-up JCN
+	INC2k ORA ,&no-up JCN
 		POP2 ;move-up JSR2 BRK
 		&no-up
 	DUP2 #0001 NEQ2 ,&no-down JCN
@@ -219,7 +219,7 @@ BRK
 		&no-down
 	POP2
 	.Mouse/scrollx DEI2
-	DUP2 #ffff NEQ2 ,&no-left JCN
+	INC2k ORA ,&no-left JCN
 		POP2 ;move-left JSR2 BRK
 		&no-left
 	DUP2 #0001 NEQ2 ,&no-right JCN
@@ -1175,9 +1175,9 @@ JMP2r
 	#06 .brush/tool LDZ
 	.panel/x LDZ2 #0004 ADD2
 	.panel/y LDZ2 #0005 ADD2
-		,draw-icons JSR
+		,draw-icons ( .. )
 
-JMP2r
+JMP
 
 @draw-pattpane ( -- )
 
@@ -1714,9 +1714,9 @@ JMP2
 @pixel-raw-true ( pixel* -- color )
 
 	STH2
-	( b ) #00 STH2kr LDA INC2r
-	( g ) #00 STH2kr LDA INC2r
-	( r ) #00 STH2r LDA
+	( b ) #00 LDAkr STHr INC2r
+	( g ) #00 LDAkr STHr INC2r
+	( r ) #00 LDAr STHr
 	( res ) ADD2 ADD2 #0003 DIV2 NIP
 
 JMP2r

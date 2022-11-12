@@ -36,7 +36,7 @@ BRK
 		BRK
 		&no-sub
 	( do not leave if menu is active )
-	;draw-menu/sel LDA #ff NEQ ,&no-leave JCN
+	;draw-menu/sel LDA INC ,&no-leave JCN
 	.Mouse/y DEI2 #000c LTH2 ,&no-leave JCN
 		,menu-close JSR
 		&no-leave
