@@ -30,6 +30,8 @@
 
 |0100
 
+	( meta )
+	;meta #f0 DEO
 	( vectors )
 	;on-console .Console/vector DEO2
 	( connect drag events )
@@ -1592,10 +1594,14 @@ JMP2r
 (
 @|about )
 
-@about
+@meta =&end =appicon &body
 	( name ) "Noodle $1
-	( license ) "Hundred 20 "Rabbits 20 7f 20 "2022 $1
-	( version ) "Version 20 "1.01 $2
+	( version ) "Ver. 20 "14 $1
+	( details ) "A 20 "Sketching 20 "Program $1
+	( author ) "Hundred 20 "Rabbits 20 7f 20 "2022 $1
+	&end $1
+
+@about
 &on-mouse ( -> )
 	.Mouse/state DEI ,&on-control JCN
 	BRK
@@ -1630,14 +1636,15 @@ JMP2
 	OVR2r STH2r .Screen/x DEO2
 	#08 #0e76 ;appicon ;draw-fill-fast JSR2
 	( text )
-	STH2r #000c ADD2 .Screen/y DEO2
+	STH2r #0010 ADD2 .Screen/y DEO2
 	LIT2r 0048 ADD2r
 	#01 .Screen/auto DEO
+	#0a ;draw-chr/color STA
 	STH2kr .Screen/x DEO2
-	;about
+	;meta/body
 	&w
 		;draw-str JSR2
-		;draw-lb JSR2k JSR2
+		;draw-lb JSR2
 		STH2kr .Screen/x DEO2
 		LDAk ,&w JCN
 	POP2
