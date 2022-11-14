@@ -31,7 +31,7 @@
 |0100
 
 	( meta )
-	;meta #f0 DEO
+	;meta #f0 DEO2
 	( vectors )
 	;on-console .Console/vector DEO2
 	( connect drag events )
