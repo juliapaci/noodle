@@ -263,7 +263,8 @@ JMP2r
 
 @on-drag ( x* y* -> )
 
-	( get event ) .cursor/drag LDZ #08 ADD LDZ2 ( .. )
+	( get event )
+	.cursor/drag LDZ #08 ADD LDZ2 ( .. )
 
 JMP2
 
@@ -418,11 +419,9 @@ BRK
 @tool-magic ( -- ) #03 ;select-tool JMP2
 @tool-rect ( -- ) #04 ;select-tool JMP2
 @tool-zoom ( -- ) #05 ;select-tool JMP2
-
 @tool-erase ( -- ) .brush/mode LDZk #00 EQU SWP STZ ;draw-sizepane JMP2
 @size-decr ( -- ) .brush/size LDZ #01 SUB ;select-size JMP2
 @size-incr ( -- ) .brush/size LDZ INC ;select-size JMP2
-
 @pattern-1 ( -- ) #00 ;select-patt JMP2
 @pattern-2 ( -- ) #01 ;select-patt JMP2
 @pattern-3 ( -- ) #02 ;select-patt JMP2
@@ -790,7 +789,7 @@ JMP2
 @get-pixel ( x* y* -- b )
 
 	,within-surface JSR ,&continue JCN
-		POP2 POP2 #01 JMP2r
+		POP2 POP2 #02 JMP2r
 		&continue
 
 	( keep x* ) OVR2 NIP #07 AND STH
@@ -950,7 +949,9 @@ JMP2
 
 @draw-menu-bg ( -- )
 
-	#0000 DUP2 .Screen/x DEO2 .Screen/y DEO2
+	#0000
+		DUP2 .Screen/x DEO2
+		.Screen/y DEO2
 	#15 .Screen/auto DEO
 	.Screen/width DEI2 #03 SFT2 NIP INC #00
 	&l
@@ -1000,24 +1001,24 @@ JMP2
 
 @draw-viewport ( -- )
 
-	.viewport/size LDZ2 ORA #01 JCN JMP2r
+	.viewport/size LDZ2 ORA #01 JCN [ JMP2r ]
 
+	( frame )
 	.viewport/x LDZ2 .Screen/x DEO2
 	.viewport/y LDZ2 #0008 SUB2 .Screen/y DEO2
 	.viewport/size LDZ2 INC ;frame1-chr ;draw-frame JSR2
-
+	( fill )
 	.viewport/x LDZ2 .Screen/x DEO2
 	.viewport/y LDZ2 #0008 SUB2 .Screen/y DEO2
 	#0c ;draw-fill/color STA
 	.viewport/size LDZ2 INC ;check-icn ;draw-fill JSR2
-
 	( titlebar )
 	;draw-filestate JSR2
 	#ff ;draw-filepath JSR2
 
 @draw-surface ( -- )
 
-	.surface/size LDZ2 ORA #01 JCN JMP2r
+	.surface/size LDZ2 ORA #01 JCN [ JMP2r ]
 
 	.zoom/active LDZ ;draw-surface-zoom JCN2
 
@@ -1066,10 +1067,9 @@ JMP2r
 		.viewport/w LDZ #00
 		&hor
 			( get pixel )
-			( y ) #00 STHkr .zoom/y LDZ2 ADD2 STH2
-			( x ) #00 OVR .zoom/x LDZ2 ADD2 STH2r
-			;get-pixel JSR2 #00 SWP #30 SFT2 ;bigpixel-icns ADD2 .Screen/addr DEO2
-			#0e .Screen/sprite DEO
+			( x ) #00 OVR .zoom/x LDZ2 ADD2
+			( y ) #00 STHkr .zoom/y LDZ2 ADD2
+			;draw-tile-zoom/paint JSR2
 			INC GTHk ,&hor JCN
 		POP2
 		POPr
@@ -1100,10 +1100,18 @@ JMP2r
 	( bounds )
 	DUP2 .zoom/y LDZ2 SUB2 #00 .viewport/h LDZ #01 SUB GTH2 ,&cancel JCN
 	OVR2 .zoom/x LDZ2 SUB2 #00 .viewport/w LDZ #01 SUB GTH2 ,&cancel JCN
-	( paint )
-	OVR2 OVR2 ;get-pixel JSR2 #00 SWP #30 SFT2 ;bigpixel-icns ADD2 .Screen/addr DEO2
+	OVR2 OVR2 
 	.zoom/y LDZ2 SUB2 #30 SFT2 .viewport/y LDZ2 ADD2 .Screen/y DEO2
 	.zoom/x LDZ2 SUB2 #30 SFT2 .viewport/x LDZ2 ADD2 .Screen/x DEO2
+
+&paint ( x* y* -- )
+
+	( each 8th )
+	OVR2 NIP #07 AND #00 EQU STH LITr 20 SFTr
+	DUP #07 AND #00 EQU STH LITr 10 SFTr ORAr
+	( painted )
+	;get-pixel JSR2 STHr ORA #00 SWP #30 SFT2 ;bigpixel-icns ADD2
+		.Screen/addr DEO2
 	#0e .Screen/sprite DEO
 
 JMP2r
