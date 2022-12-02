@@ -1106,15 +1106,22 @@ JMP2r
 
 &paint ( x* y* -- )
 
-	( each 8th )
-	OVR2 NIP #07 AND #00 EQU STH LITr 20 SFTr
-	DUP #07 AND #00 EQU STH LITr 10 SFTr ORAr
-	( painted )
-	;get-pixel JSR2 STHr ORA #00 SWP #30 SFT2 ;bigpixel-icns ADD2
+	OVR2 OVR2 ;get-pixel JSR2
+		DUP #02 EQU ,&outside JCN
+		STH
+	( x ) ROT #07 AND #00 EQU #20 SFT
+	( y ) SWP #07 AND #00 EQU #10 SFT
+	NIP2 ORA
+	STHr ORA #00 SWP #30 SFT2 ;bigpixel-icns ADD2
 		.Screen/addr DEO2
 	#0e .Screen/sprite DEO
 
 JMP2r
+	&outside
+		POP2 POP2 POP
+		;check-icn .Screen/addr DEO2
+		#03 .Screen/sprite DEO
+	JMP2r
 	&cancel POP2 POP2 JMP2r
 
 @draw-pointer ( x* y* color -- )
