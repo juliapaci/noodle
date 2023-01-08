@@ -74,7 +74,7 @@ BRK
 	( details ) "A 20 "Drawing 20 "Program 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
 	( date ) "Jan 20 "8, 20 "2023 00
-	03
+	02
 		( icon ) 83 =appicon
 		( mask ) 41 1705
 
