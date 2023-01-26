@@ -124,7 +124,7 @@ BRK
 @untrap ( -- )
 
 	( vectors )
-	;on-frame .Screen/vector DEO2
+	#0000 .Screen/vector DEO2
 	;on-button .Controller/vector DEO2
 	;on-mouse .Mouse/vector DEO2
 	( filepath )
@@ -197,12 +197,6 @@ JMP2r
 		DUP #03 SFT #01 AND DUP ADD #06 ADD ;draw-filepath JSR2
 		&no-blink
 	INC SWP STZ
-
-BRK
-
-@on-frame ( -> )
-
-	( inactive )
 
 BRK
 
