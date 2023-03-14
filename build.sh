@@ -3,7 +3,7 @@
 ASM="uxncli $HOME/roms/drifblim.rom"
 EMU="uxnemu"
 LIN="uxncli $HOME/roms/uxnlin.rom"
-APP="$HOME/Applications/butler push"
+APP="$HOME/bin/butler push"
 
 SRC="src/noodle.tal"
 DST="bin/noodle.rom"
