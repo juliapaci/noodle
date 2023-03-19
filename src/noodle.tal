@@ -544,7 +544,6 @@ JMP2
 
 	;snarf-txt .File/name DEO2
 	#0001 .File/length DEO2
-
 	#00 .surface/h LDZ #30 SFT2 #0000
 	&ver
 		STH2k
@@ -552,6 +551,7 @@ JMP2
 		#00 .surface/w LDZ #30 SFT2 #0000
 		&hor
 			DUP2 STH2kr write-glycol
+			( whitespace ) ;&ws .File/write DEO2
 			INC2 GTH2k ?&hor
 		POP2 POP2
 		POP2r
@@ -560,12 +560,11 @@ JMP2
 	POP2 POP2
 
 JMP2r
-	&es 1b &lb 0a
+	&es 1b &lb 0a &ws 20
 
 @write-glycol ( x* y* -- )
 
-	;&y STA2
-	;&x STA2
+	;&y STA2 ;&x STA2
 	( create column )
 	[ LIT2r 0000 ]
 	#1000
@@ -578,18 +577,16 @@ JMP2r
 	( send ascii )
 	#0400
 	&l
-		DUP #40 SFT
-		STHkr #0f AND ORA
-		DUP #0f AND #00 EQU ?&skip
-			DUP LIT "? ADD ,&b STR ;&b .File/write DEO2 &skip POP
+		STHkr #00 EQU ?&skip
+			DUP #40 SFT STHkr #0f AND ORA
+			LIT "? ADD ,&b STR ;&b .File/write DEO2
+			&skip
 		LITr 04 SFT2r
 		INC GTHk ?&l
-	POP2
-	POP2r
-	( linebreak ) ;&ws .File/write DEO2
+	POP2 POP2r
 
 JMP2r
-	&ws 20 &b $1
+	&b $1
 
 @snarf-txt ".snarf $1
 
