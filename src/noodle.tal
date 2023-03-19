@@ -571,7 +571,7 @@ JMP2r
 	#1000
 	&loop
 		LITr 10 SFT2r LITr 00
-		#00 OVR #0f SWP SUB [ LIT2 &y $2 ] ADD2 [ LIT2 &x $2 ] SWP2 
+		#00 OVR #0f SWP SUB [ LIT2 &y $2 ] ADD2 [ LIT2 &x $2 ] SWP2
 			get-pixel STH ORA2r
 		INC GTHk ?&loop
 	POP2
@@ -579,8 +579,8 @@ JMP2r
 	#0400
 	&l
 		DUP #40 SFT
-		STHkr #0f AND ORA 
-		DUP #00 EQU ?&skip 
+		STHkr #0f AND ORA
+		DUP #0f AND #00 EQU ?&skip
 			DUP LIT "? ADD ,&b STR ;&b .File/write DEO2 &skip POP
 		LITr 04 SFT2r
 		INC GTHk ?&l
