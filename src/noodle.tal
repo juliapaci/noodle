@@ -73,31 +73,32 @@ BRK
 	( name ) "Noodle 0a
 	( details ) "A 20 "Drawing 20 "Program 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "Jan 20 "8, 20 "2023 00
+	( date ) "Mar 20 "18, 20 "2023 00
 	02
 		( icon ) 83 =appicon
 		( mask ) 41 1705
 
 @manifest
 
-	06 "Noodle $1
+	06 "Noodle $1 [
 		00 00 =about/toggle "About $1
 		01 "n =file-new "New $1
 		01 "r =trap "Rename $1
 		01 "o =file-open "Open $1
 		01 "s =file-save "Save $1
-		01 "q =exit "Exit $1
-	03 "Edit $1
+		01 "q =exit "Exit $1 ]
+	04 "Edit $1 [
 		14 00 =shift-up "Up $1
 		24 00 =shift-down "Down $1
 		00 09 =edit-invert "Invert $1
-	05 "Move $1
+		01 "p =edit-gly "Copy 20 "Gly $1 ]
+	05 "Move $1 [
 		10 00 =move-up "Up $1
 		20 00 =move-down "Down $1
 		40 00 =move-left "Left $1
 		80 00 =move-right "Right $1
-		02 00 =view-toggle "Zoom $1
-	09 "Tool $1
+		02 00 =view-toggle "Zoom $1 ]
+	09 "Tool $1 [
 		00 "q =tool-pen "Pen $1
 		00 "w =tool-brush "Brush $1
 		00 "e =tool-line "Line $1
@@ -106,8 +107,8 @@ BRK
 		00 "y =tool-zoom "Zoom $1
 		00 "x =tool-erase "Erase $1
 		00 "[ =size-decr "Decr.Size $1
-		00 "] =size-incr "Incr.Size $1
-	08 "Pattern $1
+		00 "] =size-incr "Incr.Size $1 ]
+	08 "Pattern $1 [
 		00 "1 =pattern-1 "Full $1
 		00 "2 =pattern-2 "HalftoneA $1
 		00 "3 =pattern-3 "HalftoneB $1
@@ -115,7 +116,7 @@ BRK
 		00 "5 =pattern-5 "DiagonalA $1
 		00 "6 =pattern-6 "DiagonalB $1
 		00 "7 =pattern-7 "Vertical $1
-		00 "8 =pattern-8 "Horizontal $1
+		00 "8 =pattern-8 "Horizontal $1 ]
 	$1
 
 (
@@ -538,6 +539,52 @@ JMP2
 	;draw-surface ( .. )
 
 JMP2
+
+@edit-gly ( -- )
+
+	#00 .surface/h LDZ #30 SFT2 #0000
+	&ver
+		STH2k
+		#00 .surface/w LDZ #30 SFT2 #0000
+		&hor
+			DUP2 STH2kr write-glycol
+			INC2 GTH2k ?&hor
+		POP2 POP2
+		POP2r
+		( linebreak ) #0a18 DEO
+		#0010 ADD2 GTH2k ?&ver
+	POP2 POP2
+
+JMP2r
+	&lb 0a
+
+@write-glycol ( x* y* -- )
+
+	;&y STA2
+	;&x STA2
+	( create column )
+	[ LIT2r 0000 ]
+	#1000
+	&loop
+		LITr 10 SFT2r LITr 00
+		#00 OVR #0f SWP SUB [ LIT2 &y $2 ] ADD2 [ LIT2 &x $2 ] SWP2 
+			get-pixel STH ORA2r
+		INC GTHk ?&loop
+	POP2
+	( send ascii )
+	#0400
+	&l
+		DUP #40 SFT
+		STHkr #0f AND ORA 
+		DUP #00 EQU ?&skip 
+			DUP LIT "? ADD #18 DEO &skip POP
+		LITr 04 SFT2r
+		INC GTHk ?&l
+	POP2
+	POP2r
+	#2018 DEO
+
+JMP2r
 
 @set-viewport-size ( w h -- )
 
@@ -989,7 +1036,7 @@ JMP2r
 		.cursor/x LDZ2 #0003 SUB2 .Screen/x DEO2
 		.cursor/y LDZ2 #0003 SUB2 .Screen/y DEO2
 		;brush-icns #00 .brush/size LDZ #30 SFT2 ADD2 .Screen/addr DEO2
-		.Mouse/state DEI #00 NEQ DUPk 
+		.Mouse/state DEI #00 NEQ DUPk
 			ADD DUP ADD #41 ADD .Screen/sprite DEO
 			#00 EQU ,&outside-canvas JCN JMP2r
 	&outside-canvas
@@ -1103,7 +1150,7 @@ JMP2r
 	( bounds )
 	DUP2 .zoom/y LDZ2 SUB2 #00 .viewport/h LDZ #01 SUB GTH2 ,&cancel JCN
 	OVR2 .zoom/x LDZ2 SUB2 #00 .viewport/w LDZ #01 SUB GTH2 ,&cancel JCN
-	OVR2 OVR2 
+	OVR2 OVR2
 	.zoom/y LDZ2 SUB2 #30 SFT2 .viewport/y LDZ2 ADD2 .Screen/y DEO2
 	.zoom/x LDZ2 SUB2 #30 SFT2 .viewport/x LDZ2 ADD2 .Screen/x DEO2
 
@@ -1310,11 +1357,11 @@ JMP2r
 
 @draw-byte ( byte -- )
 
-	 DUP #04 SFT ,draw-hex JSR
+	DUP #04 SFT ,draw-hex JSR
 
 @draw-hex ( char -- )
 
-	 #0f AND DUP #09 GTH #27 MUL ADD #30 ADD
+	#0f AND DUP #09 GTH #27 MUL ADD #30 ADD
 
 @draw-chr ( char -- )
 
@@ -1399,11 +1446,11 @@ JMP2r
 ( Tools )
 
 @tools
-	=pencil/hover  =pencil/up  =pencil/down  =pencil/drag
-	=marker/hover  =marker/up  =marker/down  =marker/drag
-	=stroke/hover  =stroke/up  =stroke/down  =stroke/drag
-	=magic/hover   =magic/up   =magic/down   =magic/drag
-	=box/hover     =box/up     =box/down     =box/drag
+	=pencil/hover =pencil/up =pencil/down =pencil/drag
+	=marker/hover =marker/up =marker/down =marker/drag
+	=stroke/hover =stroke/up =stroke/down =stroke/drag
+	=magic/hover =magic/up =magic/down =magic/drag
+	=box/hover =box/up =box/down =box/drag
 	=magnify/hover =magnify/up =magnify/down =magnify/drag
 
 @pencil ( x* y* -> )

@@ -10,6 +10,7 @@ DST="bin/noodle.rom"
 
 CPY="$HOME/roms"
 ARG="lemon15x12.icn"
+ARG="etc/boxgly.tga"
 
 APPID="hundredrabbits/noodle:uxn"
 
