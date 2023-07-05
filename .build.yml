@@ -11,9 +11,9 @@ tasks:
         cc src/uxnasm.c -o ../uxnasm
     - assemble: |
         cd noodle
-        ../uxnasm src/noodle.tal noodle.rom
+        ../uxnasm src/noodle.tal ../noodle.rom
     - upload: |
-        tar -czf out.tar.gz noodle/noodle.rom
+        tar -czf out.tar.gz noodle.rom
         acurl() {
             set +x
             curl -H "Authorization: Bearer ${OAUTH2_TOKEN}" "${@}"
