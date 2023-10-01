@@ -1193,11 +1193,12 @@ JMP2r
 
 	.panel/x LDZ2 #0004 SUB2 .Screen/x DEO2
 	.panel/y LDZ2 #0004 SUB2 .Screen/y DEO2
+	;fill-icn .Screen/addr DEO2
 	#32 .Screen/auto DEO
 	#1200
-	&l
+	&t ( -- )
 		#00 .Screen/sprite DEO
-		INC GTHk ,&l JCN
+		INC GTHk ?&t
 	POP2
 
 JMP2r
