@@ -73,7 +73,7 @@ BRK
 	( name ) "Noodle 0a
 	( details ) "A 20 "Drawing 20 "Program 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "Mar 20 "18, 20 "2023 00
+	( date ) "Jun 20 "3, 20 "2023 00
 	02
 		( icon ) 83 =appicon
 		( mask ) 41 1705
@@ -1651,9 +1651,9 @@ JMP2r
 (
 @|stdlib )
 
-@abs2 DUP2 #0f SFT2 EQU #05 JCN #0000 SWP2 SUB2 JMP2r
-@lts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 GTH2 JMP2r
-@gts2 #8000 STH2k ADD2 SWP2 STH2r ADD2 LTH2 JMP2r
+@abs2 DUP2 #0f SFT2 EQU ?{ #0000 SWP2 SUB2 } JMP2r
+@lts2 ( a* b* -- f ) SUB2 POP #07 SFT JMP2r
+@gts2 ( a* b* -- f ) SWP2 SUB2 POP #07 SFT JMP2r
 @sbyte ( str* -- byte ) LDAk ,chex JSR #40 SFT STH INC2 LDA ,chex JSR STHr ADD JMP2r
 @chex ( c -- val|ff ) LIT "0 SUB DUP #09 GTH JMP JMP2r #27 SUB DUP #0f GTH JMP JMP2r POP #ff JMP2r
 @hexc ( hex -- char ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD JMP2r
