@@ -73,7 +73,7 @@ BRK
 	( name ) "Noodle 0a
 	( details ) "A 20 "Drawing 20 "Program 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "Jun 20 "3, 20 "2023 00
+	( date ) "Aug 20 "18, 20 "2024 00
 	02
 		( icon ) 83 =appicon
 		( mask ) 41 1705
@@ -1028,7 +1028,7 @@ JMP2r
 	;fill-icn .Screen/addr DEO2
 	#40 .Screen/sprite DEO
 	( clear last cursor )
-	#40 ;draw-pointer JSR2
+	clear-pointer
 
 	( record cursor positions )
 	.Mouse/x DEI2 .cursor/x STZ2
@@ -1050,9 +1050,7 @@ JMP2r
 	.cursor/x LDZ2
 	.cursor/y LDZ2
 	#4142 .Mouse/state DEI #01 [ JCN SWP POP ]
-		;draw-pointer ( .. )
-
-JMP2
+		!draw-pointer
 
 @draw-viewport ( -- )
 
@@ -1178,6 +1176,15 @@ JMP2r
 		#03 .Screen/sprite DEO
 	JMP2r
 	&cancel POP2 POP2 JMP2r
+
+@clear-pointer ( -- )
+	[ LIT2 11 -Screen/auto ] DEO
+	.cursor/x LDZ2 #0003 SUB2 .Screen/y DEO2
+	.cursor/y LDZ2 #0003 SUB2 .Screen/y DEO2
+	;fill-icn .Screen/addr DEO2
+	[ LIT2 40 -Screen/sprite ] DEOk DEO
+	[ LIT2 00 -Screen/auto ] DEO
+	JMP2r
 
 @draw-pointer ( x* y* color -- )
 
@@ -1497,19 +1504,19 @@ BRK
 @stroke ( x* y* -> )
 
 	&down
-		( clear cursor ) .cursor/x LDZ2 .cursor/y LDZ2 #40 ;draw-pointer JSR2
+		( clear cursor ) clear-pointer
 		( erase guide ) .guide #40 ;guide-line JSR2
 		.cursor/y0 STZ2 .cursor/x0 STZ2
 		BRK
 	&up
-		( clear cursor ) .cursor/x LDZ2 .cursor/y LDZ2 #40 ;draw-pointer JSR2
+		( clear cursor ) clear-pointer
 		( erase guide ) .guide #40 ;guide-line JSR2
 		.cursor/y STZ2 .cursor/x STZ2
 		.cursor/x0 LDZ2 .cursor/y0 LDZ2 .cursor/x LDZ2 .cursor/y LDZ2 ;paint-line JSR2
 		#01 .state/changed STZ ;draw-filestate JSR2
 		BRK
 	&drag
-		( clear cursor ) .cursor/x LDZ2 .cursor/y LDZ2 #40 ;draw-pointer JSR2
+		( clear cursor ) clear-pointer
 		( erase guide ) .guide #40 ;guide-line JSR2
 		.cursor/y STZ2 .cursor/x STZ2
 		( update guide )
@@ -1539,19 +1546,19 @@ BRK
 @box ( x* y* -> )
 
 	&down
-		( clear cursor ) .cursor/x LDZ2 .cursor/y LDZ2 #40 ;draw-pointer JSR2
+		( clear cursor ) clear-pointer
 		( erase guide ) #40 ;guide-rect JSR2
 		.cursor/y0 STZ2 .cursor/x0 STZ2
 		BRK
 	&up
-		( clear cursor ) .cursor/x LDZ2 .cursor/y LDZ2 #40 ;draw-pointer JSR2
+		( clear cursor ) clear-pointer
 		( erase guide ) #40 ;guide-rect JSR2
 		.cursor/y STZ2 .cursor/x STZ2
 		;paint-rect JSR2
 		#01 .state/changed STZ ;draw-filestate JSR2
 		BRK
 	&drag
-		( clear cursor ) .cursor/x LDZ2 .cursor/y LDZ2 #40 ;draw-pointer JSR2
+		( clear cursor ) clear-pointer
 		( erase guide ) #40 ;guide-rect JSR2
 		.cursor/y STZ2 .cursor/x STZ2
 		( update guide )
