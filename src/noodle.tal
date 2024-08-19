@@ -44,7 +44,7 @@
 	#c70f .System/g DEO2
 	#970f .System/b DEO2
 	( size thinkpad )
-	#0280 .Screen/width DEO2
+	#0288 .Screen/width DEO2
 	#0180 .Screen/height DEO2
 	( theme support )
 	load-theme
@@ -73,7 +73,7 @@ BRK
 	( name ) "Noodle 0a
 	( details ) "A 20 "Drawing 20 "Program 0a
 	( author ) "By 20 "Hundred 20 "Rabbits 0a
-	( date ) "Aug 20 "18, 20 "2024 00
+	( date ) "Aug 20 "19, 20 "2024 00
 	02
 		( icon ) 83 =appicon
 		( mask ) 41 1705
@@ -164,7 +164,7 @@ JMP2r
 		#00 ,&listening STR
 		&no-end
 	( capture )
-	,capture-trap JSR
+	capture-trap
 	#ff draw-filepath
 
 BRK
@@ -172,7 +172,7 @@ BRK
 @on-button-trap ( -> )
 
 	#00 draw-filepath
-	.Controller/key DEI DUP #0d EQU #03 MUL SUB ,capture-trap JSR
+	.Controller/key DEI DUP #0d EQU #03 MUL SUB capture-trap
 	#ff draw-filepath
 
 BRK
@@ -416,23 +416,23 @@ BRK
 (
 @|helpers )
 
-@tool-pen ( -- ) #00 ;select-tool JMP2
-@tool-brush ( -- ) #01 ;select-tool JMP2
-@tool-line ( -- ) #02 ;select-tool JMP2
-@tool-magic ( -- ) #03 ;select-tool JMP2
-@tool-rect ( -- ) #04 ;select-tool JMP2
-@tool-zoom ( -- ) #05 ;select-tool JMP2
-@tool-erase ( -- ) .brush/mode LDZk #00 EQU SWP STZ ;draw-sizepane JMP2
-@size-decr ( -- ) .brush/size LDZ #01 SUB ;select-size JMP2
-@size-incr ( -- ) .brush/size LDZ INC ;select-size JMP2
-@pattern-1 ( -- ) #00 ;select-patt JMP2
-@pattern-2 ( -- ) #01 ;select-patt JMP2
-@pattern-3 ( -- ) #02 ;select-patt JMP2
-@pattern-4 ( -- ) #03 ;select-patt JMP2
-@pattern-5 ( -- ) #04 ;select-patt JMP2
-@pattern-6 ( -- ) #05 ;select-patt JMP2
-@pattern-7 ( -- ) #06 ;select-patt JMP2
-@pattern-8 ( -- ) #07 ;select-patt JMP2
+@tool-pen ( -- ) #00 !select-tool
+@tool-brush ( -- ) #01 !select-tool
+@tool-line ( -- ) #02 !select-tool
+@tool-magic ( -- ) #03 !select-tool
+@tool-rect ( -- ) #04 !select-tool
+@tool-zoom ( -- ) #05 !select-tool
+@tool-erase ( -- ) .brush/mode LDZk #00 EQU SWP STZ !draw-sizepane
+@size-decr ( -- ) .brush/size LDZ #01 SUB !select-size
+@size-incr ( -- ) .brush/size LDZ INC !select-size
+@pattern-1 ( -- ) #00 !select-patt
+@pattern-2 ( -- ) #01 !select-patt
+@pattern-3 ( -- ) #02 !select-patt
+@pattern-4 ( -- ) #03 !select-patt
+@pattern-5 ( -- ) #04 !select-patt
+@pattern-6 ( -- ) #05 !select-patt
+@pattern-7 ( -- ) #06 !select-patt
+@pattern-8 ( -- ) #07 !select-patt
 
 @shift-up ( -- )
 
@@ -483,7 +483,7 @@ BRK
 	.brush/patt STZ
 	( select brush )
 	.brush/tool LDZ ?&no-switch
-		#01 ,select-tool JSR
+		#01 select-tool
 		&no-switch
 	!draw-pattpane
 
@@ -497,7 +497,7 @@ BRK
 	.brush/size STZ
 	( select brush )
 	.brush/tool LDZ ?&no-switch
-		#01 ,select-tool JSR
+		#01 select-tool
 		&no-switch
 	!draw-sizepane
 
@@ -777,7 +777,7 @@ JMP2r
 			STH2kr SWP2r STH2kr SWP2r ROT2 ADD2 ROT2 ROT2 ADD2 SWP2
 			( skip blanks )
 			OVR2 OVR2 get-pixel #00 EQU ?&blank
-				OVR2 OVR2 ,clean-pixel JSR
+				OVR2 OVR2 clean-pixel
 				OVR2 OVR2 draw-tile
 				&blank
 			POP2 POP2
@@ -792,10 +792,10 @@ JMP2r
 @clean-pixel ( x* y* -- )
 
 	( get neighbors )
-	OVR2 OVR2 #0001 SUB2 ,get-pixel JSR STH
-	OVR2 INC2 OVR2 ,get-pixel JSR DUP ADD STH ADDr
-	OVR2 OVR2 INC2 ,get-pixel JSR #20 SFT STH ADDr
-	OVR2 #0001 SUB2 OVR2 ,get-pixel JSR #30 SFT STH ADDr
+	OVR2 OVR2 #0001 SUB2 get-pixel STH
+	OVR2 INC2 OVR2 get-pixel DUP ADD STH ADDr
+	OVR2 OVR2 INC2 get-pixel #20 SFT STH ADDr
+	OVR2 #0001 SUB2 OVR2 get-pixel #30 SFT STH ADDr
 	STHr
 	DUP #03 EQU ?&remove
 	DUP #06 EQU ?&remove
@@ -807,12 +807,12 @@ JMP2r
 
 @get-pixel ( x* y* -- b )
 
-	,within-surface JSR ?&continue
+	within-surface ?&continue
 		POP2 POP2 #02 JMP2r
 		&continue
 
 	( keep x* ) OVR2 NIP #07 AND STH
-	( get byte ) ,get-row JSR LDA
+	( get byte ) get-row LDA
 	( flag ) #07 STHr SUB SFT #01 AND
 
 JMP2r
@@ -826,12 +826,12 @@ JMP2r
 
 @add-pixel ( x* y* -- )
 
-	,within-surface JSR ?&continue
+	within-surface ?&continue
 		POP2 POP2 JMP2r
 		&continue
 
 	( keep x* ) OVR2 NIP #07 AND STH
-	( get byte ) ,get-row JSR LDAk
+	( get byte ) get-row LDAk
 	( mask ) #0107 STHr SUB #40 SFT SFT ORA
 	( save ) ROT ROT STA
 
@@ -839,12 +839,12 @@ JMP2r
 
 @remove-pixel ( x* y* -- )
 
-	,within-surface JSR ?&continue
+	within-surface ?&continue
 		POP2 POP2 JMP2r
 		&continue
 
 	( keep x* ) OVR2 NIP #07 AND STH
-	( get byte ) ,get-row JSR LDAk
+	( get byte ) get-row LDAk
 	( mask ) #0107 STHr SUB #40 SFT SFT #ff EOR AND
 	( save ) ROT ROT STA
 
@@ -1163,10 +1163,10 @@ JMP2r
 	STH2r .Screen/x DEO2
 	#10 #0312 ;fill-icn draw-fill-fast
 	( tools )
-	,draw-toolpane JSR
-	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0026 ADD2 #02 ,draw-lineh JSR
-	,draw-pattpane JSR
-	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0058 ADD2 #02 ,draw-lineh JSR
+	draw-toolpane
+	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0026 ADD2 #02 draw-lineh
+	draw-pattpane
+	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0058 ADD2 #02 draw-lineh
 	!draw-sizepane
 
 @clear-viewport ( -- )
@@ -1283,7 +1283,7 @@ JMP2r
 
 @draw-str-right ( text* -- )
 
-	DUP2 ,get-strw JSR STH2
+	DUP2 get-strw STH2
 	.Screen/x DEI2k STH2r SUB2 ROT DEO2
 
 @draw-str ( str* -- str* )
@@ -1291,7 +1291,7 @@ JMP2r
 	LDAk #00 EQU ?&skip
 	#01 .Screen/auto DEO
 	&while
-		LDAk ,draw-chr JSR
+		LDAk draw-chr
 		INC2 LDAk ?&while
 	&skip
 	INC2
@@ -1300,7 +1300,7 @@ JMP2r
 
 @draw-byte ( byte -- )
 
-	DUP #04 SFT ,draw-hex JSR
+	DUP #04 SFT draw-hex
 
 @draw-hex ( char -- )
 
@@ -1492,8 +1492,8 @@ BRK
 		( erase guide ) #40 guide-rect
 		.cursor/y STZ2 .cursor/x STZ2
 		( update guide )
-		.cursor/x0 LDZ2 .cursor/y0 LDZ2 ,to-screen JSR .guide/y STZ2 .guide/x STZ2
-		.cursor/x LDZ2 .cursor/y LDZ2 ,to-screen JSR .guide/y2 STZ2 .guide/x2 STZ2
+		.cursor/x0 LDZ2 .cursor/y0 LDZ2 to-screen .guide/y STZ2 .guide/x STZ2
+		.cursor/x LDZ2 .cursor/y LDZ2 to-screen .guide/y2 STZ2 .guide/x2 STZ2
 		( draw guide ) #41 guide-rect
 		BRK
 	&hover
@@ -1552,22 +1552,22 @@ JMP2r
 	STH2 ,&h STR ,&w STR
 	.Screen/x DEI2 DUP2 #0008 SUB2 .Screen/x DEO2
 	.Screen/y DEI2 #0008 SUB2 DUP2 .Screen/y DEO2
-	( ul ) #00 STH2kr #05 ,&single JSR
-	( uu ) [ LIT &w $1 ] #00 STH2kr #0010 ADD2 #01 ,&repeat JSR
-	( ur ) #10 STH2kr #06 ,&single JSR
-	( rr ) [ LIT &h $1 ] #00 STH2kr #0020 ADD2 #02 ,&repeat JSR
+	( ul ) #00 STH2kr #05 /single
+	( uu ) [ LIT &w $1 ] #00 STH2kr #0010 ADD2 #01 /repeat
+	( ur ) #10 STH2kr #06 /single
+	( rr ) [ LIT &h $1 ] #00 STH2kr #0020 ADD2 #02 /repeat
 	#0008 ADD2 .Screen/y DEO2
 	#0008 SUB2 .Screen/x DEO2
-	( ll ) ,&h LDR #10 STH2kr #0020 ADD2 #02 ,&repeat JSR
-	( dl ) #20 STH2kr #01 ,&single JSR
-	( bb ) ,&w LDR #20 STH2kr #0010 ADD2 #01 ,&repeat JSR
+	( ll ) ,&h LDR #10 STH2kr #0020 ADD2 #02 /repeat
+	( dl ) #20 STH2kr #01 /single
+	( bb ) ,&w LDR #20 STH2kr #0010 ADD2 #01 /repeat
 	( dr ) #30 STH2r #00 !&single
 
 	&repeat ( times color addr* auto -- )
 		.Screen/auto DEO
 		.Screen/addr DEO2
 		STH
-		#00 &l STHkr ,&paint JSR INC GTHk ,&l JCN POP2
+		#00 &l STHkr /paint INC GTHk ,&l JCN POP2
 		POPr
 	JMP2r
 	&single ( color addr* auto -- )
@@ -1589,7 +1589,7 @@ JMP2r
 @abs2 DUP2 #0f SFT2 EQU ?{ #0000 SWP2 SUB2 } JMP2r
 @lts2 ( a* b* -- f ) SUB2 POP #07 SFT JMP2r
 @gts2 ( a* b* -- f ) SWP2 SUB2 POP #07 SFT JMP2r
-@sbyte ( str* -- byte ) LDAk ,chex JSR #40 SFT STH INC2 LDA ,chex JSR STHr ADD JMP2r
+@sbyte ( str* -- byte ) LDAk chex #40 SFT STH INC2 LDA chex STHr ADD JMP2r
 @chex ( c -- val|ff ) LIT "0 SUB DUP #09 GTH JMP JMP2r #27 SUB DUP #0f GTH JMP JMP2r POP #ff JMP2r
 @hexc ( hex -- char ) #0f AND DUP #09 GTH #27 MUL ADD #30 ADD JMP2r
 @scmp ( a* b* -- f ) STH2 &l LDAk LDAkr STHr ANDk #00 EQU ,&e JCN NEQk ,&e JCN POP2 INC2 INC2r ,&l JMP &e NIP2 POP2r EQU JMP2r
@@ -1607,16 +1607,16 @@ JMP2r
 	#0012 .File/length DEO2
 	;image .File/read DEO2
 	( flip endianness )
-	;image/w ,&flip JSR ;image/h ,&flip JSR
+	;image/w /flip ;image/h /flip
 	( resize canvas )
 	;image/w LDA2 #03 SFT2 NIP ;image/h LDA2 #03 SFT2 NIP set-surface-size
 	( get parser )
 	;image/image-type LDA
 	#02 NEQk NIP ,&no-raw-true JCN
-		;pixel-raw-true #0004 ,parse-tga JSR POP JMP2r
+		;pixel-raw-true #0004 parse-tga POP JMP2r
 		&no-raw-true
 	#03 NEQk NIP ,&no-raw-bw JCN
-		;pixel-raw-bw #0001 ,parse-tga JSR POP JMP2r
+		;pixel-raw-bw #0001 parse-tga POP JMP2r
 		&no-raw-bw
 	( error )
 	;&error-unknown-txt pstr
