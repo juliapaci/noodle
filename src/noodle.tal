@@ -367,7 +367,7 @@ JMP2r
 	( canvas offset )
 	.surface/y LDZ2 SUB2 SWP2
 	.surface/x LDZ2 SUB2 SWP2
-		,get-tool JSR ( .. )
+		get-tool ( .. )
 
 JMP2
 
@@ -377,7 +377,7 @@ JMP2
 	( canvas offset )
 	.viewport/y LDZ2 SUB2 #03 SFT2 .zoom/y LDZ2 ADD2 SWP2
 	.viewport/x LDZ2 SUB2 #03 SFT2 .zoom/x LDZ2 ADD2 SWP2
-		,get-tool JSR ( .. )
+		get-tool ( .. )
 
 JMP2
 	&cancel POP2 POP2 BRK
@@ -439,57 +439,43 @@ BRK
 	;data DUP2 get-length ADD2
 		#00 .surface/w LDZ #30 SFT2
 		msfl
-	;draw-surface ( .. )
-
-JMP2
+	!draw-surface
 
 @shift-down ( -- )
 
 	;data DUP2 get-length ADD2
 		#00 .surface/w LDZ #30 SFT2
 		msfr
-	;draw-surface ( .. )
-
-JMP2
+	!draw-surface
 
 @move-up ( -- )
 
 	.zoom/active LDZ ?&is-zoom JMP2r &is-zoom
 	.zoom/y LDZ2k #0001 SUB2 ROT STZ2
-	;draw-surface ( .. )
-
-JMP2
+	!draw-surface
 
 @move-down ( -- )
 
 	.zoom/active LDZ ?&is-zoom JMP2r &is-zoom
 	.zoom/y LDZ2k INC2 ROT STZ2
-	;draw-surface ( .. )
-
-JMP2
+	!draw-surface
 
 @move-left ( -- )
 
 	.zoom/active LDZ ?&is-zoom JMP2r &is-zoom
 	.zoom/x LDZ2k #0001 SUB2 ROT STZ2
-	;draw-surface ( .. )
-
-JMP2
+	!draw-surface
 
 @move-right ( -- )
 
 	.zoom/active LDZ ?&is-zoom JMP2r &is-zoom
 	.zoom/x LDZ2k INC2 ROT STZ2
-	;draw-surface ( .. )
-
-JMP2
+	!draw-surface
 
 @select-tool ( tool -- )
 
 	.brush/tool STZ
-	;draw-toolpane ( .. )
-
-JMP2
+	!draw-toolpane
 
 @select-patt ( patt -- )
 
@@ -499,9 +485,7 @@ JMP2
 	.brush/tool LDZ ?&no-switch
 		#01 ,select-tool JSR
 		&no-switch
-	;draw-pattpane ( .. )
-
-JMP2
+	!draw-pattpane
 
 @select-size ( size -- )
 
@@ -515,17 +499,13 @@ JMP2
 	.brush/tool LDZ ?&no-switch
 		#01 ,select-tool JSR
 		&no-switch
-	;draw-sizepane ( .. )
-
-JMP2
+	!draw-sizepane
 
 @view-toggle ( -- )
 
 	.zoom/active LDZk #00 EQU SWP STZ
 	draw-viewport
-	;draw-panel ( .. )
-
-JMP2
+	!draw-panel
 
 @edit-invert ( -- )
 
@@ -535,9 +515,7 @@ JMP2
 		( save ) STH2r STA
 		INC2 GTH2k ?&loop
 	POP2 POP2
-	;draw-surface ( .. )
-
-JMP2
+	!draw-surface
 
 @edit-gly ( -- )
 
@@ -602,9 +580,7 @@ JMP2r
 	clear-viewport
 	DUP .viewport/h STZ #00 SWP #30 SFT2 .viewport/y LDZ2 ADD2 .viewport/y2 STZ2
 	DUP .viewport/w STZ #00 SWP #30 SFT2 .viewport/x LDZ2 ADD2 .viewport/x2 STZ2
-	;center-surface ( .. )
-
-JMP2
+	!center-surface
 	&cancel POP2 JMP2r
 
 @set-panel-position ( x* y* -- )
@@ -613,9 +589,7 @@ JMP2
 	DUP2 .panel/y STZ2 #0088 ADD2 .panel/y2 STZ2
 	( minx ) #0008 GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .panel/x STZ2 #0018 ADD2 .panel/x2 STZ2
-	;draw-panel ( .. )
-
-JMP2
+	!draw-panel
 
 @set-viewport-position ( x* y* -- )
 
@@ -623,9 +597,7 @@ JMP2
 	DUP2 .viewport/y STZ2 #00 .viewport/h LDZ #30 SFT2 ADD2 .viewport/y2 STZ2
 	( minx ) #0028 GTH2k [ JMP SWP2 POP2 ]
 	DUP2 .viewport/x STZ2 #00 .viewport/w LDZ #30 SFT2 ADD2 .viewport/x2 STZ2
-	;center-surface ( .. )
-
-JMP2
+	!center-surface
 
 @set-surface-size ( w h -- )
 
@@ -647,9 +619,9 @@ JMP2
 	.surface/w STZ
 	draw-suface-size
 
-	,center-surface ( .. )
+	!center-surface
 
-JMP
+
 	&cancel POP2 JMP2r
 
 @center-surface ( -- )
@@ -657,7 +629,7 @@ JMP
 	.viewport/w LDZ .surface/w LDZ INC GTH ?&center-x
 		.viewport/x LDZ2 .surface/x STZ2
 		.viewport/x2 LDZ2 .surface/x2 STZ2
-		,&resume-x JMP
+		!&resume-x
 		&center-x
 	( center )
 	.viewport/x LDZ2 STH2k
@@ -668,7 +640,7 @@ JMP
 	.viewport/h LDZ .surface/h LDZ INC GTH ?&center-y
 		.viewport/y LDZ2 .surface/y STZ2
 		.viewport/y2 LDZ2 .surface/y2 STZ2
-		,&resume-y JMP
+		!&resume-y
 		&center-y
 	.viewport/y LDZ2 STH2k
 		.viewport/y2 LDZ2 STH2r SUB2 #00 .surface/h LDZ #30 SFT2 STH2k SUB2 #01 SFT2 ADD2
@@ -685,9 +657,7 @@ JMP
 	.viewport/x LDZ2 .viewport-label/x STZ2
 	.viewport/x2 LDZ2 .viewport-label/x2 STZ2
 	.viewport/y LDZ2 DUP2 #0008 SUB2 .viewport-label/y STZ2 .viewport-label/y2 STZ2
-	;draw-viewport ( .. )
-
-JMP2
+	!draw-viewport
 
 @paint-line ( x1* y1* x* y* -- )
 
@@ -730,9 +700,7 @@ JMP2r
 		POP2 POP2 POP2r
 		INC2 OVR2 OVR2 gts2 ?&ver
 	POP2 POP2
-	;draw-surface ( .. )
-
-JMP2
+	!draw-surface
 
 @paint-brush ( x* y* -- )
 
@@ -747,7 +715,7 @@ JMP2
 			OVR2 OVR2 patternize #00 EQU ?&no-pixel
 					OVR2 OVR2 .brush/oper LDZ2 JSR2
 					draw-tile
-					,&skip JMP
+					!&skip
 					&no-pixel
 					POP2 POP2
 				&skip
@@ -835,9 +803,7 @@ JMP2r
 	DUP #0c EQU ?&remove
 	POP POP2 POP2 JMP2r
 	&remove
-		POP ;remove-pixel ( .. )
-
-JMP2
+		POP !remove-pixel
 
 @get-pixel ( x* y* -- b )
 
@@ -854,9 +820,9 @@ JMP2r
 @set-pixel ( x* y* color -- )
 
 	?add-pixel
-	,remove-pixel JMP
+	!remove-pixel
 
-JMP2r
+
 
 @add-pixel ( x* y* -- )
 
@@ -935,9 +901,7 @@ JMP2r
 	;data get-length mclr
 	#00 .state/changed STZ draw-filestate
 	( draw )
-	;draw-viewport ( .. )
-
-JMP2
+	!draw-viewport
 	&untitled-txt "untitled $1
 	&icn-ext ".icn $1
 
@@ -954,9 +918,7 @@ JMP2
 	( capture size )
 	;filepath scap #0009 SUB2 read-size
 	( draw )
-	;draw-viewport ( .. )
-
-JMP2
+	!draw-viewport
 	&tga-ext ".tga $1
 
 @file-save ( path* -- )
@@ -966,9 +928,7 @@ JMP2
 	;data .File/write DEO2
 	( draw )
 	#00 .state/changed STZ draw-filestate
-	;draw-viewport ( .. )
-
-JMP2
+	!draw-viewport
 
 @read-size ( 00x00* -- )
 
@@ -977,9 +937,7 @@ JMP2
 	INC2k INC2 INC2 sbyte #00 EQU ?&cancel
 	( y ) INC2k INC2 INC2 sbyte STH
 	( x ) sbyte STHr
-		;set-surface-size ( .. )
-
-JMP2
+		!set-surface-size
 	&cancel POP2 JMP2r
 
 (
@@ -996,9 +954,7 @@ JMP2
 	#40 .Screen/sprite DEO
 
 	draw-viewport
-	;draw-panel ( .. )
-
-JMP2
+	!draw-panel
 
 @draw-menu-bg ( -- )
 
@@ -1211,18 +1167,14 @@ JMP2r
 	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0026 ADD2 #02 ,draw-lineh JSR
 	,draw-pattpane JSR
 	.panel/x LDZ2 INC2 .panel/x2 LDZ2 .panel/y LDZ2 #0058 ADD2 #02 ,draw-lineh JSR
-	,draw-sizepane ( .. )
-
-JMP
+	!draw-sizepane
 
 @clear-viewport ( -- )
 
 	.viewport-label/x LDZ2 #0008 SUB2 .Screen/x DEO2
 	.viewport-label/y LDZ2 #0008 SUB2 .Screen/y DEO2
 	#00 ;draw-fill/color STA
-	.viewport/w LDZ INC INC .viewport/h LDZ #03 ADD ;fill-icn ;draw-fill ( .. )
-
-JMP2
+	.viewport/w LDZ INC INC .viewport/h LDZ #03 ADD ;fill-icn !draw-fill
 
 @draw-lineh ( x0* x1* y* color -- )
 
@@ -1241,9 +1193,7 @@ JMP2r
 	#06 .brush/tool LDZ
 	.panel/x LDZ2 #0004 ADD2
 	.panel/y LDZ2 #0005 ADD2
-		,draw-icons ( .. )
-
-JMP
+		!draw-icons
 
 @draw-pattpane ( -- )
 
@@ -1251,9 +1201,7 @@ JMP
 	#08 .brush/patt LDZ
 	.panel/x LDZ2 #0004 ADD2
 	.panel/y LDZ2 #002d ADD2
-		,draw-icons ( .. )
-
-JMP
+		!draw-icons
 
 @draw-sizepane ( -- )
 
@@ -1261,9 +1209,7 @@ JMP
 	#08 .brush/size LDZ
 	.panel/x LDZ2 #0004 ADD2
 	.panel/y LDZ2 #005f ADD2
-		,draw-icons ( .. )
-
-JMP
+		!draw-icons
 
 @draw-icons ( length selection x* y* -- )
 
@@ -1325,9 +1271,7 @@ JMP2r
 	#0c ;draw-chr/color STA
 	.surface/w LDZ draw-byte
 	LIT "x draw-chr
-	.surface/h LDZ ;draw-byte ( .. )
-
-JMP2
+	.surface/h LDZ !draw-byte
 
 ( strings )
 
@@ -1617,9 +1561,7 @@ JMP2r
 	( ll ) ,&h LDR #10 STH2kr #0020 ADD2 #02 ,&repeat JSR
 	( dl ) #20 STH2kr #01 ,&single JSR
 	( bb ) ,&w LDR #20 STH2kr #0010 ADD2 #01 ,&repeat JSR
-	( dr ) #30 STH2r #00 ,&single ( .. )
-
-JMP
+	( dr ) #30 STH2r #00 !&single
 
 	&repeat ( times color addr* auto -- )
 		.Screen/auto DEO
@@ -1705,9 +1647,7 @@ JMP2r
 	;filepath scap #0004 SUB2 write-size
 	;&icn-ext ;filepath scap scpy
 	#01 .state/changed STZ draw-filestate
-	;draw-surface ( .. )
-
-JMP2
+	!draw-surface
 	&pixel $4
 	&icn-ext ".icn $1
 
