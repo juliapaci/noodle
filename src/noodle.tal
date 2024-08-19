@@ -47,25 +47,25 @@
 	#0280 .Screen/width DEO2
 	#0180 .Screen/height DEO2
 	( theme support )
-	;load-theme JSR2
+	load-theme
 	( default brush )
 	#04 .brush/size STZ
 	#00 .brush/patt STZ
 	#00 .brush/tool STZ
 	( initial position )
-	#0000 DUP2 ;set-viewport-position JSR2
+	#0000 DUP2 set-viewport-position
 	.Screen/width DEI2 #03 SFT2 NIP #08 SUB
 	.Screen/height DEI2 #03 SFT2 NIP #06 SUB
-		;set-viewport-size JSR2
+		set-viewport-size
 	.viewport/w LDZ #05 SUB
 	.viewport/h LDZ #06 SUB
-		;set-surface-size JSR2
-	#0000 DUP2 ;set-panel-position JSR2
+		set-surface-size
+	#0000 DUP2 set-panel-position
 	( begin. )
-	;file-new JSR2
-	;draw-menu-bg JSR2
-	;draw-menu JSR2
-	;untrap JSR2
+	file-new
+	draw-menu-bg
+	draw-menu
+	untrap
 
 BRK
 
@@ -129,7 +129,7 @@ BRK
 	;on-button .Controller/vector DEO2
 	;on-mouse .Mouse/vector DEO2
 	( filepath )
-	#ff ;draw-filepath JSR2
+	#ff draw-filepath
 	#00 .Mouse/state DEO
 
 JMP2r
@@ -141,7 +141,7 @@ JMP2r
 	;on-button-trap .Controller/vector DEO2
 	;on-mouse-trap .Mouse/vector DEO2
 	( filepath )
-	#ff ;draw-filepath JSR2
+	#ff draw-filepath
 	#00 .Mouse/state DEO
 	( clear brush )
 	.cursor/x LDZ2 .Screen/x DEO2
@@ -152,11 +152,11 @@ JMP2r
 
 @on-console ( -> )
 
-	#00 ;draw-filepath JSR2
+	#00 draw-filepath
 	( start )
 	[ LIT &listening $1 ] ,&no-start JCN
 		#01 ,&listening STR
-		;filepath #0040 ;mclr JSR2
+		;filepath #0040 mclr
 		&no-start
 	( end )
 	.Console/read DEI
@@ -165,26 +165,26 @@ JMP2r
 		&no-end
 	( capture )
 	,capture-trap JSR
-	#ff ;draw-filepath JSR2
+	#ff draw-filepath
 
 BRK
 
 @on-button-trap ( -> )
 
-	#00 ;draw-filepath JSR2
+	#00 draw-filepath
 	.Controller/key DEI DUP #0d EQU #03 MUL SUB ,capture-trap JSR
-	#ff ;draw-filepath JSR2
+	#ff draw-filepath
 
 BRK
 
 @capture-trap ( button -- )
 
 	DUP ,&no-null JCN POP JMP2r &no-null
-	[ #08 ] NEQk NIP ,&no-pop JCN ;filepath ;spop JSR2 POP JMP2r &no-pop
-	[ #0a ] NEQk NIP ,&no-load JCN ;file-open JSR2 &no-load
-	[ #7f ] NEQk NIP ,&no-delete JCN ;filepath #0040 ;mclr JSR2 POP JMP2r &no-delete
-	[ #20 ] GTHk NIP ,&no-special JCN ;untrap JSR2 POP JMP2r &no-special
-	;filepath ;slen JSR2 NIP #3f EQU ,&no-push JCN
+	[ #08 ] NEQk NIP ,&no-pop JCN ;filepath spop POP JMP2r &no-pop
+	[ #0a ] NEQk NIP ,&no-load JCN file-open &no-load
+	[ #7f ] NEQk NIP ,&no-delete JCN ;filepath #0040 mclr POP JMP2r &no-delete
+	[ #20 ] GTHk NIP ,&no-special JCN untrap POP JMP2r &no-special
+	;filepath slen NIP #3f EQU ,&no-push JCN
 		DUP ;filepath ;sput JSR2
 		&no-push
 	POP
@@ -213,8 +213,7 @@ BRK
 
 	.Mouse/y DEI2 #000c LTH2 ;trap-menu JCN2
 
-	;draw-cursor2 JSR2
-
+	draw-cursor2
 	( when scroll )
 	.Mouse/scrolly DEI2
 	INC2k ORA ,&no-up JCN
@@ -1017,23 +1016,10 @@ JMP2
 JMP2r
 
 @draw-cursor2 ( -- )
-
-	( clear brush size )
-	.cursor/x LDZ2
-	.cursor/y LDZ2
-	( clear size cursor )
-	OVR2 OVR2
-	#0003 SUB2 .Screen/y DEO2
-	#0003 SUB2 .Screen/x DEO2
-	;fill-icn .Screen/addr DEO2
-	#40 .Screen/sprite DEO
-	( clear last cursor )
 	clear-pointer
-
 	( record cursor positions )
 	.Mouse/x DEI2 .cursor/x STZ2
 	.Mouse/y DEI2 .cursor/y STZ2
-
 	( draw size cursor )
 	.brush/tool LDZ DUP #01 EQU SWP #03 EQU #0000 EQU2 ;&outside-canvas JCN2
 	( outside canvas )
@@ -1043,9 +1029,10 @@ JMP2r
 		;brush-icns #00 .brush/size LDZ #30 SFT2 ADD2 .Screen/addr DEO2
 		.Mouse/state DEI #00 NEQ DUPk
 			ADD DUP ADD #41 ADD .Screen/sprite DEO
-			#00 EQU ,&outside-canvas JCN JMP2r
-	&outside-canvas
+			#00 EQU ,&outside-canvas JCN
 
+		JMP2r
+	&outside-canvas
 	( draw new cursor )
 	.cursor/x LDZ2
 	.cursor/y LDZ2
@@ -1179,7 +1166,7 @@ JMP2r
 
 @clear-pointer ( -- )
 	[ LIT2 11 -Screen/auto ] DEO
-	.cursor/x LDZ2 #0003 SUB2 .Screen/y DEO2
+	.cursor/x LDZ2 #0003 SUB2 .Screen/x DEO2
 	.cursor/y LDZ2 #0003 SUB2 .Screen/y DEO2
 	;fill-icn .Screen/addr DEO2
 	[ LIT2 40 -Screen/sprite ] DEOk DEO
@@ -1187,7 +1174,6 @@ JMP2r
 	JMP2r
 
 @draw-pointer ( x* y* color -- )
-
 	STH
 	.Screen/y DEO2
 	.Screen/x DEO2
