@@ -602,9 +602,9 @@ JMP2r
 @set-surface-size ( w h -- )
 
 	( clamp )
-	.viewport/h LDZ #02 SUB LTHk [ JMP SWP POP ]
+	.viewport/h LDZ LTHk [ JMP SWP POP ]
 	SWP
-	.viewport/w LDZ #02 SUB LTHk [ JMP SWP POP ]
+	.viewport/w LDZ LTHk [ JMP SWP POP ]
 	SWP
 
 	( only redraw on change )
